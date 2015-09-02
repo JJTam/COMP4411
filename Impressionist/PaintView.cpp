@@ -10,7 +10,6 @@
 #include "paintview.h"
 #include "ImpBrush.h"
 
-
 #define LEFT_MOUSE_DOWN		1
 #define LEFT_MOUSE_DRAG		2
 #define LEFT_MOUSE_UP		3
@@ -138,7 +137,6 @@ void PaintView::draw()
 	// To avoid flicker on some machines.
 	glDrawBuffer(GL_BACK);
 	#endif // !MESA
-
 }
 
 
@@ -189,7 +187,8 @@ int PaintView::handle(int event)
 
 	}
 
-
+	// move the mouse indicator in OriginalView
+	this->m_pDoc->m_pUI->m_origView->move_mouse_ident_box(coord.x, coord.y);
 
 	return 1;
 }

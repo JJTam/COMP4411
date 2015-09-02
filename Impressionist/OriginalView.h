@@ -8,7 +8,6 @@
 #define ORIGINALVIEW_H
 
 #include <FL/Fl.H>
-
 #include <FL/Fl_Gl_Window.H>
 #include <FL/gl.h>
 #include <GL/gl.h>
@@ -29,13 +28,15 @@ public:
 	void refresh();
 
 	void resizeWindow(int width, int height);
+	void move_mouse_ident_box(int x, int y);
 
 	ImpressionistDoc*	m_pDoc;
 
 private:
 	int	m_nWindowWidth, 
 		m_nWindowHeight;
-
+	int mouse_indicator_x,
+		mouse_indicator_y;
 };
 
 #endif
