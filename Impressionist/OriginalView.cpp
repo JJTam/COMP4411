@@ -21,8 +21,9 @@ OriginalView::OriginalView(int			x,
 {
 	m_nWindowWidth	= w;
 	m_nWindowHeight	= h;
-
 }
+
+GLubyte preserve[300];
 
 void OriginalView::draw()
 {
@@ -68,6 +69,30 @@ void OriginalView::draw()
 
 		bitstart = m_pDoc->m_ucBitmap + 3 * ((m_pDoc->m_nWidth * startrow) + scrollpos.x);
 
+		GLubyte* bits = (GLubyte*)bitstart;
+
+		// draw the mouse indicator
+		for (int i = 0; i < 10; ++i)
+		{
+			int x = mouse_indicator_x - 5 + i;
+			if (x < 0 || x >= drawWidth)
+				continue;
+
+			for (int j = 0; j < 10; ++j)
+			{
+				int y = (m_nWindowHeight - mouse_indicator_y) - 5 + j;
+				if (y < 0 || y >= drawHeight)
+					continue;
+
+				preserve[3 * (j * 10 + i)] = bits[3 * (y * drawWidth + x)];
+				preserve[3 * (j * 10 + i) + 1] = bits[3 * (y * drawWidth + x) + 1];
+				preserve[3 * (j * 10 + i) + 2] = bits[3 * (y * drawWidth + x) + 2];
+				bits[3 * (y * drawWidth + x)] = 255;
+				bits[3 * (y * drawWidth + x) + 1] = 0;
+				bits[3 * (y * drawWidth + x) + 2] = 0;
+			}
+		}
+
 		// just copy image to GLwindow conceptually
 		glRasterPos2i( 0, m_nWindowHeight - drawHeight );
 		glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
@@ -75,8 +100,25 @@ void OriginalView::draw()
 		glDrawBuffer( GL_BACK );
 		glDrawPixels( drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, bitstart );
 
+		for (int i = 0; i < 10; ++i)
+		{
+			int x = mouse_indicator_x - 5 + i;
+			if (x < 0 || x >= drawWidth)
+				continue;
+
+			for (int j = 0; j < 10; ++j)
+			{
+				int y = (m_nWindowHeight - mouse_indicator_y) - 5 + j;
+				if (y < 0 || y >= drawHeight)
+					continue;
+
+				bits[3 * (y * drawWidth + x)] = preserve[3 * (j * 10 + i)];
+				bits[3 * (y * drawWidth + x) + 1] = preserve[3 * (j * 10 + i) + 1];
+				bits[3 * (y * drawWidth + x) + 2] = preserve[3 * (j * 10 + i) + 2];
+			}
+		}
 	}
-			
+
 	glFlush();
 }
 
@@ -91,3 +133,9 @@ void OriginalView::resizeWindow(int	width,
 	resize(x(), y(), width, height);
 }
 
+void OriginalView::move_mouse_ident_box(int x, int y)
+{
+	mouse_indicator_x = x;
+	mouse_indicator_y = y;
+	redraw();
+}
