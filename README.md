@@ -4,7 +4,7 @@
 
 ### Status
 
-Impressionist **In progress**
+Impressionist [**In progress**](https://github.com/logchan/COMP4411/wiki/Impressionist)
 
 Modeler **Not added**
 
