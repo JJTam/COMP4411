@@ -76,6 +76,27 @@ char* ImpressionistDoc::getImageName()
 void ImpressionistDoc::setBrushType(int type)
 {
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[type];
+	
+	// deactive all sliders
+	// add new lines when new sliders are available
+	m_pUI->m_BrushSizeSlider->deactivate();
+	m_pUI->m_LineWidthSlider->deactivate();
+
+	// select used sliders
+	// add other cases when new brushes are implemented
+	switch (type)
+	{
+	case BRUSH_POINTS:
+		m_pUI->m_BrushSizeSlider->activate();
+		break;
+	case BRUSH_LINES:
+		m_pUI->m_BrushSizeSlider->activate();
+		m_pUI->m_LineWidthSlider->activate();
+		break;
+		
+	default:
+		break;
+	}
 }
 
 //---------------------------------------------------------
