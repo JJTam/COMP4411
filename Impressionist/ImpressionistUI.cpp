@@ -280,6 +280,11 @@ void ImpressionistUI::cb_sizeSlides(Fl_Widget* o, void* v)
 	((ImpressionistUI*)(o->user_data()))->m_nSize=int( ((Fl_Slider *)o)->value() ) ;
 }
 
+void ImpressionistUI::cb_LineWidthSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nLineWidth = int(((Fl_Slider *)o)->value());
+}
+
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -327,6 +332,10 @@ int ImpressionistUI::getSize()
 {
 	return m_nSize;
 }
+int ImpressionistUI::getLineWidth()
+{
+	return m_nLineWidth;
+}
 
 //-------------------------------------------------
 // Set the brush size
@@ -338,7 +347,13 @@ void ImpressionistUI::setSize( int size )
 	if (size<=40) 
 		m_BrushSizeSlider->value(m_nSize);
 }
+void ImpressionistUI::setLineWidth(int size)
+{
+	m_nLineWidth = size;
 
+	if (size <= 40)
+		m_BrushSizeSlider->value(m_nLineWidth);
+}
 // Main menu definition
 Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
@@ -402,6 +417,7 @@ ImpressionistUI::ImpressionistUI() {
 	// init values
 
 	m_nSize = 10;
+	m_nLineWidth = 1;
 
 	// brush dialog definition
 	m_brushDialog = new Fl_Window(400, 325, "Brush Dialog");
@@ -428,6 +444,20 @@ ImpressionistUI::ImpressionistUI() {
 		m_BrushSizeSlider->value(m_nSize);
 		m_BrushSizeSlider->align(FL_ALIGN_RIGHT);
 		m_BrushSizeSlider->callback(cb_sizeSlides);
+
+		// Add line width slider to the dialog 
+		m_LineWidthSlider = new Fl_Value_Slider(10, 100, 300, 20, "LineWidth");
+		m_LineWidthSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_LineWidthSlider->type(FL_HOR_NICE_SLIDER);
+		m_LineWidthSlider->labelfont(FL_COURIER);
+		m_LineWidthSlider->labelsize(12);
+		m_LineWidthSlider->minimum(1);
+		m_LineWidthSlider->maximum(40);
+		m_LineWidthSlider->step(1);
+		m_LineWidthSlider->value(m_nLineWidth);
+		m_LineWidthSlider->align(FL_ALIGN_RIGHT);
+		m_LineWidthSlider->callback(cb_LineWidthSlides);
+		m_LineWidthSlider->deactivate();
 
     m_brushDialog->end();	
 

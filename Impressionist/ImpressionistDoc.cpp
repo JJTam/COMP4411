@@ -15,6 +15,7 @@
 // Include individual brush headers here.
 #include "PointBrush.h"
 #include "CircleBrush.h"
+#include "LineBrush.h"
 
 #define DESTROY(p)	{  if ((p)!=NULL) {delete [] p; p=NULL; } }
 
@@ -36,7 +37,7 @@ ImpressionistDoc::ImpressionistDoc()
 
 	// Note: You should implement these 5 brushes.  They are set the same (PointBrush) for now
 	ImpBrush::c_pBrushes[BRUSH_LINES]				
-		= new PointBrush( this, "Lines" );
+		= new LineBrush( this, "Lines" );
 	ImpBrush::c_pBrushes[BRUSH_CIRCLES]				
 		= new CircleBrush( this, "Circles" );
 	ImpBrush::c_pBrushes[BRUSH_SCATTERED_POINTS]	
@@ -75,6 +76,27 @@ char* ImpressionistDoc::getImageName()
 void ImpressionistDoc::setBrushType(int type)
 {
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[type];
+	
+	// deactive all sliders
+	// add new lines when new sliders are available
+	m_pUI->m_BrushSizeSlider->deactivate();
+	m_pUI->m_LineWidthSlider->deactivate();
+
+	// select used sliders
+	// add other cases when new brushes are implemented
+	switch (type)
+	{
+	case BRUSH_POINTS:
+		m_pUI->m_BrushSizeSlider->activate();
+		break;
+	case BRUSH_LINES:
+		m_pUI->m_BrushSizeSlider->activate();
+		m_pUI->m_LineWidthSlider->activate();
+		break;
+		
+	default:
+		break;
+	}
 }
 
 //---------------------------------------------------------
@@ -84,7 +106,10 @@ int ImpressionistDoc::getSize()
 {
 	return m_pUI->getSize();
 }
-
+int ImpressionistDoc::getLineWidth()
+{
+	return m_pUI->getLineWidth();
+}
 //---------------------------------------------------------
 // Load the specified image
 // This is called by the UI when the load image button is 
