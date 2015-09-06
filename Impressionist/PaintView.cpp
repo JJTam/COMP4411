@@ -36,12 +36,15 @@ PaintView::PaintView(int			x,
 {
 	m_nWindowWidth	= w;
 	m_nWindowHeight	= h;
-
+	this->mode(FL_ALPHA);
 }
 
 
 void PaintView::draw()
 {
+	// TODO: TEMPORARY. Its value shall come from a user setting from the UI.
+	static bool shallDrawBackground = false;
+
 	#ifndef MESA
 	// To avoid flicker on some machines.
 	glDrawBuffer(GL_FRONT_AND_BACK);
@@ -50,7 +53,7 @@ void PaintView::draw()
 	if(!valid())
 	{
 
-		glClearColor(0.7f, 0.7f, 0.7f, 1.0);
+		glClearColor(0.7f, 0.7f, 0.7f, 0);
 
 		// We're only using 2-D, so turn off depth 
 		glDisable( GL_DEPTH_TEST );
@@ -75,7 +78,9 @@ void PaintView::draw()
 	if ( startrow < 0 ) startrow = 0;
 
 	m_pPaintBitstart = m_pDoc->m_ucPainting + 
-		3 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
+		4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
+	m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting + 
+		4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
 
 	m_nDrawWidth	= drawWidth;
 	m_nDrawHeight	= drawHeight;
@@ -97,6 +102,15 @@ void PaintView::draw()
 		// Clear it after processing.
 		isAnEvent	= 0;	
 
+		// Restore the drawing for... drawing
+		// 0.9f is a magic number.
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glRasterPos2i(0, m_nWindowHeight - drawHeight);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
+		glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPreservedPaintBitstart);
+
 		Point source( coord.x + m_nStartCol, m_nEndRow - coord.y );
 		Point target( coord.x, m_nWindowHeight - coord.y );
 		
@@ -112,8 +126,8 @@ void PaintView::draw()
 		case LEFT_MOUSE_UP:
 			m_pDoc->m_pCurrentBrush->BrushEnd( source, target );
 
-			SaveCurrentContent();
-			RestoreContent();
+			//SaveCurrentContent();
+			//RestoreContent();
 			break;
 		case RIGHT_MOUSE_DOWN:
 
@@ -122,13 +136,64 @@ void PaintView::draw()
 
 			break;
 		case RIGHT_MOUSE_UP:
-
+			// TODO: TEMPORARY. Its value shall come from a user setting from the UI.
+			shallDrawBackground = !shallDrawBackground;
 			break;
 
 		default:
 			printf("Unknown event!!\n");		
 			break;
 		}
+
+		// Preserve the drawing
+		glReadPixels(0,
+			m_nWindowHeight - m_nDrawHeight,
+			m_nDrawWidth,
+			m_nDrawHeight,
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			m_pPreservedPaintBitstart);
+		glReadPixels(0,
+			m_nWindowHeight - m_nDrawHeight,
+			m_nDrawWidth,
+			m_nDrawHeight,
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			m_pPaintBitstart);
+
+		GLubyte* bits = (GLubyte*)m_pPaintBitstart;
+		GLubyte* pbits = (GLubyte*)m_pPreservedPaintBitstart;
+
+		// setup for visual drawing
+		glRasterPos2i(0, m_nWindowHeight - drawHeight);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
+		
+		if (shallDrawBackground)
+		{
+			for (int i = 0; i < drawWidth * drawHeight; ++i)
+			{
+				if (pbits[i * 4 + 3] == 0)
+					// TODO: TEMPORARY. The alpha value (180) shall come from a user setting from the UI.
+					bits[i * 4 + 3] = 180;
+			}
+			
+			glRasterPos2i(0, m_nWindowHeight - drawHeight);
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
+			
+			glDrawPixels(drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, m_pDoc->m_ucBitmap);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPaintBitstart);
+		}
+		else
+		{
+			glDisable(GL_BLEND);
+			glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPaintBitstart);
+		}
+
+		SaveCurrentContent();
 	}
 
 	glFlush();
@@ -216,9 +281,14 @@ void PaintView::SaveCurrentContent()
 				  m_nWindowHeight - m_nDrawHeight, 
 				  m_nDrawWidth, 
 				  m_nDrawHeight, 
-				  GL_RGB, 
+				  GL_RGBA, 
 				  GL_UNSIGNED_BYTE, 
 				  m_pPaintBitstart );
+
+	for (int i = 0; i < m_nDrawHeight * m_nDrawWidth; ++i)
+	{
+		((GLubyte*)m_pPaintBitstart)[i * 4 + 3] = 255;
+	}
 }
 
 
@@ -233,7 +303,7 @@ void PaintView::RestoreContent()
 	glPixelStorei( GL_UNPACK_ROW_LENGTH, m_pDoc->m_nPaintWidth );
 	glDrawPixels( m_nDrawWidth, 
 				  m_nDrawHeight, 
-				  GL_RGB, 
+				  GL_RGBA, 
 				  GL_UNSIGNED_BYTE, 
 				  m_pPaintBitstart);
 

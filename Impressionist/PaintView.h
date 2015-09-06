@@ -34,6 +34,7 @@ public:
 
 private:
 	GLvoid* m_pPaintBitstart;
+	GLvoid* m_pPreservedPaintBitstart;
 	int		m_nDrawWidth,
 			m_nDrawHeight,
 			m_nStartRow, 

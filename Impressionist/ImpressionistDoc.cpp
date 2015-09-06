@@ -29,7 +29,7 @@ ImpressionistDoc::ImpressionistDoc()
 	m_nWidth		= -1;
 	m_ucBitmap		= NULL;
 	m_ucPainting	= NULL;
-
+	m_ucPreservedPainting = NULL;
 
 	// create one instance of each brush
 	ImpBrush::c_nBrushCount	= NUM_BRUSH_TYPE;
@@ -148,12 +148,16 @@ int ImpressionistDoc::loadImage(char *iname)
 	// release old storage
 	if ( m_ucBitmap ) delete [] m_ucBitmap;
 	if ( m_ucPainting ) delete [] m_ucPainting;
+	if (m_ucPreservedPainting) delete[] m_ucPreservedPainting;
 
 	m_ucBitmap		= data;
 
 	// allocate space for draw view
-	m_ucPainting	= new unsigned char [width*height*3];
-	memset(m_ucPainting, 0, width*height*3);
+	m_ucPainting = new unsigned char[width*height * 4];
+	memset(m_ucPainting, 0, width*height * 4);
+
+	m_ucPreservedPainting = new unsigned char[width*height * 4];
+	memset(m_ucPreservedPainting, 0, width*height * 4);
 
 	m_pUI->m_mainWindow->resize(m_pUI->m_mainWindow->x(), 
 								m_pUI->m_mainWindow->y(), 
@@ -181,8 +185,16 @@ int ImpressionistDoc::loadImage(char *iname)
 int ImpressionistDoc::saveImage(char *iname) 
 {
 
-	writeBMP(iname, m_nPaintWidth, m_nPaintHeight, m_ucPainting);
-
+	// writeBMP(iname, m_nPaintWidth, m_nPaintHeight, m_ucPainting);
+	unsigned char* rgb = new unsigned char[m_nPaintWidth*m_nPaintHeight * 3];
+	for (int i = 0; i < m_nPaintWidth*m_nPaintHeight; ++i)
+	{
+		rgb[i * 3] = m_ucPainting[i * 4];
+		rgb[i * 3 + 1] = m_ucPainting[i * 4 + 1];
+		rgb[i * 3 + 2] = m_ucPainting[i * 4 + 2];
+	}
+	writeBMP(iname, m_nPaintWidth, m_nPaintHeight, rgb);
+	delete[] rgb;
 	return 1;
 }
 
@@ -193,15 +205,21 @@ int ImpressionistDoc::saveImage(char *iname)
 //-----------------------------------------------------------------
 int ImpressionistDoc::clearCanvas() 
 {
-
 	// Release old storage
+	if (m_ucPreservedPainting)
+	{
+		delete[] m_ucPreservedPainting;
+		m_ucPreservedPainting = new unsigned char[m_nPaintWidth*m_nPaintHeight * 4];
+		memset(m_ucPreservedPainting, 0, m_nPaintWidth*m_nPaintHeight * 4);
+	}
+
 	if ( m_ucPainting ) 
 	{
 		delete [] m_ucPainting;
 
 		// allocate space for draw view
-		m_ucPainting	= new unsigned char [m_nPaintWidth*m_nPaintHeight*3];
-		memset(m_ucPainting, 0, m_nPaintWidth*m_nPaintHeight*3);
+		m_ucPainting	= new unsigned char [m_nPaintWidth*m_nPaintHeight*4];
+		memset(m_ucPainting, 0, m_nPaintWidth*m_nPaintHeight*4);
 
 		// refresh paint view as well	
 		m_pUI->m_paintView->refresh();
