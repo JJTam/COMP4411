@@ -1,18 +1,18 @@
 //
-//LineBrush.h
+//ScatteredLineBrush.h
 //
-// The header file for Line Brush. 
+// The header file for Scattered Line Brush. 
 //
 
-#ifndef LINEBRUSH_H
-#define LINEBRUSH_H
+#ifndef ScatteredLINEBRUSH_H
+#define ScatteredLINEBRUSH_H
 
 #include "ImpBrush.h"
 
-class LineBrush : public ImpBrush
+class ScatteredLineBrush : public ImpBrush
 {
 public:
-	LineBrush(ImpressionistDoc* pDoc = NULL, char* name = NULL);
+	ScatteredLineBrush(ImpressionistDoc* pDoc = NULL, char* name = NULL);
 
 	void BrushBegin(const Point source, const Point target);
 	void BrushMove(const Point source, const Point target);

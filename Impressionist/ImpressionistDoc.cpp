@@ -16,7 +16,9 @@
 #include "PointBrush.h"
 #include "CircleBrush.h"
 #include "LineBrush.h"
-
+#include "ScatteredLineBrush.h"
+#include "ScatteredPointBrush.h"
+#include "ScatteredCircleBrush.h"
 #define DESTROY(p)	{  if ((p)!=NULL) {delete [] p; p=NULL; } }
 
 ImpressionistDoc::ImpressionistDoc() 
@@ -41,11 +43,11 @@ ImpressionistDoc::ImpressionistDoc()
 	ImpBrush::c_pBrushes[BRUSH_CIRCLES]				
 		= new CircleBrush( this, "Circles" );
 	ImpBrush::c_pBrushes[BRUSH_SCATTERED_POINTS]	
-		= new PointBrush( this, "Scattered Points" );
+		= new ScatteredPointBrush(this, "Scattered Points");
 	ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES]		
-		= new PointBrush( this, "Scattered Lines" );
+		= new ScatteredLineBrush( this, "Scattered Lines" );
 	ImpBrush::c_pBrushes[BRUSH_SCATTERED_CIRCLES]	
-		= new PointBrush( this, "Scattered Circles" );
+		= new ScatteredCircleBrush(this, "Scattered Circles");
 
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
@@ -81,17 +83,22 @@ void ImpressionistDoc::setBrushType(int type)
 	// add new lines when new sliders are available
 	m_pUI->m_BrushSizeSlider->deactivate();
 	m_pUI->m_LineWidthSlider->deactivate();
-
+	m_pUI->m_AngleSlider->deactivate();
 	// select used sliders
 	// add other cases when new brushes are implemented
 	switch (type)
 	{
 	case BRUSH_POINTS:
+	case BRUSH_CIRCLES:
+	case BRUSH_SCATTERED_POINTS:
+	case BRUSH_SCATTERED_CIRCLES:
 		m_pUI->m_BrushSizeSlider->activate();
 		break;
 	case BRUSH_LINES:
+	case BRUSH_SCATTERED_LINES:
 		m_pUI->m_BrushSizeSlider->activate();
 		m_pUI->m_LineWidthSlider->activate();
+		m_pUI->m_AngleSlider->activate();
 		break;
 		
 	default:
@@ -109,6 +116,10 @@ int ImpressionistDoc::getSize()
 int ImpressionistDoc::getLineWidth()
 {
 	return m_pUI->getLineWidth();
+}
+int ImpressionistDoc::getAngle()
+{
+	return m_pUI->getAngle();
 }
 //---------------------------------------------------------
 // Load the specified image

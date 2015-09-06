@@ -284,7 +284,10 @@ void ImpressionistUI::cb_LineWidthSlides(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data()))->m_nLineWidth = int(((Fl_Slider *)o)->value());
 }
-
+void ImpressionistUI::cb_AngleSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nAngle = int(((Fl_Slider *)o)->value());
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -336,7 +339,10 @@ int ImpressionistUI::getLineWidth()
 {
 	return m_nLineWidth;
 }
-
+int ImpressionistUI::getAngle()
+{
+	return m_nAngle;
+}
 //-------------------------------------------------
 // Set the brush size
 //-------------------------------------------------
@@ -352,6 +358,13 @@ void ImpressionistUI::setLineWidth(int size)
 	m_nLineWidth = size;
 
 	if (size <= 40)
+		m_BrushSizeSlider->value(m_nLineWidth);
+}
+void ImpressionistUI::setAngle(int angle)
+{
+	m_nAngle = angle;
+
+	if (angle <= 359)
 		m_BrushSizeSlider->value(m_nLineWidth);
 }
 // Main menu definition
@@ -418,6 +431,7 @@ ImpressionistUI::ImpressionistUI() {
 
 	m_nSize = 10;
 	m_nLineWidth = 1;
+	m_nAngle = 0;
 
 	// brush dialog definition
 	m_brushDialog = new Fl_Window(400, 325, "Brush Dialog");
@@ -458,7 +472,19 @@ ImpressionistUI::ImpressionistUI() {
 		m_LineWidthSlider->align(FL_ALIGN_RIGHT);
 		m_LineWidthSlider->callback(cb_LineWidthSlides);
 		m_LineWidthSlider->deactivate();
-
+		// Add angle slider to the dialog 
+		m_AngleSlider = new Fl_Value_Slider(10, 120, 300, 20, "LineAngle");
+		m_AngleSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_AngleSlider->type(FL_HOR_NICE_SLIDER);
+		m_AngleSlider->labelfont(FL_COURIER);
+		m_AngleSlider->labelsize(12);
+		m_AngleSlider->minimum(0);
+		m_AngleSlider->maximum(359);
+		m_AngleSlider->step(1);
+		m_AngleSlider->value(m_nAngle);
+		m_AngleSlider->align(FL_ALIGN_RIGHT);
+		m_AngleSlider->callback(cb_AngleSlides);
+		m_AngleSlider->deactivate();
     m_brushDialog->end();	
 
 }
