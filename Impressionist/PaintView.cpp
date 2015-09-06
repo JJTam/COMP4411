@@ -36,13 +36,13 @@ PaintView::PaintView(int			x,
 {
 	m_nWindowWidth	= w;
 	m_nWindowHeight	= h;
-
+	this->mode(FL_ALPHA);
 }
 
 
 void PaintView::draw()
 {
-	// TEMPORARY. Its value shall come from a user setting from the UI.
+	// TODO: TEMPORARY. Its value shall come from a user setting from the UI.
 	static bool shallDrawBackground = false;
 
 	#ifndef MESA
@@ -53,7 +53,7 @@ void PaintView::draw()
 	if(!valid())
 	{
 
-		glClearColor(0.7f, 0.7f, 0.7f, 0.9f);
+		glClearColor(0.7f, 0.7f, 0.7f, 0);
 
 		// We're only using 2-D, so turn off depth 
 		glDisable( GL_DEPTH_TEST );
@@ -104,7 +104,7 @@ void PaintView::draw()
 
 		// Restore the drawing for... drawing
 		// 0.9f is a magic number.
-		glClearColor(0, 0, 0, 0.9f);
+		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glRasterPos2i(0, m_nWindowHeight - drawHeight);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -136,7 +136,7 @@ void PaintView::draw()
 
 			break;
 		case RIGHT_MOUSE_UP:
-			// TEMPORARY. Its value shall come from a user setting from the UI.
+			// TODO: TEMPORARY. Its value shall come from a user setting from the UI.
 			shallDrawBackground = !shallDrawBackground;
 			break;
 
@@ -173,8 +173,8 @@ void PaintView::draw()
 		{
 			for (int i = 0; i < drawWidth * drawHeight; ++i)
 			{
-				if (pbits[i * 4 + 3] != 255)
-					// TEMPORARY. The alpha value (180) shall come from a user setting from the UI.
+				if (pbits[i * 4 + 3] == 0)
+					// TODO: TEMPORARY. The alpha value (180) shall come from a user setting from the UI.
 					bits[i * 4 + 3] = 180;
 			}
 			
@@ -189,13 +189,7 @@ void PaintView::draw()
 		}
 		else
 		{
-			// change magic number alphas to 255
-			// so that the background (black) for the user is really, black
-			for (int i = 0; i < drawWidth * drawHeight; ++i)
-			{
-				bits[i * 4 + 3] = 255;
-			}
-
+			glDisable(GL_BLEND);
 			glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPaintBitstart);
 		}
 
