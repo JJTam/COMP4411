@@ -81,7 +81,7 @@ void ImpressionistDoc::setBrushType(int type)
 	// add new lines when new sliders are available
 	m_pUI->m_BrushSizeSlider->deactivate();
 	m_pUI->m_LineWidthSlider->deactivate();
-
+	m_pUI->m_AngleSlider->deactivate();
 	// select used sliders
 	// add other cases when new brushes are implemented
 	switch (type)
@@ -92,6 +92,7 @@ void ImpressionistDoc::setBrushType(int type)
 	case BRUSH_LINES:
 		m_pUI->m_BrushSizeSlider->activate();
 		m_pUI->m_LineWidthSlider->activate();
+		m_pUI->m_AngleSlider->activate();
 		break;
 		
 	default:
@@ -109,6 +110,10 @@ int ImpressionistDoc::getSize()
 int ImpressionistDoc::getLineWidth()
 {
 	return m_pUI->getLineWidth();
+}
+int ImpressionistDoc::getAngle()
+{
+	return m_pUI->getAngle();
 }
 //---------------------------------------------------------
 // Load the specified image

@@ -20,7 +20,8 @@ public:
 	char* BrushName();
 
 private:
-	double length;
+	int length;
+	int angle;
 };
 
 #endif
