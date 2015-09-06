@@ -9,6 +9,7 @@
 #include "impressionistUI.h"
 #include "paintview.h"
 #include "ImpBrush.h"
+#include <cmath>
 
 #define LEFT_MOUSE_DOWN		1
 #define LEFT_MOUSE_DRAG		2
@@ -26,6 +27,9 @@
 static int		eventToDo;
 static int		isAnEvent=0;
 static Point	coord;
+static Point    rightClickBegin;
+static Point    rightClickEnd;
+static int      prevEvent;
 
 PaintView::PaintView(int			x, 
 					 int			y, 
@@ -98,12 +102,12 @@ void PaintView::draw()
 
 	if ( m_pDoc->m_ucPainting && isAnEvent) 
 	{
+		bool updatePreservedDrawing = false;
 
 		// Clear it after processing.
 		isAnEvent	= 0;	
 
 		// Restore the drawing for... drawing
-		// 0.9f is a magic number.
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glRasterPos2i(0, m_nWindowHeight - drawHeight);
@@ -119,40 +123,70 @@ void PaintView::draw()
 		{
 		case LEFT_MOUSE_DOWN:
 			m_pDoc->m_pCurrentBrush->BrushBegin( source, target );
+			updatePreservedDrawing = true;
 			break;
 		case LEFT_MOUSE_DRAG:
 			m_pDoc->m_pCurrentBrush->BrushMove( source, target );
+			updatePreservedDrawing = true;
 			break;
 		case LEFT_MOUSE_UP:
 			m_pDoc->m_pCurrentBrush->BrushEnd( source, target );
-
+			updatePreservedDrawing = true;
 			//SaveCurrentContent();
 			//RestoreContent();
 			break;
 		case RIGHT_MOUSE_DOWN:
-
+			rightClickBegin.x = target.x;
+			rightClickBegin.y = target.y;
+			printf("[1]Setting begin to (%d, %d)\n", target.x, target.y);
 			break;
 		case RIGHT_MOUSE_DRAG:
-
+			glBegin(GL_LINES);
+				glColor3ub(255, 0, 0);
+				glVertex2d(rightClickBegin.x, rightClickBegin.y);
+				glVertex2d(target.x, target.y);
+			glEnd();
 			break;
 		case RIGHT_MOUSE_UP:
-			// TODO: TEMPORARY. Its value shall come from a user setting from the UI.
-			shallDrawBackground = !shallDrawBackground;
+			rightClickEnd.x = target.x;
+			rightClickEnd.y = target.y;
+
+			if (rightClickBegin.x == rightClickEnd.x &&
+				rightClickBegin.y == rightClickEnd.y)
+			{
+				// TODO: TEMPORARY. Its value shall come from a user setting from the UI.
+				shallDrawBackground = !shallDrawBackground;
+			}
+			else
+			{
+				// update angle
+				int newAngle = (int)(atan((double)((rightClickEnd.y - rightClickBegin.y)) / (rightClickEnd.x - rightClickBegin.x)) / 3.14159 * 180);
+				while (newAngle < 0)
+					newAngle += 360;
+
+				m_pDoc->m_pUI->m_AngleSlider->value(newAngle);
+				m_pDoc->m_pUI->setAngle(newAngle);
+			}
 			break;
 
 		default:
 			printf("Unknown event!!\n");		
 			break;
 		}
+		prevEvent = eventToDo;
 
 		// Preserve the drawing
-		glReadPixels(0,
-			m_nWindowHeight - m_nDrawHeight,
-			m_nDrawWidth,
-			m_nDrawHeight,
-			GL_RGBA,
-			GL_UNSIGNED_BYTE,
-			m_pPreservedPaintBitstart);
+		if (updatePreservedDrawing)
+		{
+			glReadPixels(0,
+						m_nWindowHeight - m_nDrawHeight,
+						m_nDrawWidth,
+						m_nDrawHeight,
+						GL_RGBA,
+						GL_UNSIGNED_BYTE,
+						m_pPreservedPaintBitstart);
+		}
+		
 		glReadPixels(0,
 			m_nWindowHeight - m_nDrawHeight,
 			m_nDrawWidth,
@@ -173,7 +207,7 @@ void PaintView::draw()
 		{
 			for (int i = 0; i < drawWidth * drawHeight; ++i)
 			{
-				if (pbits[i * 4 + 3] == 0)
+				if (bits[i * 4 + 3] == 0)
 					// TODO: TEMPORARY. The alpha value (180) shall come from a user setting from the UI.
 					bits[i * 4 + 3] = 180;
 			}
@@ -245,6 +279,12 @@ int PaintView::handle(int event)
 	case FL_MOVE:
 		coord.x = Fl::event_x();
 		coord.y = Fl::event_y();
+		// dirty trick to solve "drag-without-down" problem
+		if (prevEvent != RIGHT_MOUSE_DRAG)
+		{
+			rightClickBegin.x = coord.x;
+			rightClickBegin.y = m_nWindowHeight - coord.y;
+		}
 		break;
 	default:
 		return 0;
