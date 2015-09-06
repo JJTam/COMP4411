@@ -37,8 +37,8 @@ void ScatteredPointBrush::BrushMove(const Point source, const Point target)
 	int loop_time = pDoc->getSize()*4;
 	for (int i = 0; i < loop_time; ++i)
 	{
-		int Xoffset = irand(pDoc->getSize()) - 5;
-		int Yoffset = irand(pDoc->getSize()) - 5;
+		int Xoffset = irand(pDoc->getSize()) - pDoc->getSize() / 2;
+		int Yoffset = irand(pDoc->getSize()) - pDoc->getSize() / 2;
 		SetColor(source.x + Xoffset, source.y + Yoffset);
 		glVertex2d(target.x + Xoffset, target.y + Yoffset);
 	}

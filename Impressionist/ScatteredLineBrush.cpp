@@ -43,8 +43,8 @@ void ScatteredLineBrush::BrushMove(const Point source, const Point target)
 	int loop_time = irand(2) + 2;
 	for (int i = 0; i < loop_time; ++i)
 	{
-		int Xoffset = irand(this->length) - 5;
-		int Yoffset = irand(this->length) - 5;
+		int Xoffset = irand(this->length) - this->length/2;
+		int Yoffset = irand(this->length) - this->length/2;
 		SetColor(source.x + Xoffset, source.y + Yoffset);
 		glVertex2f(target.x + Xoffset - this->length / 2 * cos(this->angle * 3.14159 / 180), target.y + Yoffset - this->length / 2 * sin(this->angle * 3.14159 / 180));
 		glVertex2f(target.x + Xoffset + this->length / 2 * cos(this->angle * 3.14159 / 180), target.y + Yoffset + this->length / 2 * sin(this->angle * 3.14159 / 180));
