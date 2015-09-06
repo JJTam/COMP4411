@@ -1,5 +1,5 @@
 //
-//LineBrush.h
+//ScatteredLineBrush.h
 //
 // The header file for Scattered Line Brush. 
 //
