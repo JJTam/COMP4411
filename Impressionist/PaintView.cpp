@@ -104,6 +104,17 @@ void PaintView::draw()
 	{
 		bool updatePreservedDrawing = false;
 		
+		if (coord.x > drawWidth || coord.y > drawHeight)
+		{
+			RestoreContent();
+			glFlush();
+#ifndef MESA
+			// To avoid flicker on some machines.
+			glDrawBuffer(GL_BACK);
+#endif // !MESA
+			return;
+		}
+
 		// Clear it after processing.
 		isAnEvent	= 0;	
 

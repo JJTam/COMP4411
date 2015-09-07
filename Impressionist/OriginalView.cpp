@@ -61,7 +61,7 @@ void OriginalView::draw()
 
 		drawWidth	= min( m_nWindowWidth, m_pDoc->m_nWidth );
 		drawHeight	= min( m_nWindowHeight, m_pDoc->m_nHeight );
-
+		
 		int	startrow	= m_pDoc->m_nHeight - (scrollpos.y + drawHeight);
 		if ( startrow < 0 ) 
 			startrow = 0;
@@ -71,39 +71,48 @@ void OriginalView::draw()
 
 		GLubyte* bits = (GLubyte*)bitstart;
 
-		int mouse_indicator_draw_y = m_nWindowHeight - mouse_indicator_y;
-		// draw the mouse indicator
-		for (int i = 0; i < 10; ++i)
+		int imageWidth = m_pDoc->m_nWidth;
+		int mouse_indicator_draw_y = drawHeight - mouse_indicator_y;
+		int mouse_indicator_center = (mouse_indicator_draw_y * drawWidth + mouse_indicator_x) * 3;
+		if (mouse_indicator_center > 0 && mouse_indicator_center < drawHeight * drawWidth * 3)
 		{
-			int x = mouse_indicator_x - 5 + i;
-			if (x < 0 || x >= drawWidth)
-				continue;
-
-			for (int j = 0; j < 10; ++j)
+			GLubyte R = bits[mouse_indicator_center];
+			GLubyte G = bits[mouse_indicator_center + 1];
+			GLubyte B = bits[mouse_indicator_center + 2];
+			// draw the mouse indicator
+			for (int i = 0; i < 10; ++i)
 			{
-				int y = mouse_indicator_draw_y - 5 + j;
-				if (y < 0 || y >= drawHeight)
+				int x = mouse_indicator_x - 5 + i;
+				if (x < 0 || x >= imageWidth)
 					continue;
 
-				preserve[3 * (j * 10 + i)] = bits[3 * (y * drawWidth + x)];
-				preserve[3 * (j * 10 + i) + 1] = bits[3 * (y * drawWidth + x) + 1];
-				preserve[3 * (j * 10 + i) + 2] = bits[3 * (y * drawWidth + x) + 2];
+				for (int j = 0; j < 10; ++j)
+				{
+					int y = mouse_indicator_draw_y - 5 + j;
+					if (y < 0 || y >= drawHeight)
+						continue;
 
-				if (i == 0 || i == 9 || j == 0 || j == 9)
-				{
-					bits[3 * (y * drawWidth + x)] = 255;
-					bits[3 * (y * drawWidth + x) + 1] = 0;
-					bits[3 * (y * drawWidth + x) + 2] = 0;
-				}
-				else
-				{
-					int center = (mouse_indicator_draw_y * drawWidth + mouse_indicator_x) * 3;
-					bits[3 * (y * drawWidth + x)] = bits[center];
-					bits[3 * (y * drawWidth + x) + 1] = bits[center+1];
-					bits[3 * (y * drawWidth + x) + 2] = bits[center+2];
+					preserve[3 * (j * 10 + i)] = bits[3 * (y * imageWidth + x)];
+					preserve[3 * (j * 10 + i) + 1] = bits[3 * (y * imageWidth + x) + 1];
+					preserve[3 * (j * 10 + i) + 2] = bits[3 * (y * imageWidth + x) + 2];
+
+					if (i == 0 || i == 9 || j == 0 || j == 9)
+					{
+						bits[3 * (y * imageWidth + x)] = 255;
+						bits[3 * (y * imageWidth + x) + 1] = 0;
+						bits[3 * (y * imageWidth + x) + 2] = 0;
+					}
+					else
+					{
+					
+						bits[3 * (y * imageWidth + x)] = R;
+						bits[3 * (y * imageWidth + x) + 1] = G;
+						bits[3 * (y * imageWidth + x) + 2] = B;
+					}
 				}
 			}
 		}
+
 
 		// just copy image to GLwindow conceptually
 		glRasterPos2i( 0, m_nWindowHeight - drawHeight );
@@ -112,21 +121,24 @@ void OriginalView::draw()
 		glDrawBuffer( GL_BACK );
 		glDrawPixels( drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, bitstart );
 
-		for (int i = 0; i < 10; ++i)
+		if (mouse_indicator_center > 0 && mouse_indicator_center < drawHeight * drawWidth * 3)
 		{
-			int x = mouse_indicator_x - 5 + i;
-			if (x < 0 || x >= drawWidth)
-				continue;
-
-			for (int j = 0; j < 10; ++j)
+			for (int i = 0; i < 10; ++i)
 			{
-				int y = (m_nWindowHeight - mouse_indicator_y) - 5 + j;
-				if (y < 0 || y >= drawHeight)
+				int x = mouse_indicator_x - 5 + i;
+				if (x < 0 || x >= imageWidth)
 					continue;
 
-				bits[3 * (y * drawWidth + x)] = preserve[3 * (j * 10 + i)];
-				bits[3 * (y * drawWidth + x) + 1] = preserve[3 * (j * 10 + i) + 1];
-				bits[3 * (y * drawWidth + x) + 2] = preserve[3 * (j * 10 + i) + 2];
+				for (int j = 0; j < 10; ++j)
+				{
+					int y = mouse_indicator_draw_y - 5 + j;
+					if (y < 0 || y >= drawHeight)
+						continue;
+
+					bits[3 * (y * imageWidth + x)] = preserve[3 * (j * 10 + i)];
+					bits[3 * (y * imageWidth + x) + 1] = preserve[3 * (j * 10 + i) + 1];
+					bits[3 * (y * imageWidth + x) + 2] = preserve[3 * (j * 10 + i) + 2];
+				}
 			}
 		}
 	}
