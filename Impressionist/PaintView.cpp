@@ -108,8 +108,10 @@ void PaintView::draw()
 		isAnEvent	= 0;	
 
 		// Restore the drawing for... drawing
+		glDisable(GL_BLEND);
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
+		
 		glRasterPos2i(0, m_nWindowHeight - drawHeight);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
@@ -130,6 +132,8 @@ void PaintView::draw()
 		// This is the event handler
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		if (!m_pDoc->m_bHasPendingUndo)
 		switch (eventToDo) 
 		{
 		case LEFT_MOUSE_DOWN:
