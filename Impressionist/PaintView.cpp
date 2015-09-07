@@ -128,6 +128,8 @@ void PaintView::draw()
 		}
 		
 		// This is the event handler
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		switch (eventToDo) 
 		{
 		case LEFT_MOUSE_DOWN:
