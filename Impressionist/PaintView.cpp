@@ -120,9 +120,9 @@ void PaintView::draw()
 		
 		if (eventToDo == LEFT_MOUSE_DOWN || (eventToDo == LEFT_MOUSE_DRAG && prevEvent == LEFT_MOUSE_UP) && (!m_pDoc->m_bHasPendingUndo))
 		{
-			printf("Pushing to undo list... ");
+			//printf("Pushing to undo list... ");
 			m_pDoc->pushToUndo();
-			printf("%d\n", m_pDoc->m_lUndoList.size());
+			//printf("%d\n", m_pDoc->m_lUndoList.size());
 			m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting +
 				4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
 		}
@@ -147,7 +147,7 @@ void PaintView::draw()
 		case RIGHT_MOUSE_DOWN:
 			rightClickBegin.x = target.x;
 			rightClickBegin.y = target.y;
-			printf("[1]Setting begin to (%d, %d)\n", target.x, target.y);
+			//printf("[1]Setting begin to (%d, %d)\n", target.x, target.y);
 			break;
 		case RIGHT_MOUSE_DRAG:
 			glBegin(GL_LINES);
