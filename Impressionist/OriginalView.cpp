@@ -71,6 +71,7 @@ void OriginalView::draw()
 
 		GLubyte* bits = (GLubyte*)bitstart;
 
+		int mouse_indicator_draw_y = m_nWindowHeight - mouse_indicator_y;
 		// draw the mouse indicator
 		for (int i = 0; i < 10; ++i)
 		{
@@ -80,16 +81,27 @@ void OriginalView::draw()
 
 			for (int j = 0; j < 10; ++j)
 			{
-				int y = (m_nWindowHeight - mouse_indicator_y) - 5 + j;
+				int y = mouse_indicator_draw_y - 5 + j;
 				if (y < 0 || y >= drawHeight)
 					continue;
 
 				preserve[3 * (j * 10 + i)] = bits[3 * (y * drawWidth + x)];
 				preserve[3 * (j * 10 + i) + 1] = bits[3 * (y * drawWidth + x) + 1];
 				preserve[3 * (j * 10 + i) + 2] = bits[3 * (y * drawWidth + x) + 2];
-				bits[3 * (y * drawWidth + x)] = 255;
-				bits[3 * (y * drawWidth + x) + 1] = 0;
-				bits[3 * (y * drawWidth + x) + 2] = 0;
+
+				if (i == 0 || i == 9 || j == 0 || j == 9)
+				{
+					bits[3 * (y * drawWidth + x)] = 255;
+					bits[3 * (y * drawWidth + x) + 1] = 0;
+					bits[3 * (y * drawWidth + x) + 2] = 0;
+				}
+				else
+				{
+					int center = (mouse_indicator_draw_y * drawWidth + mouse_indicator_x) * 3;
+					bits[3 * (y * drawWidth + x)] = bits[center];
+					bits[3 * (y * drawWidth + x) + 1] = bits[center+1];
+					bits[3 * (y * drawWidth + x) + 2] = bits[center+2];
+				}
 			}
 		}
 
