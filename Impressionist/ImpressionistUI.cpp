@@ -241,6 +241,14 @@ void ImpressionistUI::cb_about(Fl_Menu_* o, void* v)
 	fl_message("Impressionist FLTK version for CS341, Spring 2002");
 }
 
+void ImpressionistUI::cb_undo(Fl_Menu_* o, void* v) {
+	ImpressionistUI* pUI = whoami(o);
+	ImpressionistDoc* pDoc = pUI->getDocument();
+
+	pDoc->undo();
+}
+
+
 //------- UI should keep track of the current for all the controls for answering the query from Doc ---------
 //-------------------------------------------------------------
 // Sets the type of brush to use to the one chosen in the brush 
@@ -378,6 +386,10 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
 		{ 0 },
 
+	{ "&Edit", 0, 0, 0, FL_SUBMENU },
+		{ "&Undo", FL_CTRL + 'z', (Fl_Callback *)ImpressionistUI::cb_undo },
+		{ 0 },
+
 	{ "&Help",		0, 0, 0, FL_SUBMENU },
 		{ "&About",	FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_about },
 		{ 0 },
@@ -395,7 +407,6 @@ Fl_Menu_Item ImpressionistUI::brushTypeMenu[NUM_BRUSH_TYPE+1] = {
   {"Scattered Circles",	FL_ALT+'d', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SCATTERED_CIRCLES},
   {0}
 };
-
 
 
 //----------------------------------------------------

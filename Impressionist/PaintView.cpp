@@ -94,16 +94,16 @@ void PaintView::draw()
 	m_nStartCol		= scrollpos.x;
 	m_nEndCol		= m_nStartCol + drawWidth;
 
-	if ( m_pDoc->m_ucPainting && !isAnEvent) 
+	if ( (m_pDoc->m_ucPainting && !isAnEvent) && (!m_pDoc->m_bHasPendingUndo)) 
 	{
 		RestoreContent();
 
 	}
 
-	if ( m_pDoc->m_ucPainting && isAnEvent) 
+	if ( (m_pDoc->m_ucPainting && isAnEvent) || (m_pDoc->m_bHasPendingUndo)) 
 	{
 		bool updatePreservedDrawing = false;
-
+		
 		// Clear it after processing.
 		isAnEvent	= 0;	
 
@@ -117,6 +117,15 @@ void PaintView::draw()
 
 		Point source( coord.x + m_nStartCol, m_nEndRow - coord.y );
 		Point target( coord.x, m_nWindowHeight - coord.y );
+		
+		if (eventToDo == LEFT_MOUSE_DOWN || (eventToDo == LEFT_MOUSE_DRAG && prevEvent == LEFT_MOUSE_UP) && (!m_pDoc->m_bHasPendingUndo))
+		{
+			//printf("Pushing to undo list... ");
+			m_pDoc->pushToUndo();
+			//printf("%d\n", m_pDoc->m_lUndoList.size());
+			m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting +
+				4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
+		}
 		
 		// This is the event handler
 		switch (eventToDo) 
@@ -138,7 +147,7 @@ void PaintView::draw()
 		case RIGHT_MOUSE_DOWN:
 			rightClickBegin.x = target.x;
 			rightClickBegin.y = target.y;
-			printf("[1]Setting begin to (%d, %d)\n", target.x, target.y);
+			//printf("[1]Setting begin to (%d, %d)\n", target.x, target.y);
 			break;
 		case RIGHT_MOUSE_DRAG:
 			glBegin(GL_LINES);
@@ -173,6 +182,7 @@ void PaintView::draw()
 			printf("Unknown event!!\n");		
 			break;
 		}
+
 		prevEvent = eventToDo;
 
 		// Preserve the drawing
@@ -186,7 +196,9 @@ void PaintView::draw()
 						GL_UNSIGNED_BYTE,
 						m_pPreservedPaintBitstart);
 		}
-		
+
+		m_pDoc->m_bHasPendingUndo = false;
+
 		glReadPixels(0,
 			m_nWindowHeight - m_nDrawHeight,
 			m_nDrawWidth,

@@ -51,7 +51,7 @@ ImpressionistDoc::ImpressionistDoc()
 
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
-
+	m_bHasPendingUndo = false;
 }
 
 
@@ -149,6 +149,7 @@ int ImpressionistDoc::loadImage(char *iname)
 	if ( m_ucBitmap ) delete [] m_ucBitmap;
 	if ( m_ucPainting ) delete [] m_ucPainting;
 	if (m_ucPreservedPainting) delete[] m_ucPreservedPainting;
+	
 
 	m_ucBitmap		= data;
 
@@ -254,3 +255,25 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( const Point p )
 	return GetOriginalPixel( p.x, p.y );
 }
 
+void ImpressionistDoc::undo()
+{
+	if (m_lUndoList.size() >= 1)
+	{
+		printf("Poping from undo list...\n");
+		delete m_ucPreservedPainting;
+		m_ucPreservedPainting = m_lUndoList.back();
+		m_lUndoList.pop_back();
+		m_bHasPendingUndo = true;
+
+		m_pUI->m_paintView->redraw();
+	}
+}
+
+void ImpressionistDoc::pushToUndo()
+{
+	m_lUndoList.push_back(m_ucPreservedPainting);
+
+	unsigned char* t = new unsigned char[m_nWidth * m_nHeight * 4];
+	memcpy(t, m_ucPreservedPainting, m_nWidth * m_nHeight * 4);
+	m_ucPreservedPainting = t;
+}
