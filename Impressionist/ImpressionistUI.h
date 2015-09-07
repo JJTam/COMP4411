@@ -84,6 +84,7 @@ private:
 	static void	cb_sizeSlides(Fl_Widget* o, void* v);
 	static void	cb_LineWidthSlides(Fl_Widget* o, void* v);
 	static void	cb_AngleSlides(Fl_Widget* o, void* v);
+	static void cb_undo(Fl_Menu_* o, void* v);
 };
 
 #endif

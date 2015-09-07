@@ -9,6 +9,7 @@
 
 #include "impressionist.h"
 #include "bitmap.h"
+#include <list>
 
 class ImpressionistUI;
 
@@ -33,6 +34,8 @@ public:
 	void	setAngle(int angle);
 	char*	getImageName();					// get the current image name
 	
+	void undo();
+	void pushToUndo();
 
 // Attributes
 public:
@@ -46,6 +49,10 @@ public:
 	unsigned char*	m_ucBitmap;
 	unsigned char*	m_ucPainting;
 	unsigned char*  m_ucPreservedPainting;
+
+	// Undo
+	std::list<unsigned char*> m_lUndoList;
+	bool m_bHasPendingUndo;
 
 	// The current active brush.
 	ImpBrush*			m_pCurrentBrush;	
@@ -65,7 +72,6 @@ public:
 
 private:
 	char			m_imageName[256];
-
 };
 
 extern void MessageBox(char *message);
