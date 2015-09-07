@@ -29,6 +29,7 @@ public:
 	int		getSize();						// get the UI size
 	int		getLineWidth();
 	int		getAngle();
+	double  getAlpha();
 	void	setSize(int size);				// set the UI size
 	void	setLineWidth(int size);
 	void	setAngle(int angle);

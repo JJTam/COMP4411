@@ -84,6 +84,8 @@ void ImpressionistDoc::setBrushType(int type)
 	m_pUI->m_BrushSizeSlider->deactivate();
 	m_pUI->m_LineWidthSlider->deactivate();
 	m_pUI->m_AngleSlider->deactivate();
+	m_pUI->m_AlphaSlider->deactivate();
+
 	// select used sliders
 	// add other cases when new brushes are implemented
 	switch (type)
@@ -93,12 +95,14 @@ void ImpressionistDoc::setBrushType(int type)
 	case BRUSH_SCATTERED_POINTS:
 	case BRUSH_SCATTERED_CIRCLES:
 		m_pUI->m_BrushSizeSlider->activate();
+		m_pUI->m_AlphaSlider->activate();
 		break;
 	case BRUSH_LINES:
 	case BRUSH_SCATTERED_LINES:
 		m_pUI->m_BrushSizeSlider->activate();
 		m_pUI->m_LineWidthSlider->activate();
 		m_pUI->m_AngleSlider->activate();
+		m_pUI->m_AlphaSlider->activate();
 		break;
 		
 	default:
@@ -120,6 +124,10 @@ int ImpressionistDoc::getLineWidth()
 int ImpressionistDoc::getAngle()
 {
 	return m_pUI->getAngle();
+}
+double ImpressionistDoc::getAlpha()
+{
+	return m_pUI->getAlpha();
 }
 //---------------------------------------------------------
 // Load the specified image
