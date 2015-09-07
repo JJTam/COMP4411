@@ -267,7 +267,7 @@ void ImpressionistDoc::undo()
 {
 	if (m_lUndoList.size() >= 1)
 	{
-		printf("Poping from undo list...\n");
+		//printf("Poping from undo list...\n");
 		delete m_ucPreservedPainting;
 		m_ucPreservedPainting = m_lUndoList.back();
 		m_lUndoList.pop_back();
