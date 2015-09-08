@@ -30,6 +30,7 @@ static Point	coord;
 static Point    rightClickBegin;
 static Point    rightClickEnd;
 static int      prevEvent;
+static bool		isAuto;
 
 PaintView::PaintView(int			x, 
 					 int			y, 
@@ -131,7 +132,7 @@ void PaintView::draw()
 		Point source( coord.x + m_nStartCol, m_nEndRow - coord.y );
 		Point target( coord.x, m_nWindowHeight - coord.y );
 		
-		if (eventToDo == LEFT_MOUSE_DOWN || (eventToDo == LEFT_MOUSE_DRAG && prevEvent == LEFT_MOUSE_UP) && (!m_pDoc->m_bHasPendingUndo))
+		if (!isAuto && (eventToDo == LEFT_MOUSE_DOWN || (eventToDo == LEFT_MOUSE_DRAG && prevEvent == LEFT_MOUSE_UP) && (!m_pDoc->m_bHasPendingUndo)))
 		{
 			//printf("Pushing to undo list... ");
 			m_pDoc->pushToUndo();
@@ -145,7 +146,6 @@ void PaintView::draw()
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		//printf("Calling source is (%d, %d)\n", source.x, source.y);
-
 		if (!m_pDoc->m_bHasPendingUndo)
 		switch (eventToDo) 
 		{
@@ -190,9 +190,8 @@ void PaintView::draw()
 				// update angle
 				int newAngle = (int)(atan((double)((rightClickEnd.y - rightClickBegin.y)) / (rightClickEnd.x - rightClickBegin.x)) / 3.14159 * 180);
 				while (newAngle < 0)
-					newAngle += 360;
+					newAngle += 180;
 
-				m_pDoc->m_pUI->m_AngleSlider->value(newAngle);
 				m_pDoc->m_pUI->setAngle(newAngle);
 			}
 			break;
@@ -326,6 +325,19 @@ int PaintView::handle(int event)
 	// move the mouse indicator in OriginalView
 	this->m_pDoc->m_pUI->m_origView->move_mouse_ident_box(coord.x, coord.y);
 
+	return 1;
+}
+
+//MouseSimulator for auto draw
+int PaintView::SimulateMouse(int x, int y, int click_type, bool end)
+{
+	isAuto = true;
+	coord.x = x;
+	coord.y = y;
+	eventToDo = click_type;
+	isAnEvent = 1;
+	this->flush();
+	if (end) isAuto = false;
 	return 1;
 }
 

@@ -277,7 +277,12 @@ void ImpressionistUI::cb_clear_canvas_button(Fl_Widget* o, void* v)
 	pDoc->clearCanvas();
 }
 
+void ImpressionistUI::cb_autodraw_button(Fl_Widget* o, void* v)
+{
+	ImpressionistDoc * pDoc = ((ImpressionistUI*)(o->user_data()))->getDocument();
 
+	pDoc->autoDraw();
+}
 //-----------------------------------------------------------
 // Updates the brush size to use from the value of the size
 // slider
@@ -299,6 +304,14 @@ void ImpressionistUI::cb_AngleSlides(Fl_Widget* o, void* v)
 void ImpressionistUI::cb_AlphaSlides(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data()))->m_dAlpha = double(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_SpacingSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nSpacing = int(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_randattr_button(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data())) ->m_bAttrRand = bool(((Fl_Button *)o)->value());
 }
 //---------------------------------- per instance functions --------------------------------------
 
@@ -359,36 +372,57 @@ double ImpressionistUI::getAlpha()
 {
 	return m_dAlpha;
 }
+int ImpressionistUI::getSpacing()
+{
+	return m_nSpacing;
+}
+bool ImpressionistUI::getAttrRand()
+{
+	return m_bAttrRand;
+}
 //-------------------------------------------------
 // Set the brush size
 //-------------------------------------------------
 void ImpressionistUI::setSize( int size )
 {
-	m_nSize=size;
-
-	if (size<=40) 
-		m_BrushSizeSlider->value(m_nSize);
+	if (size < 1) size = 1;
+	if (size > 40) size = 40;
+	m_nSize=size; 
+	m_BrushSizeSlider->value(m_nSize);
 }
 void ImpressionistUI::setLineWidth(int size)
 {
+	if (size < 1) size = 1;
+	if (size > 40) size = 40;
 	m_nLineWidth = size;
-
-	if (size <= 40)
-		m_LineWidthSlider->value(m_nLineWidth);
+	m_LineWidthSlider->value(m_nLineWidth);
 }
 void ImpressionistUI::setAngle(int angle)
 {
+	while (angle < 0) angle += 180;
+	if (angle > 359) angle = 359;
 	m_nAngle = angle;
-
-	if (angle <= 359)
-		m_AngleSlider->value(m_nAngle);
+	m_AngleSlider->value(m_nAngle);
 }
 void ImpressionistUI::setAlpha(double value)
 {
+	if (value < 0.0) value = 0.0;
+	if (value > 1.0) value = 1.0;
+
 	m_dAlpha = value;
-	
-	if (value <= 1.0)
-		m_AlphaSlider->value(value);
+	m_AlphaSlider->value(value);
+}
+void ImpressionistUI::setSpacing(int size)
+{
+	if (size < 1) size = 1;
+	if (size > 16) size = 16;
+	m_nSpacing = size;
+	m_SpacingSlider->value(m_nSpacing);
+}
+void ImpressionistUI::setAttrRand(bool value)
+{
+	m_bAttrRand = value;
+	m_RandAttrButton->value(value);
 }
 // Main menu definition
 Fl_Menu_Item ImpressionistUI::menuitems[] = {
@@ -459,6 +493,8 @@ ImpressionistUI::ImpressionistUI() {
 	m_nLineWidth = 1;
 	m_nAngle = 0;
 	m_dAlpha = 1.0;
+	m_nSpacing = 4;
+	m_bAttrRand = false;
 
 	// brush dialog definition
 	m_brushDialog = new Fl_Window(400, 325, "Brush Dialog");
@@ -525,6 +561,27 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->align(FL_ALIGN_RIGHT);
 		m_AlphaSlider->callback(cb_AlphaSlides);
 		
+		m_SpacingSlider = new Fl_Value_Slider(10, 180, 150, 20, "Spacing");
+		m_SpacingSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_SpacingSlider->type(FL_HOR_NICE_SLIDER);
+		m_SpacingSlider->labelfont(FL_COURIER);
+		m_SpacingSlider->labelsize(12);
+		m_SpacingSlider->minimum(1);
+		m_SpacingSlider->maximum(16);
+		m_SpacingSlider->step(1);
+		m_SpacingSlider->value(m_nSpacing);
+		m_SpacingSlider->align(FL_ALIGN_RIGHT);
+		m_SpacingSlider->callback(cb_SpacingSlides);
+
+		m_RandAttrButton = new Fl_Check_Button(240, 180,100,20,"&Attr Rand");
+		m_RandAttrButton->user_data((void*)(this));
+		m_RandAttrButton->callback(cb_randattr_button);
+		m_RandAttrButton->value(m_bAttrRand);
+
+		m_AutoDrawButton = new Fl_Button(320, 180, 50, 20, "&Paint");
+		m_AutoDrawButton->user_data((void*)(this));
+		m_AutoDrawButton->callback(cb_autodraw_button);
+
     m_brushDialog->end();	
 
 }
