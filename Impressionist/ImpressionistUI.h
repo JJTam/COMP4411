@@ -82,7 +82,7 @@ private:
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
 	static Fl_Menu_Item		brushTypeMenu[NUM_BRUSH_TYPE+1];
-	static Fl_Menu_Item		DirectionTypeMenu[NUM_Direction_Type + 1];
+	static Fl_Menu_Item		DirectionTypeMenu[NUM_DIRECTION_TYPE + 1];
 
 	static ImpressionistUI*	whoami(Fl_Menu_* o);
 
