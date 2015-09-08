@@ -21,6 +21,14 @@ enum
 	NUM_BRUSH_TYPE // Make sure this stays at the end!
 };
 
+// Each brush stroke direction has an associated content
+enum
+{
+	Slider_And_Right_Mouse = 0,
+	Gradient,
+	Brush_Direction,
+	NUM_Direction_Type // Make sure this stays at the end!
+};
 
 class ImpressionistDoc; // Pre-declaring class
 

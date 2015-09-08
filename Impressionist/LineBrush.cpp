@@ -38,7 +38,7 @@ void LineBrush::BrushMove(const Point source, const Point target)
 		printf("LineBrush::BrushMove  document is NULL\n");
 		return;
 	}
-
+	this->angle = pDoc->getAngle();
 	glBegin(GL_LINES);
 	SetColor(source);
 

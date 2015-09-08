@@ -29,6 +29,7 @@ static int		isAnEvent=0;
 static Point	coord;
 static Point    rightClickBegin;
 static Point    rightClickEnd;
+static Point	prevPoint;
 static int      prevEvent;
 static bool		isAuto;
 
@@ -150,10 +151,30 @@ void PaintView::draw()
 		switch (eventToDo) 
 		{
 		case LEFT_MOUSE_DOWN:
+			if (((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
+				&& m_pDoc->m_nBrushDirection == Brush_Direction)
+			{
+				prevPoint.x = target.x;
+				prevPoint.y = target.y;
+			}
 			m_pDoc->m_pCurrentBrush->BrushBegin( source, target );
 			updatePreservedDrawing = true;
 			break;
 		case LEFT_MOUSE_DRAG:
+			if (((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
+				&& m_pDoc->m_nBrushDirection == Brush_Direction)
+			{
+				if (prevPoint.x != target.x || prevPoint.y != target.y)
+				{
+					int newAngle = (int)(atan((double)((target.y - prevPoint.y)) / (target.x - prevPoint.x)) / 3.14159 * 180);
+					while (newAngle < 0)
+						newAngle += 180;
+
+					m_pDoc->m_pUI->setAngle(newAngle);
+					prevPoint.x = target.x;
+					prevPoint.y = target.y;
+				}
+			}
 			m_pDoc->m_pCurrentBrush->BrushMove( source, target );
 			updatePreservedDrawing = true;
 			break;
@@ -187,12 +208,15 @@ void PaintView::draw()
 			}
 			else
 			{
-				// update angle
-				int newAngle = (int)(atan((double)((rightClickEnd.y - rightClickBegin.y)) / (rightClickEnd.x - rightClickBegin.x)) / 3.14159 * 180);
-				while (newAngle < 0)
-					newAngle += 180;
+				if (m_pDoc->m_nBrushDirection == Slider_And_Right_Mouse)
+				{
+					// update angle
+					int newAngle = (int)(atan((double)((rightClickEnd.y - rightClickBegin.y)) / (rightClickEnd.x - rightClickBegin.x)) / 3.14159 * 180);
+					while (newAngle < 0)
+						newAngle += 180;
 
-				m_pDoc->m_pUI->setAngle(newAngle);
+					m_pDoc->m_pUI->setAngle(newAngle);
+				}
 			}
 			break;
 
