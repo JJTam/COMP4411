@@ -135,9 +135,7 @@ void PaintView::draw()
 		
 		if (!isAuto && (eventToDo == LEFT_MOUSE_DOWN || (eventToDo == LEFT_MOUSE_DRAG && prevEvent == LEFT_MOUSE_UP) && (!m_pDoc->m_bHasPendingUndo)))
 		{
-			//printf("Pushing to undo list... ");
 			m_pDoc->pushToUndo();
-			//printf("%d\n", m_pDoc->m_lUndoList.size());
 			m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting +
 				4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
 		}
@@ -146,7 +144,6 @@ void PaintView::draw()
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		//printf("Calling source is (%d, %d)\n", source.x, source.y);
 		if (eventToDo == LEFT_MOUSE_DOWN || eventToDo == LEFT_MOUSE_DRAG &&
 			(((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
 			&& m_pDoc->m_nBrushDirection == BRUSH_DIRECTION))
@@ -167,47 +164,20 @@ void PaintView::draw()
 		switch (eventToDo) 
 		{
 		case LEFT_MOUSE_DOWN:
-			/*
-			if (((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
-				&& m_pDoc->m_nBrushDirection == BRUSH_DIRECTION)
-			{
-				prevPoint.x = target.x;
-				prevPoint.y = target.y;
-			}
-			*/
 			m_pDoc->m_pCurrentBrush->BrushBegin( source, target );
 			updatePreservedDrawing = true;
 			break;
 		case LEFT_MOUSE_DRAG:
-			/*
-			if (((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
-				&& m_pDoc->m_nBrushDirection == BRUSH_DIRECTION)
-			{
-				if (prevPoint.x != target.x || prevPoint.y != target.y)
-				{
-					int newAngle = (int)(atan((double)((target.y - prevPoint.y)) / (target.x - prevPoint.x)) / 3.14159 * 180);
-					while (newAngle < 0)
-						newAngle += 180;
-
-					m_pDoc->m_pUI->setAngle(newAngle);
-					prevPoint.x = target.x;
-					prevPoint.y = target.y;
-				}
-			}
-			*/
 			m_pDoc->m_pCurrentBrush->BrushMove( source, target );
 			updatePreservedDrawing = true;
 			break;
 		case LEFT_MOUSE_UP:
 			m_pDoc->m_pCurrentBrush->BrushEnd( source, target );
 			updatePreservedDrawing = true;
-			//SaveCurrentContent();
-			//RestoreContent();
 			break;
 		case RIGHT_MOUSE_DOWN:
 			rightClickBegin.x = target.x;
 			rightClickBegin.y = target.y;
-			//printf("[1]Setting begin to (%d, %d)\n", target.x, target.y);
 			break;
 		case RIGHT_MOUSE_DRAG:
 			if (m_pDoc->m_nBrushDirection == SLIDER_AND_RIGHT_MOUSE)
