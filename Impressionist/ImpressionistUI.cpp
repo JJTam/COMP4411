@@ -321,6 +321,28 @@ void ImpressionistUI::cb_randattr_button(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data())) ->m_bAttrRand = bool(((Fl_Button *)o)->value());
 }
+
+// Background dialog callbacks
+void ImpressionistUI::cb_background(Fl_Menu_* o, void* v)
+{
+	whoami(o)->m_backgroundDialog->show();
+}
+void ImpressionistUI::cb_background_button(Fl_Widget* o, void* v)
+{
+	ImpressionistUI* pUI = (ImpressionistUI*)(o->user_data());
+	pUI->m_bBackground = bool(((Fl_Button *)o)->value());
+	if (pUI->m_pDoc)
+		pUI->m_pDoc->updateBg();
+}
+void ImpressionistUI::cb_backgroundAlphaSlides(Fl_Widget* o, void* v)
+{
+	ImpressionistUI* pUI = (ImpressionistUI*)(o->user_data());
+	pUI->m_dBackgroundAlpha = double(((Fl_Slider *)o)->value());
+	pUI->setBackground(true);
+	if (pUI->m_pDoc)
+		pUI->m_pDoc->updateBg();
+}
+
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -388,6 +410,14 @@ bool ImpressionistUI::getAttrRand()
 {
 	return m_bAttrRand;
 }
+bool ImpressionistUI::getBackground()
+{
+	return m_bBackground;
+}
+double ImpressionistUI::getBackgroundAlpha()
+{
+	return m_dBackgroundAlpha;
+}
 //-------------------------------------------------
 // Set the brush size
 //-------------------------------------------------
@@ -432,6 +462,22 @@ void ImpressionistUI::setAttrRand(bool value)
 	m_bAttrRand = value;
 	m_RandAttrButton->value(value);
 }
+void ImpressionistUI::setBackground(bool value)
+{
+	m_bBackground = value;
+	m_BackgroundButton->value(value);
+	if (m_pDoc)
+		m_pDoc->updateBg();
+}
+void ImpressionistUI::setBackgroundAlpha(double value)
+{
+	if (value < 0.01) value = 0.01;
+	if (value > 1.0) value = 1.0;
+	m_dBackgroundAlpha = value;
+	m_BackgroundAlphaSlider->value(value);
+	if (m_pDoc)
+		m_pDoc->updateBg();
+}
 // Main menu definition
 Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
@@ -445,6 +491,10 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 
 	{ "&Edit", 0, 0, 0, FL_SUBMENU },
 		{ "&Undo", FL_CTRL + 'z', (Fl_Callback *)ImpressionistUI::cb_undo },
+		{ 0 },
+
+	{ "&Display", 0, 0, 0, FL_SUBMENU },
+		{ "&Background", 0, (Fl_Callback *)ImpressionistUI::cb_background },
 		{ 0 },
 
 	{ "&Help",		0, 0, 0, FL_SUBMENU },
@@ -531,7 +581,7 @@ ImpressionistUI::ImpressionistUI() {
 
 
 		// Add brush size slider to the dialog 
-		m_BrushSizeSlider = new Fl_Value_Slider(10, 80, 300, 20, "Size");
+		m_BrushSizeSlider = new Fl_Value_Slider(10, 80, 300, 25, "Size");
 		m_BrushSizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_BrushSizeSlider->type(FL_HOR_NICE_SLIDER);
         m_BrushSizeSlider->labelfont(FL_COURIER);
@@ -544,7 +594,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_BrushSizeSlider->callback(cb_sizeSlides);
 
 		// Add line width slider to the dialog 
-		m_LineWidthSlider = new Fl_Value_Slider(10, 100, 300, 20, "LineWidth");
+		m_LineWidthSlider = new Fl_Value_Slider(10, 105, 300, 25, "LineWidth");
 		m_LineWidthSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_LineWidthSlider->type(FL_HOR_NICE_SLIDER);
 		m_LineWidthSlider->labelfont(FL_COURIER);
@@ -557,7 +607,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_LineWidthSlider->callback(cb_LineWidthSlides);
 		m_LineWidthSlider->deactivate();
 		// Add angle slider to the dialog 
-		m_AngleSlider = new Fl_Value_Slider(10, 120, 300, 20, "LineAngle");
+		m_AngleSlider = new Fl_Value_Slider(10, 130, 300, 25, "LineAngle");
 		m_AngleSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AngleSlider->type(FL_HOR_NICE_SLIDER);
 		m_AngleSlider->labelfont(FL_COURIER);
@@ -570,7 +620,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_AngleSlider->callback(cb_AngleSlides);
 		m_AngleSlider->deactivate();
 		// Add alpha slider to the dialog
-		m_AlphaSlider = new Fl_Value_Slider(10, 140, 300, 20, "Alpha");
+		m_AlphaSlider = new Fl_Value_Slider(10, 155, 300, 25, "Alpha");
 		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
 		m_AlphaSlider->labelfont(FL_COURIER);
@@ -582,7 +632,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->align(FL_ALIGN_RIGHT);
 		m_AlphaSlider->callback(cb_AlphaSlides);
 		
-		m_SpacingSlider = new Fl_Value_Slider(10, 180, 150, 20, "Spacing");
+		m_SpacingSlider = new Fl_Value_Slider(10, 200, 150, 25, "Spacing");
 		m_SpacingSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_SpacingSlider->type(FL_HOR_NICE_SLIDER);
 		m_SpacingSlider->labelfont(FL_COURIER);
@@ -594,15 +644,38 @@ ImpressionistUI::ImpressionistUI() {
 		m_SpacingSlider->align(FL_ALIGN_RIGHT);
 		m_SpacingSlider->callback(cb_SpacingSlides);
 
-		m_RandAttrButton = new Fl_Check_Button(240, 180,100,20,"&Attr Rand");
+		m_RandAttrButton = new Fl_Light_Button(215, 200, 100, 25, "&Attr Rand");
 		m_RandAttrButton->user_data((void*)(this));
 		m_RandAttrButton->callback(cb_randattr_button);
 		m_RandAttrButton->value(m_bAttrRand);
 
-		m_AutoDrawButton = new Fl_Button(320, 180, 50, 20, "&Paint");
+		m_AutoDrawButton = new Fl_Button(320, 200, 50, 25, "&Paint");
 		m_AutoDrawButton->user_data((void*)(this));
 		m_AutoDrawButton->callback(cb_autodraw_button);
 
     m_brushDialog->end();	
 
+	m_bBackground = false;
+	m_dBackgroundAlpha = 0.4;
+
+	m_backgroundDialog = new Fl_Window(400, 300, "Background Dialog");
+
+		m_BackgroundButton = new Fl_Light_Button(10, 10, 100, 25, "&Show BG");
+		m_BackgroundButton->user_data((void*)(this));
+		m_BackgroundButton->callback(cb_background_button);
+		m_BackgroundButton->value(m_bBackground);
+
+		m_BackgroundAlphaSlider = new Fl_Value_Slider(10, 40, 300, 25, "Alpha");
+		m_BackgroundAlphaSlider->type(FL_HOR_NICE_SLIDER);
+		m_BackgroundAlphaSlider->labelfont(FL_COURIER);
+		m_BackgroundAlphaSlider->labelsize(12);
+		m_BackgroundAlphaSlider->minimum(0.01);
+		m_BackgroundAlphaSlider->maximum(1.00);
+		m_BackgroundAlphaSlider->step(0.01);
+		m_BackgroundAlphaSlider->align(FL_ALIGN_RIGHT);
+		m_BackgroundAlphaSlider->user_data((void*)(this));
+		m_BackgroundAlphaSlider->callback(cb_backgroundAlphaSlides);
+		m_BackgroundAlphaSlider->value(m_dBackgroundAlpha);
+
+	m_backgroundDialog->end();
 }

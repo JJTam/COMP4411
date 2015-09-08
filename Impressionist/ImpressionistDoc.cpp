@@ -58,6 +58,7 @@ ImpressionistDoc::ImpressionistDoc()
 	m_nBrushDirection = SLIDER_AND_RIGHT_MOUSE;
 
 	m_bHasPendingUndo = false;
+	m_bHasPendingBgUpdate = false;
 }
 
 
@@ -250,6 +251,8 @@ int ImpressionistDoc::clearCanvas()
 		memset(m_ucPainting, 0, m_nPaintWidth*m_nPaintHeight*4);
 
 		// refresh paint view as well	
+		// mark bg update
+		m_bHasPendingBgUpdate = true;
 		m_pUI->m_paintView->refresh();
 	}
 	
@@ -341,4 +344,13 @@ void ImpressionistDoc::pushToUndo()
 	unsigned char* t = new unsigned char[m_nWidth * m_nHeight * 4];
 	memcpy(t, m_ucPreservedPainting, m_nWidth * m_nHeight * 4);
 	m_ucPreservedPainting = t;
+}
+
+void ImpressionistDoc::updateBg()
+{
+	if (m_pUI->m_paintView)
+	{
+		m_bHasPendingBgUpdate = true;
+		m_pUI->m_paintView->redraw();
+	}
 }

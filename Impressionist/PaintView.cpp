@@ -48,9 +48,8 @@ PaintView::PaintView(int			x,
 
 void PaintView::draw()
 {
-	// TODO: TEMPORARY. Its value shall come from a user setting from the UI.
-	static bool shallDrawBackground = false;
-
+	bool shallDrawBackground = m_pDoc->m_pUI->getBackground();
+	
 	#ifndef MESA
 	// To avoid flicker on some machines.
 	glDrawBuffer(GL_FRONT_AND_BACK);
@@ -96,17 +95,17 @@ void PaintView::draw()
 	m_nStartCol		= scrollpos.x;
 	m_nEndCol		= m_nStartCol + drawWidth;
 
-	if ( (m_pDoc->m_ucPainting && !isAnEvent) && (!m_pDoc->m_bHasPendingUndo)) 
+	if ( (m_pDoc->m_ucPainting && !isAnEvent) && (!m_pDoc->m_bHasPendingUndo) && (!m_pDoc->m_bHasPendingBgUpdate)) 
 	{
 		RestoreContent();
 
 	}
 
-	if ( (m_pDoc->m_ucPainting && isAnEvent) || (m_pDoc->m_bHasPendingUndo)) 
+	if ( (m_pDoc->m_ucPainting && isAnEvent) || (m_pDoc->m_bHasPendingUndo) || (m_pDoc->m_bHasPendingBgUpdate)) 
 	{
 		bool updatePreservedDrawing = false;
 		
-		if (coord.x > drawWidth || coord.y > drawHeight)
+		if (isAnEvent && (coord.x > drawWidth || coord.y > drawHeight))
 		{
 			RestoreContent();
 			glFlush();
@@ -133,16 +132,12 @@ void PaintView::draw()
 		Point source( coord.x + m_nStartCol, m_nEndRow - coord.y );
 		Point target( coord.x, m_nWindowHeight - coord.y );
 		
-		if (!isAuto && (eventToDo == LEFT_MOUSE_DOWN || (eventToDo == LEFT_MOUSE_DRAG && prevEvent == LEFT_MOUSE_UP) && (!m_pDoc->m_bHasPendingUndo)))
+		if (!isAuto && (eventToDo == LEFT_MOUSE_DOWN || (eventToDo == LEFT_MOUSE_DRAG && prevEvent == LEFT_MOUSE_UP) && (!m_pDoc->m_bHasPendingUndo) && (!m_pDoc->m_bHasPendingBgUpdate)))
 		{
 			m_pDoc->pushToUndo();
 			m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting +
 				4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
 		}
-		
-		// This is the event handler
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		if (eventToDo == LEFT_MOUSE_DOWN || eventToDo == LEFT_MOUSE_DRAG &&
 			(((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
@@ -160,7 +155,11 @@ void PaintView::draw()
 			prevPoint.y = target.y;
 		}
 
-		if (!m_pDoc->m_bHasPendingUndo)
+		// This is the event handler
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		if (!m_pDoc->m_bHasPendingUndo && !m_pDoc->m_bHasPendingBgUpdate)
 		switch (eventToDo) 
 		{
 		case LEFT_MOUSE_DOWN:
@@ -196,8 +195,9 @@ void PaintView::draw()
 			if (rightClickBegin.x == rightClickEnd.x &&
 				rightClickBegin.y == rightClickEnd.y)
 			{
-				// TODO: TEMPORARY. Its value shall come from a user setting from the UI.
+				// allow user to toggle background by right-clicking
 				shallDrawBackground = !shallDrawBackground;
+				m_pDoc->m_pUI->setBackground(shallDrawBackground);
 			}
 			else
 			{
@@ -233,6 +233,7 @@ void PaintView::draw()
 		}
 
 		m_pDoc->m_bHasPendingUndo = false;
+		m_pDoc->m_bHasPendingBgUpdate = false;
 
 		glReadPixels(0,
 			m_nWindowHeight - m_nDrawHeight,
@@ -252,11 +253,11 @@ void PaintView::draw()
 		
 		if (shallDrawBackground)
 		{
+			int bgAlpha = 255 * (1 - m_pDoc->m_pUI->getBackgroundAlpha());
 			for (int i = 0; i < drawWidth * drawHeight; ++i)
 			{
 				if (bits[i * 4 + 3] == 0)
-					// TODO: TEMPORARY. The alpha value (180) shall come from a user setting from the UI.
-					bits[i * 4 + 3] = 180;
+					bits[i * 4 + 3] = bgAlpha;
 			}
 			
 			glRasterPos2i(0, m_nWindowHeight - drawHeight);

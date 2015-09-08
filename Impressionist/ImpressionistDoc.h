@@ -40,6 +40,7 @@ public:
 	void undo();
 	void pushToUndo();
 
+	void updateBg();
 // Attributes
 public:
 	// Dimensions of original window.
@@ -56,6 +57,9 @@ public:
 	// Undo
 	std::list<unsigned char*> m_lUndoList;
 	bool m_bHasPendingUndo;
+
+	// Background
+	bool m_bHasPendingBgUpdate;
 
 	// The current active brush.
 	ImpBrush*			m_pCurrentBrush;
