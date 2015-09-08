@@ -21,7 +21,7 @@
 #include "ScatteredCircleBrush.h"
 #include <vector>
 #include <algorithm>
-#include <iostream>
+
 #define DESTROY(p)	{  if ((p)!=NULL) {delete [] p; p=NULL; } }
 #define ABS(x) (x >= 0 ? x : -x)
 extern int irand(int);
@@ -274,7 +274,6 @@ int ImpressionistDoc::autoDraw()
 	}
 	
 	// change this to brush type later
-	if (false)
 	std::random_shuffle(temp.begin(), temp.end());
 	
 	for (int i = 0; i < x_counts*y_counts; ++i)

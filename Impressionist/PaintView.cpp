@@ -10,7 +10,6 @@
 #include "paintview.h"
 #include "ImpBrush.h"
 #include <cmath>
-#include <iostream>
 
 #define LEFT_MOUSE_DOWN		1
 #define LEFT_MOUSE_DRAG		2
