@@ -29,6 +29,7 @@ static int		isAnEvent=0;
 static Point	coord;
 static Point    rightClickBegin;
 static Point    rightClickEnd;
+static Point	prevPoint;
 static int      prevEvent;
 static bool		isAuto;
 
@@ -134,9 +135,7 @@ void PaintView::draw()
 		
 		if (!isAuto && (eventToDo == LEFT_MOUSE_DOWN || (eventToDo == LEFT_MOUSE_DRAG && prevEvent == LEFT_MOUSE_UP) && (!m_pDoc->m_bHasPendingUndo)))
 		{
-			//printf("Pushing to undo list... ");
 			m_pDoc->pushToUndo();
-			//printf("%d\n", m_pDoc->m_lUndoList.size());
 			m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting +
 				4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
 		}
@@ -145,7 +144,22 @@ void PaintView::draw()
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		//printf("Calling source is (%d, %d)\n", source.x, source.y);
+		if (eventToDo == LEFT_MOUSE_DOWN || eventToDo == LEFT_MOUSE_DRAG &&
+			(((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
+			&& m_pDoc->m_nBrushDirection == BRUSH_DIRECTION))
+		{
+			if (prevPoint.x != target.x || prevPoint.y != target.y)
+			{
+				int newAngle = (int)(atan((double)((target.y - prevPoint.y)) / (target.x - prevPoint.x)) / 3.14159 * 180);
+				while (newAngle < 0)
+					newAngle += 180;
+
+				m_pDoc->m_pUI->setAngle(newAngle);
+			}
+			prevPoint.x = target.x;
+			prevPoint.y = target.y;
+		}
+
 		if (!m_pDoc->m_bHasPendingUndo)
 		switch (eventToDo) 
 		{
@@ -160,20 +174,20 @@ void PaintView::draw()
 		case LEFT_MOUSE_UP:
 			m_pDoc->m_pCurrentBrush->BrushEnd( source, target );
 			updatePreservedDrawing = true;
-			//SaveCurrentContent();
-			//RestoreContent();
 			break;
 		case RIGHT_MOUSE_DOWN:
 			rightClickBegin.x = target.x;
 			rightClickBegin.y = target.y;
-			//printf("[1]Setting begin to (%d, %d)\n", target.x, target.y);
 			break;
 		case RIGHT_MOUSE_DRAG:
-			glBegin(GL_LINES);
+			if (m_pDoc->m_nBrushDirection == SLIDER_AND_RIGHT_MOUSE)
+			{
+				glBegin(GL_LINES);
 				glColor3ub(255, 0, 0);
 				glVertex2d(rightClickBegin.x, rightClickBegin.y);
 				glVertex2d(target.x, target.y);
-			glEnd();
+				glEnd();
+			}
 			break;
 		case RIGHT_MOUSE_UP:
 			rightClickEnd.x = target.x;
@@ -187,12 +201,15 @@ void PaintView::draw()
 			}
 			else
 			{
-				// update angle
-				int newAngle = (int)(atan((double)((rightClickEnd.y - rightClickBegin.y)) / (rightClickEnd.x - rightClickBegin.x)) / 3.14159 * 180);
-				while (newAngle < 0)
-					newAngle += 180;
+				if (m_pDoc->m_nBrushDirection == SLIDER_AND_RIGHT_MOUSE)
+				{
+					// update angle
+					int newAngle = (int)(atan((double)((rightClickEnd.y - rightClickBegin.y)) / (rightClickEnd.x - rightClickBegin.x)) / 3.14159 * 180);
+					while (newAngle < 0)
+						newAngle += 180;
 
-				m_pDoc->m_pUI->setAngle(newAngle);
+					m_pDoc->m_pUI->setAngle(newAngle);
+				}
 			}
 			break;
 
@@ -310,10 +327,12 @@ int PaintView::handle(int event)
 		coord.x = Fl::event_x();
 		coord.y = Fl::event_y();
 		// dirty trick to solve "drag-without-down" problem
-		if (prevEvent != RIGHT_MOUSE_DRAG)
+		if (prevEvent != RIGHT_MOUSE_DRAG && prevEvent != LEFT_MOUSE_DRAG)
 		{
 			rightClickBegin.x = coord.x;
 			rightClickBegin.y = m_nWindowHeight - coord.y;
+			prevPoint.x = coord.x;
+			prevPoint.y = m_nWindowHeight - coord.y;
 		}
 		break;
 	default:

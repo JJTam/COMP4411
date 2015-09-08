@@ -55,6 +55,8 @@ ImpressionistDoc::ImpressionistDoc()
 
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
+	m_nBrushDirection = SLIDER_AND_RIGHT_MOUSE;
+
 	m_bHasPendingUndo = false;
 }
 

@@ -58,7 +58,11 @@ public:
 	bool m_bHasPendingUndo;
 
 	// The current active brush.
-	ImpBrush*			m_pCurrentBrush;	
+	ImpBrush*			m_pCurrentBrush;
+
+	// current brush direction
+	int m_nBrushDirection;
+
 	// Size of the brush.
 	int m_nSize;							
 	int m_nLineWidth;
