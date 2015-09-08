@@ -38,7 +38,7 @@ void ScatteredLineBrush::BrushMove(const Point source, const Point target)
 		printf("LineBrush::BrushMove  document is NULL\n");
 		return;
 	}
-
+	this->angle = pDoc->getAngle();
 	glBegin(GL_LINES);
 	int loop_time = irand(2) + 2;
 	for (int i = 0; i < loop_time; ++i)
