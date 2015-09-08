@@ -77,7 +77,7 @@ void PaintView::draw()
 	int drawWidth, drawHeight;
 	drawWidth = min( m_nWindowWidth, m_pDoc->m_nPaintWidth );
 	drawHeight = min( m_nWindowHeight, m_pDoc->m_nPaintHeight );
-
+	
 	int startrow = m_pDoc->m_nPaintHeight - (scrollpos.y + drawHeight);
 	if ( startrow < 0 ) startrow = 0;
 
@@ -104,6 +104,17 @@ void PaintView::draw()
 	{
 		bool updatePreservedDrawing = false;
 		
+		if (coord.x > drawWidth || coord.y > drawHeight)
+		{
+			RestoreContent();
+			glFlush();
+#ifndef MESA
+			// To avoid flicker on some machines.
+			glDrawBuffer(GL_BACK);
+#endif // !MESA
+			return;
+		}
+
 		// Clear it after processing.
 		isAnEvent	= 0;	
 
@@ -132,6 +143,8 @@ void PaintView::draw()
 		// This is the event handler
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		//printf("Calling source is (%d, %d)\n", source.x, source.y);
 
 		if (!m_pDoc->m_bHasPendingUndo)
 		switch (eventToDo) 
