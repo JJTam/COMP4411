@@ -33,7 +33,7 @@ public:
 	PaintView*			m_paintView;
 	OriginalView*		m_origView;
 
-// for brush dialog
+	// for brush dialog
 	Fl_Window*			m_brushDialog;
 	Fl_Choice*			m_BrushTypeChoice;
 
@@ -46,6 +46,12 @@ public:
 	Fl_Slider*			m_SpacingSlider;
 	Fl_Button*	m_RandAttrButton;
 	Fl_Button*			m_AutoDrawButton;
+
+	// for background dialog
+	Fl_Window*			m_backgroundDialog;
+	Fl_Button*			m_BackgroundButton;
+	Fl_Slider*			m_BackgroundAlphaSlider;
+
 	// Member functions
 	void				setDocument(ImpressionistDoc* doc);
 	ImpressionistDoc*	getDocument();
@@ -67,6 +73,10 @@ public:
 	void				setSpacing(int);
 	bool				getAttrRand();
 	void				setAttrRand(bool);
+	bool				getBackground();
+	void				setBackground(bool);
+	double				getBackgroundAlpha();
+	void				setBackgroundAlpha(double);
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document
 
@@ -78,6 +88,8 @@ private:
 	int		m_nSpacing;
 	bool    m_bAttrRand;
 
+	bool	m_bBackground;
+	double	m_dBackgroundAlpha;
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
 	static Fl_Menu_Item		brushTypeMenu[NUM_BRUSH_TYPE+1];
@@ -103,6 +115,10 @@ private:
 	static void cb_SpacingSlides(Fl_Widget* o, void* v);
 	static void cb_randattr_button(Fl_Widget* o, void* v);
 	static void cb_autodraw_button(Fl_Widget* o, void* v);
+
+	static void cb_background(Fl_Menu_* o, void* v);
+	static void cb_background_button(Fl_Widget* o, void* v);
+	static void cb_backgroundAlphaSlides(Fl_Widget* o, void* v);
 };
 
 #endif

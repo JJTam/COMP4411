@@ -313,6 +313,27 @@ void ImpressionistUI::cb_randattr_button(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data())) ->m_bAttrRand = bool(((Fl_Button *)o)->value());
 }
+
+// Background dialog callbacks
+void ImpressionistUI::cb_background(Fl_Menu_* o, void* v)
+{
+	whoami(o)->m_backgroundDialog->show();
+}
+void ImpressionistUI::cb_background_button(Fl_Widget* o, void* v)
+{
+	ImpressionistUI* pUI = (ImpressionistUI*)(o->user_data());
+	pUI->m_bBackground = bool(((Fl_Button *)o)->value());
+	if (pUI->m_pDoc)
+		pUI->m_pDoc->updateBg();
+}
+void ImpressionistUI::cb_backgroundAlphaSlides(Fl_Widget* o, void* v)
+{
+	ImpressionistUI* pUI = (ImpressionistUI*)(o->user_data());
+	pUI->m_dBackgroundAlpha = double(((Fl_Slider *)o)->value());
+	if (pUI->m_pDoc)
+		pUI->m_pDoc->updateBg();
+}
+
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -380,6 +401,14 @@ bool ImpressionistUI::getAttrRand()
 {
 	return m_bAttrRand;
 }
+bool ImpressionistUI::getBackground()
+{
+	return m_bBackground;
+}
+double ImpressionistUI::getBackgroundAlpha()
+{
+	return m_dBackgroundAlpha;
+}
 //-------------------------------------------------
 // Set the brush size
 //-------------------------------------------------
@@ -424,6 +453,22 @@ void ImpressionistUI::setAttrRand(bool value)
 	m_bAttrRand = value;
 	m_RandAttrButton->value(value);
 }
+void ImpressionistUI::setBackground(bool value)
+{
+	m_bBackground = value;
+	m_BackgroundButton->value(value);
+	if (m_pDoc)
+		m_pDoc->updateBg();
+}
+void ImpressionistUI::setBackgroundAlpha(double value)
+{
+	if (value < 0.01) value = 0.01;
+	if (value > 1.0) value = 1.0;
+	m_dBackgroundAlpha = value;
+	m_BackgroundAlphaSlider->value(value);
+	if (m_pDoc)
+		m_pDoc->updateBg();
+}
 // Main menu definition
 Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
@@ -437,6 +482,10 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 
 	{ "&Edit", 0, 0, 0, FL_SUBMENU },
 		{ "&Undo", FL_CTRL + 'z', (Fl_Callback *)ImpressionistUI::cb_undo },
+		{ 0 },
+
+	{ "&Display", 0, 0, 0, FL_SUBMENU },
+		{ "&Background", 0, (Fl_Callback *)ImpressionistUI::cb_background },
 		{ 0 },
 
 	{ "&Help",		0, 0, 0, FL_SUBMENU },
@@ -584,4 +633,27 @@ ImpressionistUI::ImpressionistUI() {
 
     m_brushDialog->end();	
 
+	m_bBackground = false;
+	m_dBackgroundAlpha = 0.4;
+
+	m_backgroundDialog = new Fl_Window(400, 300, "Background Dialog");
+
+		m_BackgroundButton = new Fl_Light_Button(10, 10, 100, 25, "&Show BG");
+		m_BackgroundButton->user_data((void*)(this));
+		m_BackgroundButton->callback(cb_background_button);
+		m_BackgroundButton->value(m_bBackground);
+
+		m_BackgroundAlphaSlider = new Fl_Value_Slider(10, 40, 300, 25, "Alpha");
+		m_BackgroundAlphaSlider->type(FL_HOR_NICE_SLIDER);
+		m_BackgroundAlphaSlider->labelfont(FL_COURIER);
+		m_BackgroundAlphaSlider->labelsize(12);
+		m_BackgroundAlphaSlider->minimum(0.01);
+		m_BackgroundAlphaSlider->maximum(1.00);
+		m_BackgroundAlphaSlider->step(0.01);
+		m_BackgroundAlphaSlider->align(FL_ALIGN_RIGHT);
+		m_BackgroundAlphaSlider->user_data((void*)(this));
+		m_BackgroundAlphaSlider->callback(cb_backgroundAlphaSlides);
+		m_BackgroundAlphaSlider->value(m_dBackgroundAlpha);
+
+	m_backgroundDialog->end();
 }

@@ -56,6 +56,7 @@ ImpressionistDoc::ImpressionistDoc()
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
 	m_bHasPendingUndo = false;
+	m_bHasPendingBgUpdate = false;
 }
 
 
@@ -339,4 +340,13 @@ void ImpressionistDoc::pushToUndo()
 	unsigned char* t = new unsigned char[m_nWidth * m_nHeight * 4];
 	memcpy(t, m_ucPreservedPainting, m_nWidth * m_nHeight * 4);
 	m_ucPreservedPainting = t;
+}
+
+void ImpressionistDoc::updateBg()
+{
+	if (m_pUI->m_paintView)
+	{
+		m_bHasPendingBgUpdate = true;
+		m_pUI->m_paintView->redraw();
+	}
 }
