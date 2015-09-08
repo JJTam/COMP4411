@@ -20,6 +20,7 @@
 #include "ScatteredPointBrush.h"
 #include "ScatteredCircleBrush.h"
 #define DESTROY(p)	{  if ((p)!=NULL) {delete [] p; p=NULL; } }
+#define ABS(x) (x >= 0 ? x : -x)
 
 ImpressionistDoc::ImpressionistDoc() 
 {
@@ -171,8 +172,21 @@ int ImpressionistDoc::loadImage(char *iname)
 	m_pUI->m_mainWindow->resize(m_pUI->m_mainWindow->x(), 
 								m_pUI->m_mainWindow->y(), 
 								width*2, 
-								height+33);
+								height+25);
+	//printf("Width = %d, window->w() = %d, Height+25 = %d, window->h() = %d\n", width, m_pUI->m_mainWindow->w(), height+25, m_pUI->m_mainWindow->h());
 	
+	// On some platforms, the width and height both has 8 pixels missing for some reason
+	int widthDelta = ABS(width * 2 - m_pUI->m_mainWindow->w());
+	int heightDelta = ABS(height + 25 - m_pUI->m_mainWindow->h());
+	if (widthDelta > 0 || heightDelta > 0)
+	{
+		m_pUI->m_mainWindow->resize(m_pUI->m_mainWindow->x(),
+			m_pUI->m_mainWindow->y(),
+			width * 2 + widthDelta,
+			height + 25 + heightDelta);
+	}
+	//printf("Width = %d, window->w() = %d, Height+25 = %d, window->h() = %d\n", width, m_pUI->m_mainWindow->w(), height + 25, m_pUI->m_mainWindow->h());
+
 	// display it on origView
 	m_pUI->m_origView->resizeWindow(width, height);	
 	m_pUI->m_origView->refresh();
