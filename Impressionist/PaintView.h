@@ -22,6 +22,8 @@ public:
 	void draw();
 	int handle(int event);
 
+	int SimulateMouse(int x, int y, int click_type, bool end);
+
 	void refresh();
 	
 	void resizeWindow(int width, int height);

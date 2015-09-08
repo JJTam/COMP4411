@@ -15,7 +15,7 @@
 #include <FL/Fl_Choice.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Light_Button.H>
-
+#include <FL/Fl_Check_Button.H>
 #include "Impressionist.h"
 #include "OriginalView.h"
 #include "PaintView.h"
@@ -43,6 +43,9 @@ public:
 	Fl_Slider*			m_AlphaSlider;
 	Fl_Button*          m_ClearCanvasButton;
 
+	Fl_Slider*			m_SpacingSlider;
+	Fl_Check_Button*	m_RandAttrButton;
+	Fl_Button*			m_AutoDrawButton;
 	// Member functions
 	void				setDocument(ImpressionistDoc* doc);
 	ImpressionistDoc*	getDocument();
@@ -60,6 +63,10 @@ public:
 	void				setAngle(int angle);
 	double				getAlpha();
 	void				setAlpha(double alpha);
+	int					getSpacing();
+	void				setSpacing(int);
+	bool				getAttrRand();
+	void				setAttrRand(bool);
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document
 
@@ -68,6 +75,8 @@ private:
 	int     m_nLineWidth;
 	int		m_nAngle;
 	double  m_dAlpha;
+	int		m_nSpacing;
+	bool    m_bAttrRand;
 
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
@@ -90,6 +99,10 @@ private:
 	static void	cb_AngleSlides(Fl_Widget* o, void* v);
 	static void cb_AlphaSlides(Fl_Widget* o, void* v);
 	static void cb_undo(Fl_Menu_* o, void* v);
+
+	static void cb_SpacingSlides(Fl_Widget* o, void* v);
+	static void cb_randattr_button(Fl_Widget* o, void* v);
+	static void cb_autodraw_button(Fl_Widget* o, void* v);
 };
 
 #endif

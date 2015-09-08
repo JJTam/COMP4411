@@ -19,9 +19,12 @@
 #include "ScatteredLineBrush.h"
 #include "ScatteredPointBrush.h"
 #include "ScatteredCircleBrush.h"
+#include <vector>
+#include <algorithm>
+#include <iostream>
 #define DESTROY(p)	{  if ((p)!=NULL) {delete [] p; p=NULL; } }
 #define ABS(x) (x >= 0 ? x : -x)
-
+extern int irand(int);
 ImpressionistDoc::ImpressionistDoc() 
 {
 	// Set NULL image name as init. 
@@ -248,6 +251,45 @@ int ImpressionistDoc::clearCanvas()
 		m_pUI->m_paintView->refresh();
 	}
 	
+	return 0;
+}
+
+int ImpressionistDoc::autoDraw()
+{
+
+	int Spacing = m_pUI->getSpacing();
+	bool AttrRand = m_pUI->getAttrRand();
+	
+	int oSize = m_pUI->getSize();
+	int oLineWidth = m_pUI->getLineWidth();
+	int oAngle = m_pUI->getAngle();
+
+	int x_counts = m_nWidth / Spacing;
+	int y_counts = m_nHeight / Spacing;
+
+	std::vector<int> temp;
+	for (int i = 0; i < x_counts*y_counts; ++i)
+	{
+		temp.push_back(i);
+	}
+	
+	// change this to brush type later
+	if (false)
+	std::random_shuffle(temp.begin(), temp.end());
+	
+	for (int i = 0; i < x_counts*y_counts; ++i)
+	{
+		int x = temp[i] % x_counts * Spacing + Spacing / 2;
+		int y = temp[i] / x_counts * Spacing + Spacing / 2;
+		if (AttrRand)
+		{
+			m_pUI->setSize(oSize + irand(10) - 5);
+			m_pUI->setLineWidth(oLineWidth + irand(10) - 5);
+			m_pUI->setAngle(oAngle + irand(10) - 5);
+		}
+		m_pUI->m_paintView->SimulateMouse(x, y, 1, false);
+	}
+
 	return 0;
 }
 

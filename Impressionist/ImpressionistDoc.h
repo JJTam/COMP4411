@@ -35,6 +35,8 @@ public:
 	void	setAngle(int angle);
 	char*	getImageName();					// get the current image name
 	
+	int		autoDraw();
+
 	void undo();
 	void pushToUndo();
 

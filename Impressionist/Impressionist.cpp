@@ -46,5 +46,5 @@ float frand()
 
 int irand(int max)
 {
-	return rand()%max;
+	return rand()%(max+1);
 }
