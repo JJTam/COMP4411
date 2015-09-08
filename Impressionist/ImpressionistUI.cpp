@@ -330,6 +330,7 @@ void ImpressionistUI::cb_backgroundAlphaSlides(Fl_Widget* o, void* v)
 {
 	ImpressionistUI* pUI = (ImpressionistUI*)(o->user_data());
 	pUI->m_dBackgroundAlpha = double(((Fl_Slider *)o)->value());
+	pUI->setBackground(true);
 	if (pUI->m_pDoc)
 		pUI->m_pDoc->updateBg();
 }

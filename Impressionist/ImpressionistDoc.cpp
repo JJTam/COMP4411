@@ -249,6 +249,8 @@ int ImpressionistDoc::clearCanvas()
 		memset(m_ucPainting, 0, m_nPaintWidth*m_nPaintHeight*4);
 
 		// refresh paint view as well	
+		// mark bg update
+		m_bHasPendingBgUpdate = true;
 		m_pUI->m_paintView->refresh();
 	}
 	
