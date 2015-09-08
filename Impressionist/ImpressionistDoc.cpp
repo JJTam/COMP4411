@@ -171,8 +171,8 @@ int ImpressionistDoc::loadImage(char *iname)
 	m_pUI->m_mainWindow->resize(m_pUI->m_mainWindow->x(), 
 								m_pUI->m_mainWindow->y(), 
 								width*2, 
-								height+25);
-
+								height+33);
+	
 	// display it on origView
 	m_pUI->m_origView->resizeWindow(width, height);	
 	m_pUI->m_origView->refresh();
