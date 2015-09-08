@@ -44,7 +44,7 @@ public:
 	Fl_Button*          m_ClearCanvasButton;
 
 	Fl_Slider*			m_SpacingSlider;
-	Fl_Check_Button*	m_RandAttrButton;
+	Fl_Button*	m_RandAttrButton;
 	Fl_Button*			m_AutoDrawButton;
 	// Member functions
 	void				setDocument(ImpressionistDoc* doc);

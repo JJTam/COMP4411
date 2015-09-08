@@ -510,7 +510,7 @@ ImpressionistUI::ImpressionistUI() {
 
 
 		// Add brush size slider to the dialog 
-		m_BrushSizeSlider = new Fl_Value_Slider(10, 80, 300, 20, "Size");
+		m_BrushSizeSlider = new Fl_Value_Slider(10, 80, 300, 25, "Size");
 		m_BrushSizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_BrushSizeSlider->type(FL_HOR_NICE_SLIDER);
         m_BrushSizeSlider->labelfont(FL_COURIER);
@@ -523,7 +523,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_BrushSizeSlider->callback(cb_sizeSlides);
 
 		// Add line width slider to the dialog 
-		m_LineWidthSlider = new Fl_Value_Slider(10, 100, 300, 20, "LineWidth");
+		m_LineWidthSlider = new Fl_Value_Slider(10, 105, 300, 25, "LineWidth");
 		m_LineWidthSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_LineWidthSlider->type(FL_HOR_NICE_SLIDER);
 		m_LineWidthSlider->labelfont(FL_COURIER);
@@ -536,7 +536,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_LineWidthSlider->callback(cb_LineWidthSlides);
 		m_LineWidthSlider->deactivate();
 		// Add angle slider to the dialog 
-		m_AngleSlider = new Fl_Value_Slider(10, 120, 300, 20, "LineAngle");
+		m_AngleSlider = new Fl_Value_Slider(10, 130, 300, 25, "LineAngle");
 		m_AngleSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AngleSlider->type(FL_HOR_NICE_SLIDER);
 		m_AngleSlider->labelfont(FL_COURIER);
@@ -549,7 +549,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_AngleSlider->callback(cb_AngleSlides);
 		m_AngleSlider->deactivate();
 		// Add alpha slider to the dialog
-		m_AlphaSlider = new Fl_Value_Slider(10, 140, 300, 20, "Alpha");
+		m_AlphaSlider = new Fl_Value_Slider(10, 155, 300, 25, "Alpha");
 		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_AlphaSlider->type(FL_HOR_NICE_SLIDER);
 		m_AlphaSlider->labelfont(FL_COURIER);
@@ -561,7 +561,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_AlphaSlider->align(FL_ALIGN_RIGHT);
 		m_AlphaSlider->callback(cb_AlphaSlides);
 		
-		m_SpacingSlider = new Fl_Value_Slider(10, 180, 150, 20, "Spacing");
+		m_SpacingSlider = new Fl_Value_Slider(10, 200, 150, 25, "Spacing");
 		m_SpacingSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_SpacingSlider->type(FL_HOR_NICE_SLIDER);
 		m_SpacingSlider->labelfont(FL_COURIER);
@@ -573,12 +573,12 @@ ImpressionistUI::ImpressionistUI() {
 		m_SpacingSlider->align(FL_ALIGN_RIGHT);
 		m_SpacingSlider->callback(cb_SpacingSlides);
 
-		m_RandAttrButton = new Fl_Check_Button(240, 180,100,20,"&Attr Rand");
+		m_RandAttrButton = new Fl_Light_Button(215, 200, 100, 25, "&Attr Rand");
 		m_RandAttrButton->user_data((void*)(this));
 		m_RandAttrButton->callback(cb_randattr_button);
 		m_RandAttrButton->value(m_bAttrRand);
 
-		m_AutoDrawButton = new Fl_Button(320, 180, 50, 20, "&Paint");
+		m_AutoDrawButton = new Fl_Button(320, 200, 50, 25, "&Paint");
 		m_AutoDrawButton->user_data((void*)(this));
 		m_AutoDrawButton->callback(cb_autodraw_button);
 
