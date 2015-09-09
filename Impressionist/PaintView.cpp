@@ -94,16 +94,16 @@ void PaintView::draw()
 	bool shallRestoreDrawing = shallDrawContent;
 
 	bool shallPushUndo = !isAuto
-		&& (eventToDo == LEFT_MOUSE_DOWN || (eventToDo == LEFT_MOUSE_DRAG && prevEvent == LEFT_MOUSE_UP))
+		&& (eventToDo == PV_LEFT_MOUSE_DOWN || (eventToDo == PV_LEFT_MOUSE_DRAG && prevEvent == PV_LEFT_MOUSE_UP))
 		&& !isDealingPending;
 
-	bool shallUpdatePointerDir = eventToDo == LEFT_MOUSE_DOWN || eventToDo == LEFT_MOUSE_DRAG &&
+	bool shallUpdatePointerDir = eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG &&
 		(((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
 		&& m_pDoc->m_nBrushDirection == BRUSH_DIRECTION);
 
 	bool shallBrush = !isDealingPending;
 
-	bool shallUpdatePreservedDrawing = (shallBrush && (eventToDo == LEFT_MOUSE_DOWN || eventToDo == LEFT_MOUSE_DRAG || eventToDo == LEFT_MOUSE_UP)) || m_pDoc->m_bHasPendingAutoFlush;
+	bool shallUpdatePreservedDrawing = (shallBrush && (eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG || eventToDo == PV_LEFT_MOUSE_UP)) || m_pDoc->m_bHasPendingAutoFlush;
 
 	bool shallUpdateContentView = !isAuto;
 
@@ -161,20 +161,20 @@ void PaintView::draw()
 
 			switch (eventToDo) 
 			{
-			case LEFT_MOUSE_DOWN:
+			case PV_LEFT_MOUSE_DOWN:
 				m_pDoc->m_pCurrentBrush->BrushBegin( source, target );
 				break;
-			case LEFT_MOUSE_DRAG:
+			case PV_LEFT_MOUSE_DRAG:
 				m_pDoc->m_pCurrentBrush->BrushMove( source, target );
 				break;
-			case LEFT_MOUSE_UP:
+			case PV_LEFT_MOUSE_UP:
 				m_pDoc->m_pCurrentBrush->BrushEnd( source, target );
 				break;
-			case RIGHT_MOUSE_DOWN:
+			case PV_RIGHT_MOUSE_DOWN:
 				rightClickBegin.x = target.x;
 				rightClickBegin.y = target.y;
 				break;
-			case RIGHT_MOUSE_DRAG:
+			case PV_RIGHT_MOUSE_DRAG:
 				if (m_pDoc->m_nBrushDirection == SLIDER_AND_RIGHT_MOUSE)
 				{
 					glBegin(GL_LINES);
@@ -184,7 +184,7 @@ void PaintView::draw()
 					glEnd();
 				}
 				break;
-			case RIGHT_MOUSE_UP:
+			case PV_RIGHT_MOUSE_UP:
 				rightClickEnd.x = target.x;
 				rightClickEnd.y = target.y;
 
@@ -301,9 +301,9 @@ int PaintView::handle(int event)
 		coord.x = Fl::event_x();
 		coord.y = Fl::event_y();
 		if (Fl::event_button()>1)
-			eventToDo=RIGHT_MOUSE_DOWN;
+			eventToDo=PV_RIGHT_MOUSE_DOWN;
 		else
-			eventToDo=LEFT_MOUSE_DOWN;
+			eventToDo=PV_LEFT_MOUSE_DOWN;
 		isAnEvent=1;
 		redraw();
 		break;
@@ -311,9 +311,9 @@ int PaintView::handle(int event)
 		coord.x = Fl::event_x();
 		coord.y = Fl::event_y();
 		if (Fl::event_button()>1)
-			eventToDo=RIGHT_MOUSE_DRAG;
+			eventToDo=PV_RIGHT_MOUSE_DRAG;
 		else
-			eventToDo=LEFT_MOUSE_DRAG;
+			eventToDo=PV_LEFT_MOUSE_DRAG;
 		isAnEvent=1;
 		redraw();
 		break;
@@ -321,9 +321,9 @@ int PaintView::handle(int event)
 		coord.x = Fl::event_x();
 		coord.y = Fl::event_y();
 		if (Fl::event_button()>1)
-			eventToDo=RIGHT_MOUSE_UP;
+			eventToDo=PV_RIGHT_MOUSE_UP;
 		else
-			eventToDo=LEFT_MOUSE_UP;
+			eventToDo=PV_LEFT_MOUSE_UP;
 		isAnEvent=1;
 		redraw();
 		break;
@@ -331,7 +331,7 @@ int PaintView::handle(int event)
 		coord.x = Fl::event_x();
 		coord.y = Fl::event_y();
 		// dirty trick to solve "drag-without-down" problem
-		if (prevEvent != RIGHT_MOUSE_DRAG && prevEvent != LEFT_MOUSE_DRAG)
+		if (prevEvent != PV_RIGHT_MOUSE_DRAG && prevEvent != PV_LEFT_MOUSE_DRAG)
 		{
 			rightClickBegin.x = coord.x;
 			rightClickBegin.y = m_nWindowHeight - coord.y;

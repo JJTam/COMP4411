@@ -13,12 +13,13 @@
 #include <GL/glu.h>
 #include <stdlib.h>
 
-#define LEFT_MOUSE_DOWN		1
-#define LEFT_MOUSE_DRAG		2
-#define LEFT_MOUSE_UP		3
-#define RIGHT_MOUSE_DOWN    4
-#define RIGHT_MOUSE_DRAG    5
-#define RIGHT_MOUSE_UP		6
+#define PV_LEFT_MOUSE_DOWN		1
+#define PV_LEFT_MOUSE_DRAG		2
+#define PV_LEFT_MOUSE_UP		3
+#define PV_RIGHT_MOUSE_DOWN    4
+#define PV_RIGHT_MOUSE_DRAG    5
+#define PV_RIGHT_MOUSE_UP		6
+#define PV_NORMAL_AUTO	7
 
 class ImpressionistDoc;
 
