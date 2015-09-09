@@ -30,7 +30,7 @@ public:
 	void draw();
 	int handle(int event);
 
-	int SimulateMouse(int x, int y, int click_type, bool setAuto);
+	int SimulateMouse(int x, int y, int click_type);
 
 	void refresh();
 	

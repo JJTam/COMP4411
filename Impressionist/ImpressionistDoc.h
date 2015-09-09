@@ -61,9 +61,6 @@ public:
 	// Background
 	bool m_bHasPendingBgUpdate;
 
-	// Auto
-	bool m_bHasPendingAutoFlush;
-
 	// The current active brush.
 	ImpBrush*			m_pCurrentBrush;
 

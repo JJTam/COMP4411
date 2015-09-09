@@ -59,8 +59,6 @@ ImpressionistDoc::ImpressionistDoc()
 
 	m_bHasPendingUndo = false;
 	m_bHasPendingBgUpdate = false;
-
-	m_bHasPendingAutoFlush = false;
 }
 
 
@@ -263,44 +261,7 @@ int ImpressionistDoc::clearCanvas()
 
 int ImpressionistDoc::autoDraw()
 {
-	this->pushToUndo();
-
-	int Spacing = m_pUI->getSpacing();
-	bool AttrRand = m_pUI->getAttrRand();
-	
-	int oSize = m_pUI->getSize();
-	int oLineWidth = m_pUI->getLineWidth();
-	int oAngle = m_pUI->getAngle();
-
-	int x_counts = m_nWidth / Spacing;
-	int y_counts = m_nHeight / Spacing;
-	int total_points = x_counts * y_counts;
-
-	std::vector<int> temp;
-	for (int i = 0; i < total_points; ++i)
-	{
-		temp.push_back(i);
-	}
-	
-	// change this to brush type later
-	std::random_shuffle(temp.begin(), temp.end());
-	
-	for (int i = 0; i < total_points; ++i)
-	{
-		int x = temp[i] % x_counts * Spacing + Spacing / 2;
-		int y = temp[i] / x_counts * Spacing + Spacing / 2;
-		if (AttrRand)
-		{
-			m_pUI->setSize(oSize + irand(10) - 5);
-			m_pUI->setLineWidth(oLineWidth + irand(10) - 5);
-			m_pUI->setAngle(oAngle + irand(10) - 5);
-		}
-		m_pUI->m_paintView->SimulateMouse(x, y, 1, true);
-	}
-
-	this->m_bHasPendingAutoFlush = true;
-	m_pUI->m_paintView->flush();
-
+	m_pUI->m_paintView->SimulateMouse(0, 0, PV_NORMAL_AUTO);
 	return 0;
 }
 

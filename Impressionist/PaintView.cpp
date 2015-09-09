@@ -10,11 +10,15 @@
 #include "paintview.h"
 #include "ImpBrush.h"
 #include <cmath>
+#include <vector>
+#include <algorithm>
 
 #ifndef WIN32
 #define min(a, b)	( ( (a)<(b) ) ? (a) : (b) )
 #define max(a, b)	( ( (a)>(b) ) ? (a) : (b) )
 #endif
+
+extern int irand(int);
 
 static int		eventToDo;
 static int		isAnEvent=0;
@@ -23,7 +27,6 @@ static Point    rightClickBegin;
 static Point    rightClickEnd;
 static Point    prevPoint;
 static int      prevEvent;
-static bool		isAuto = false;
 
 PaintView::PaintView(int			x, 
 					 int			y, 
@@ -35,6 +38,58 @@ PaintView::PaintView(int			x,
 	m_nWindowWidth	= w;
 	m_nWindowHeight	= h;
 	this->mode(FL_ALPHA);
+}
+
+void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int windowHeight)
+{
+	ImpressionistUI* pUI = pDoc->m_pUI;
+	ImpBrush* pBrush = pDoc->m_pCurrentBrush;
+
+	int Spacing = pUI->getSpacing();
+	bool AttrRand = pUI->getAttrRand();
+
+	int oSize = pUI->getSize();
+	int oLineWidth = pUI->getLineWidth();
+	int oAngle = pUI->getAngle();
+
+	int x_counts = width / Spacing;
+	int y_counts = height / Spacing;
+	int total_points = x_counts * y_counts;
+
+	std::vector<int> pointIndexes;
+	for (int i = 0; i < total_points; ++i)
+	{
+		pointIndexes.push_back(i);
+	}
+
+	// change this to brush type later
+	std::random_shuffle(pointIndexes.begin(), pointIndexes.end());
+
+	Point coord;
+	Point source;
+	Point target;
+	for (int i = 0; i < total_points; ++i)
+	{
+		coord.x = pointIndexes[i] % x_counts * Spacing + Spacing / 2;
+		coord.y = pointIndexes[i] / x_counts * Spacing + Spacing / 2;
+		source.x = coord.x;
+		source.y = startRow + height - coord.y;
+		target.x = coord.x;
+		target.y = windowHeight - coord.y;
+
+		if (AttrRand)
+		{
+			pUI->setSize(oSize + irand(10) - 5);
+			pUI->setLineWidth(oLineWidth + irand(10) - 5);
+			pUI->setAngle(oAngle + irand(10) - 5);
+		}
+		pBrush->BrushBegin(source, target);
+		pBrush->BrushEnd(source, target);
+	}
+
+	pUI->setSize(oSize);
+	pUI->setLineWidth(oLineWidth);
+	pUI->setAngle(oAngle);
 }
 
 void PaintView::draw()
@@ -85,7 +140,7 @@ void PaintView::draw()
 	// Deciding what to do
 	bool isPointerOutOfRange = coord.x > drawWidth || coord.y > drawHeight;
 
-	bool isDealingPending = m_pDoc->m_bHasPendingAutoFlush || m_pDoc->m_bHasPendingBgUpdate || m_pDoc->m_bHasPendingUndo;
+	bool isDealingPending = m_pDoc->m_bHasPendingBgUpdate || m_pDoc->m_bHasPendingUndo;
 
 	bool shallRestoreContent = ((m_pDoc->m_ucPainting && !isAnEvent) || (isAnEvent && isPointerOutOfRange)) && !isDealingPending;
 
@@ -93,9 +148,7 @@ void PaintView::draw()
 
 	bool shallRestoreDrawing = shallDrawContent;
 
-	bool shallPushUndo = !isAuto
-		&& (eventToDo == PV_LEFT_MOUSE_DOWN || (eventToDo == PV_LEFT_MOUSE_DRAG && prevEvent == PV_LEFT_MOUSE_UP))
-		&& !isDealingPending;
+	bool shallPushUndo = (eventToDo == PV_LEFT_MOUSE_DOWN || (eventToDo == PV_LEFT_MOUSE_DRAG && prevEvent == PV_LEFT_MOUSE_UP) || eventToDo == PV_NORMAL_AUTO) && !isDealingPending;
 
 	bool shallUpdatePointerDir = eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG &&
 		(((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
@@ -103,11 +156,9 @@ void PaintView::draw()
 
 	bool shallBrush = !isDealingPending;
 
-	bool shallUpdatePreservedDrawing = (shallBrush && (eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG || eventToDo == PV_LEFT_MOUSE_UP)) || m_pDoc->m_bHasPendingAutoFlush;
+	bool shallUpdatePreservedDrawing = (shallBrush && (eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG || eventToDo == PV_LEFT_MOUSE_UP || eventToDo == PV_NORMAL_AUTO));
 
-	bool shallUpdateContentView = !isAuto;
-
-	bool shallFlush = !isAuto;
+	bool shallUpdateContentView = true;
 
 	if (shallRestoreContent) 
 	{
@@ -169,6 +220,9 @@ void PaintView::draw()
 				break;
 			case PV_LEFT_MOUSE_UP:
 				m_pDoc->m_pCurrentBrush->BrushEnd( source, target );
+				break;
+			case PV_NORMAL_AUTO:
+				doAuto(m_pDoc, drawWidth, drawHeight, startrow, m_nWindowHeight);
 				break;
 			case PV_RIGHT_MOUSE_DOWN:
 				rightClickBegin.x = target.x;
@@ -245,7 +299,7 @@ void PaintView::draw()
 		
 			if (shallDrawBackground)
 			{
-				int bgAlpha = 255 * (1 - m_pDoc->m_pUI->getBackgroundAlpha());
+				int bgAlpha = (int)(255 * (1 - m_pDoc->m_pUI->getBackgroundAlpha()));
 				for (int i = 0; i < drawWidth * drawHeight; ++i)
 				{
 					if (bits[i * 4 + 3] == 0)
@@ -271,22 +325,23 @@ void PaintView::draw()
 		}
 	}
 
-	if (shallFlush)
-	{
-		glFlush();
-	}
+	glFlush();
 
 	#ifndef MESA
 	glDrawBuffer(GL_BACK);
 	#endif // !MESA
 
 	// Reset flags
-	isAuto = false;
 	isAnEvent = 0;
 	prevEvent = eventToDo;
 	m_pDoc->m_bHasPendingUndo = false;
 	m_pDoc->m_bHasPendingBgUpdate = false;
-	m_pDoc->m_bHasPendingAutoFlush = false;
+
+	// Edge clipping
+	if (eventToDo == PV_NORMAL_AUTO)
+	{
+		this->refresh();
+	}
 }
 
 
@@ -352,9 +407,8 @@ int PaintView::handle(int event)
 }
 
 //MouseSimulator for auto draw
-int PaintView::SimulateMouse(int x, int y, int click_type, bool setAuto)
+int PaintView::SimulateMouse(int x, int y, int click_type)
 {
-	isAuto = setAuto;
 	coord.x = x;
 	coord.y = y;
 	eventToDo = click_type;
