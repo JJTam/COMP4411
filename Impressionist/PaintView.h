@@ -13,6 +13,14 @@
 #include <GL/glu.h>
 #include <stdlib.h>
 
+#define PV_LEFT_MOUSE_DOWN		1
+#define PV_LEFT_MOUSE_DRAG		2
+#define PV_LEFT_MOUSE_UP		3
+#define PV_RIGHT_MOUSE_DOWN    4
+#define PV_RIGHT_MOUSE_DRAG    5
+#define PV_RIGHT_MOUSE_UP		6
+#define PV_NORMAL_AUTO	7
+
 class ImpressionistDoc;
 
 class PaintView : public Fl_Gl_Window
@@ -22,7 +30,7 @@ public:
 	void draw();
 	int handle(int event);
 
-	int SimulateMouse(int x, int y, int click_type, bool end);
+	int SimulateMouse(int x, int y, int click_type);
 
 	void refresh();
 	

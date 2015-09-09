@@ -10,28 +10,23 @@
 #include "paintview.h"
 #include "ImpBrush.h"
 #include <cmath>
-
-#define LEFT_MOUSE_DOWN		1
-#define LEFT_MOUSE_DRAG		2
-#define LEFT_MOUSE_UP		3
-#define RIGHT_MOUSE_DOWN	4
-#define RIGHT_MOUSE_DRAG	5
-#define RIGHT_MOUSE_UP		6
-
+#include <vector>
+#include <algorithm>
 
 #ifndef WIN32
 #define min(a, b)	( ( (a)<(b) ) ? (a) : (b) )
 #define max(a, b)	( ( (a)>(b) ) ? (a) : (b) )
 #endif
 
+extern int irand(int);
+
 static int		eventToDo;
 static int		isAnEvent=0;
-static Point	coord;
+static Point    coord;
 static Point    rightClickBegin;
 static Point    rightClickEnd;
-static Point	prevPoint;
+static Point    prevPoint;
 static int      prevEvent;
-static bool		isAuto;
 
 PaintView::PaintView(int			x, 
 					 int			y, 
@@ -45,29 +40,76 @@ PaintView::PaintView(int			x,
 	this->mode(FL_ALPHA);
 }
 
+void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int windowHeight)
+{
+	ImpressionistUI* pUI = pDoc->m_pUI;
+	ImpBrush* pBrush = pDoc->m_pCurrentBrush;
+
+	int Spacing = pUI->getSpacing();
+	bool AttrRand = pUI->getAttrRand();
+
+	int oSize = pUI->getSize();
+	int oLineWidth = pUI->getLineWidth();
+	int oAngle = pUI->getAngle();
+
+	int x_counts = width / Spacing;
+	int y_counts = height / Spacing;
+	int total_points = x_counts * y_counts;
+
+	std::vector<int> pointIndexes;
+	for (int i = 0; i < total_points; ++i)
+	{
+		pointIndexes.push_back(i);
+	}
+
+	// change this to brush type later
+	std::random_shuffle(pointIndexes.begin(), pointIndexes.end());
+
+	Point coord;
+	Point source;
+	Point target;
+	for (int i = 0; i < total_points; ++i)
+	{
+		coord.x = pointIndexes[i] % x_counts * Spacing + Spacing / 2;
+		coord.y = pointIndexes[i] / x_counts * Spacing + Spacing / 2;
+		source.x = coord.x;
+		source.y = startRow + height - coord.y;
+		target.x = coord.x;
+		target.y = windowHeight - coord.y;
+
+		if (AttrRand)
+		{
+			pUI->setSize(oSize + irand(10) - 5);
+			pUI->setLineWidth(oLineWidth + irand(10) - 5);
+			pUI->setAngle(oAngle + irand(10) - 5);
+		}
+		pBrush->BrushBegin(source, target);
+		pBrush->BrushEnd(source, target);
+	}
+
+	pUI->setSize(oSize);
+	pUI->setLineWidth(oLineWidth);
+	pUI->setAngle(oAngle);
+}
 
 void PaintView::draw()
 {
 	bool shallDrawBackground = m_pDoc->m_pUI->getBackground();
 	
 	#ifndef MESA
-	// To avoid flicker on some machines.
 	glDrawBuffer(GL_FRONT_AND_BACK);
 	#endif // !MESA
 
 	if(!valid())
 	{
-
 		glClearColor(0.7f, 0.7f, 0.7f, 0);
-
 		// We're only using 2-D, so turn off depth 
-		glDisable( GL_DEPTH_TEST );
-
+		glDisable(GL_DEPTH_TEST);
 		ortho();
-
-		glClear( GL_COLOR_BUFFER_BIT );
+		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
+	// Local parameters
 	Point scrollpos;// = GetScrollPosition();
 	scrollpos.x = 0;
 	scrollpos.y	= 0;
@@ -82,66 +124,74 @@ void PaintView::draw()
 	int startrow = m_pDoc->m_nPaintHeight - (scrollpos.y + drawHeight);
 	if ( startrow < 0 ) startrow = 0;
 
+	// Setup class members
 	m_pPaintBitstart = m_pDoc->m_ucPainting + 
 		4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
 	m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting + 
 		4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
 
-	m_nDrawWidth	= drawWidth;
+	m_nDrawWidth   	= drawWidth;
 	m_nDrawHeight	= drawHeight;
-
 	m_nStartRow		= startrow;
 	m_nEndRow		= startrow + drawHeight;
 	m_nStartCol		= scrollpos.x;
 	m_nEndCol		= m_nStartCol + drawWidth;
+	
+	// Deciding what to do
+	bool isPointerOutOfRange = coord.x > drawWidth || coord.y > drawHeight;
 
-	if ( (m_pDoc->m_ucPainting && !isAnEvent) && (!m_pDoc->m_bHasPendingUndo) && (!m_pDoc->m_bHasPendingBgUpdate)) 
+	bool isDealingPending = m_pDoc->m_bHasPendingBgUpdate || m_pDoc->m_bHasPendingUndo;
+
+	bool shallRestoreContent = ((m_pDoc->m_ucPainting && !isAnEvent) || (isAnEvent && isPointerOutOfRange)) && !isDealingPending;
+
+	bool shallDrawContent = (m_pDoc->m_ucPainting && isAnEvent && !isPointerOutOfRange) || isDealingPending;
+
+	bool shallRestoreDrawing = shallDrawContent;
+
+	bool shallPushUndo = (eventToDo == PV_LEFT_MOUSE_DOWN || (eventToDo == PV_LEFT_MOUSE_DRAG && prevEvent == PV_LEFT_MOUSE_UP) || eventToDo == PV_NORMAL_AUTO) && !isDealingPending;
+
+	bool shallUpdatePointerDir = eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG &&
+		(((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
+		&& m_pDoc->m_nBrushDirection == BRUSH_DIRECTION);
+
+	bool shallBrush = !isDealingPending;
+
+	bool shallUpdatePreservedDrawing = (shallBrush && (eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG || eventToDo == PV_LEFT_MOUSE_UP || eventToDo == PV_NORMAL_AUTO));
+
+	bool shallUpdateContentView = true;
+
+	if (shallRestoreContent) 
 	{
 		RestoreContent();
-
 	}
 
-	if ( (m_pDoc->m_ucPainting && isAnEvent) || (m_pDoc->m_bHasPendingUndo) || (m_pDoc->m_bHasPendingBgUpdate)) 
+	if (shallDrawContent)
 	{
-		bool updatePreservedDrawing = false;
-		
-		if (isAnEvent && (coord.x > drawWidth || coord.y > drawHeight))
+		// Local parameters
+		Point source(coord.x + m_nStartCol, m_nEndRow - coord.y);
+		Point target(coord.x, m_nWindowHeight - coord.y);
+
+		// Do things
+		if (shallRestoreDrawing)
 		{
-			RestoreContent();
-			glFlush();
-#ifndef MESA
-			// To avoid flicker on some machines.
-			glDrawBuffer(GL_BACK);
-#endif // !MESA
-			return;
+			glDisable(GL_BLEND);
+			glClearColor(0.7f, 0.7f, 0.7f, 0);
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			glRasterPos2i(0, m_nWindowHeight - drawHeight);
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
+			glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPreservedPaintBitstart);
 		}
-
-		// Clear it after processing.
-		isAnEvent	= 0;	
-
-		// Restore the drawing for... drawing
-		glDisable(GL_BLEND);
-		glClearColor(0, 0, 0, 0);
-		glClear(GL_COLOR_BUFFER_BIT);
 		
-		glRasterPos2i(0, m_nWindowHeight - drawHeight);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
-		glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPreservedPaintBitstart);
-
-		Point source( coord.x + m_nStartCol, m_nEndRow - coord.y );
-		Point target( coord.x, m_nWindowHeight - coord.y );
-		
-		if (!isAuto && (eventToDo == LEFT_MOUSE_DOWN || (eventToDo == LEFT_MOUSE_DRAG && prevEvent == LEFT_MOUSE_UP) && (!m_pDoc->m_bHasPendingUndo) && (!m_pDoc->m_bHasPendingBgUpdate)))
+		if (shallPushUndo)
 		{
 			m_pDoc->pushToUndo();
 			m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting +
 				4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
 		}
 
-		if (eventToDo == LEFT_MOUSE_DOWN || eventToDo == LEFT_MOUSE_DRAG &&
-			(((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
-			&& m_pDoc->m_nBrushDirection == BRUSH_DIRECTION))
+		if (shallUpdatePointerDir)
 		{
 			if (prevPoint.x != target.x || prevPoint.y != target.y)
 			{
@@ -155,73 +205,71 @@ void PaintView::draw()
 			prevPoint.y = target.y;
 		}
 
-		// This is the event handler
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		if (!m_pDoc->m_bHasPendingUndo && !m_pDoc->m_bHasPendingBgUpdate)
-		switch (eventToDo) 
+		if (shallBrush)
 		{
-		case LEFT_MOUSE_DOWN:
-			m_pDoc->m_pCurrentBrush->BrushBegin( source, target );
-			updatePreservedDrawing = true;
-			break;
-		case LEFT_MOUSE_DRAG:
-			m_pDoc->m_pCurrentBrush->BrushMove( source, target );
-			updatePreservedDrawing = true;
-			break;
-		case LEFT_MOUSE_UP:
-			m_pDoc->m_pCurrentBrush->BrushEnd( source, target );
-			updatePreservedDrawing = true;
-			break;
-		case RIGHT_MOUSE_DOWN:
-			rightClickBegin.x = target.x;
-			rightClickBegin.y = target.y;
-			break;
-		case RIGHT_MOUSE_DRAG:
-			if (m_pDoc->m_nBrushDirection == SLIDER_AND_RIGHT_MOUSE)
-			{
-				glBegin(GL_LINES);
-				glColor3ub(255, 0, 0);
-				glVertex2d(rightClickBegin.x, rightClickBegin.y);
-				glVertex2d(target.x, target.y);
-				glEnd();
-			}
-			break;
-		case RIGHT_MOUSE_UP:
-			rightClickEnd.x = target.x;
-			rightClickEnd.y = target.y;
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			if (rightClickBegin.x == rightClickEnd.x &&
-				rightClickBegin.y == rightClickEnd.y)
+			switch (eventToDo) 
 			{
-				// allow user to toggle background by right-clicking
-				shallDrawBackground = !shallDrawBackground;
-				m_pDoc->m_pUI->setBackground(shallDrawBackground);
-			}
-			else
-			{
+			case PV_LEFT_MOUSE_DOWN:
+				m_pDoc->m_pCurrentBrush->BrushBegin( source, target );
+				break;
+			case PV_LEFT_MOUSE_DRAG:
+				m_pDoc->m_pCurrentBrush->BrushMove( source, target );
+				break;
+			case PV_LEFT_MOUSE_UP:
+				m_pDoc->m_pCurrentBrush->BrushEnd( source, target );
+				break;
+			case PV_NORMAL_AUTO:
+				doAuto(m_pDoc, drawWidth, drawHeight, startrow, m_nWindowHeight);
+				break;
+			case PV_RIGHT_MOUSE_DOWN:
+				rightClickBegin.x = target.x;
+				rightClickBegin.y = target.y;
+				break;
+			case PV_RIGHT_MOUSE_DRAG:
 				if (m_pDoc->m_nBrushDirection == SLIDER_AND_RIGHT_MOUSE)
 				{
-					// update angle
-					int newAngle = (int)(atan((double)((rightClickEnd.y - rightClickBegin.y)) / (rightClickEnd.x - rightClickBegin.x)) / 3.14159 * 180);
-					while (newAngle < 0)
-						newAngle += 180;
-
-					m_pDoc->m_pUI->setAngle(newAngle);
+					glBegin(GL_LINES);
+					glColor3ub(255, 0, 0);
+					glVertex2d(rightClickBegin.x, rightClickBegin.y);
+					glVertex2d(target.x, target.y);
+					glEnd();
 				}
-			}
-			break;
+				break;
+			case PV_RIGHT_MOUSE_UP:
+				rightClickEnd.x = target.x;
+				rightClickEnd.y = target.y;
 
-		default:
-			printf("Unknown event!!\n");		
-			break;
+				if (rightClickBegin.x == rightClickEnd.x &&
+					rightClickBegin.y == rightClickEnd.y)
+				{
+					// allow user to toggle background by right-clicking
+					shallDrawBackground = !shallDrawBackground;
+					m_pDoc->m_pUI->setBackground(shallDrawBackground);
+				}
+				else
+				{
+					if (m_pDoc->m_nBrushDirection == SLIDER_AND_RIGHT_MOUSE)
+					{
+						// update angle
+						int newAngle = (int)(atan((double)((rightClickEnd.y - rightClickBegin.y)) / (rightClickEnd.x - rightClickBegin.x)) / 3.14159 * 180);
+						while (newAngle < 0)
+							newAngle += 180;
+
+						m_pDoc->m_pUI->setAngle(newAngle);
+					}
+				}
+				break;
+
+			default:
+				printf("Unknown event!!\n");		
+				break;
+			}
 		}
 
-		prevEvent = eventToDo;
-
-		// Preserve the drawing
-		if (updatePreservedDrawing)
+		if (shallUpdatePreservedDrawing)
 		{
 			glReadPixels(0,
 						m_nWindowHeight - m_nDrawHeight,
@@ -232,58 +280,68 @@ void PaintView::draw()
 						m_pPreservedPaintBitstart);
 		}
 
-		m_pDoc->m_bHasPendingUndo = false;
-		m_pDoc->m_bHasPendingBgUpdate = false;
-
-		glReadPixels(0,
-			m_nWindowHeight - m_nDrawHeight,
-			m_nDrawWidth,
-			m_nDrawHeight,
-			GL_RGBA,
-			GL_UNSIGNED_BYTE,
-			m_pPaintBitstart);
-
-		GLubyte* bits = (GLubyte*)m_pPaintBitstart;
-		GLubyte* pbits = (GLubyte*)m_pPreservedPaintBitstart;
-
-		// setup for visual drawing
-		glRasterPos2i(0, m_nWindowHeight - drawHeight);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
-		
-		if (shallDrawBackground)
+		if (shallUpdateContentView)
 		{
-			int bgAlpha = 255 * (1 - m_pDoc->m_pUI->getBackgroundAlpha());
-			for (int i = 0; i < drawWidth * drawHeight; ++i)
-			{
-				if (bits[i * 4 + 3] == 0)
-					bits[i * 4 + 3] = bgAlpha;
-			}
-			
+			glReadPixels(0,
+				m_nWindowHeight - m_nDrawHeight,
+				m_nDrawWidth,
+				m_nDrawHeight,
+				GL_RGBA,
+				GL_UNSIGNED_BYTE,
+				m_pPaintBitstart);
+
+			GLubyte* bits = (GLubyte*)m_pPaintBitstart;
+			GLubyte* pbits = (GLubyte*)m_pPreservedPaintBitstart;
+
 			glRasterPos2i(0, m_nWindowHeight - drawHeight);
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
+		
+			if (shallDrawBackground)
+			{
+				int bgAlpha = (int)(255 * (1 - m_pDoc->m_pUI->getBackgroundAlpha()));
+				for (int i = 0; i < drawWidth * drawHeight; ++i)
+				{
+					if (bits[i * 4 + 3] == 0)
+						bits[i * 4 + 3] = bgAlpha;
+				}
 			
-			glDrawPixels(drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, m_pDoc->m_ucBitmap);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPaintBitstart);
-		}
-		else
-		{
-			glDisable(GL_BLEND);
-			glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPaintBitstart);
-		}
+				glRasterPos2i(0, m_nWindowHeight - drawHeight);
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+				glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
+			
+				glDrawPixels(drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, m_pDoc->m_ucBitmap);
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPaintBitstart);
+			}
+			else
+			{
+				glDisable(GL_BLEND);
+				glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPaintBitstart);
+			}
 
-		SaveCurrentContent();
+			SaveCurrentContent();
+		}
 	}
 
 	glFlush();
 
 	#ifndef MESA
-	// To avoid flicker on some machines.
 	glDrawBuffer(GL_BACK);
 	#endif // !MESA
+
+	// Reset flags
+	isAnEvent = 0;
+	prevEvent = eventToDo;
+	m_pDoc->m_bHasPendingUndo = false;
+	m_pDoc->m_bHasPendingBgUpdate = false;
+
+	// Edge clipping
+	if (eventToDo == PV_NORMAL_AUTO)
+	{
+		this->refresh();
+	}
 }
 
 
@@ -298,9 +356,9 @@ int PaintView::handle(int event)
 		coord.x = Fl::event_x();
 		coord.y = Fl::event_y();
 		if (Fl::event_button()>1)
-			eventToDo=RIGHT_MOUSE_DOWN;
+			eventToDo=PV_RIGHT_MOUSE_DOWN;
 		else
-			eventToDo=LEFT_MOUSE_DOWN;
+			eventToDo=PV_LEFT_MOUSE_DOWN;
 		isAnEvent=1;
 		redraw();
 		break;
@@ -308,9 +366,9 @@ int PaintView::handle(int event)
 		coord.x = Fl::event_x();
 		coord.y = Fl::event_y();
 		if (Fl::event_button()>1)
-			eventToDo=RIGHT_MOUSE_DRAG;
+			eventToDo=PV_RIGHT_MOUSE_DRAG;
 		else
-			eventToDo=LEFT_MOUSE_DRAG;
+			eventToDo=PV_LEFT_MOUSE_DRAG;
 		isAnEvent=1;
 		redraw();
 		break;
@@ -318,9 +376,9 @@ int PaintView::handle(int event)
 		coord.x = Fl::event_x();
 		coord.y = Fl::event_y();
 		if (Fl::event_button()>1)
-			eventToDo=RIGHT_MOUSE_UP;
+			eventToDo=PV_RIGHT_MOUSE_UP;
 		else
-			eventToDo=LEFT_MOUSE_UP;
+			eventToDo=PV_LEFT_MOUSE_UP;
 		isAnEvent=1;
 		redraw();
 		break;
@@ -328,7 +386,7 @@ int PaintView::handle(int event)
 		coord.x = Fl::event_x();
 		coord.y = Fl::event_y();
 		// dirty trick to solve "drag-without-down" problem
-		if (prevEvent != RIGHT_MOUSE_DRAG && prevEvent != LEFT_MOUSE_DRAG)
+		if (prevEvent != PV_RIGHT_MOUSE_DRAG && prevEvent != PV_LEFT_MOUSE_DRAG)
 		{
 			rightClickBegin.x = coord.x;
 			rightClickBegin.y = m_nWindowHeight - coord.y;
@@ -349,15 +407,13 @@ int PaintView::handle(int event)
 }
 
 //MouseSimulator for auto draw
-int PaintView::SimulateMouse(int x, int y, int click_type, bool end)
+int PaintView::SimulateMouse(int x, int y, int click_type)
 {
-	isAuto = true;
 	coord.x = x;
 	coord.y = y;
 	eventToDo = click_type;
 	isAnEvent = 1;
 	this->flush();
-	if (end) isAuto = false;
 	return 1;
 }
 
