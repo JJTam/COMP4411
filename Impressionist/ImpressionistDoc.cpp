@@ -21,6 +21,7 @@
 #include "ScatteredCircleBrush.h"
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 #define DESTROY(p)	{  if ((p)!=NULL) {delete [] p; p=NULL; } }
 #define ABS(x) (x >= 0 ? x : -x)
@@ -34,6 +35,8 @@ ImpressionistDoc::ImpressionistDoc()
 	m_ucBitmap		= NULL;
 	m_ucPainting	= NULL;
 	m_ucPreservedPainting = NULL;
+	m_iGradient = NULL;
+	m_iGradientMagnitude = NULL;
 
 	// create one instance of each brush
 	ImpBrush::c_nBrushCount	= NUM_BRUSH_TYPE;
@@ -164,7 +167,8 @@ int ImpressionistDoc::loadImage(char *iname)
 	if ( m_ucBitmap ) delete [] m_ucBitmap;
 	if ( m_ucPainting ) delete [] m_ucPainting;
 	if (m_ucPreservedPainting) delete[] m_ucPreservedPainting;
-	
+	if (m_iGradient) delete[] m_iGradient;
+	if (m_iGradientMagnitude) delete[] m_iGradientMagnitude;
 
 	m_ucBitmap		= data;
 
@@ -179,8 +183,7 @@ int ImpressionistDoc::loadImage(char *iname)
 								m_pUI->m_mainWindow->y(), 
 								width*2, 
 								height+25);
-	//printf("Width = %d, window->w() = %d, Height+25 = %d, window->h() = %d\n", width, m_pUI->m_mainWindow->w(), height+25, m_pUI->m_mainWindow->h());
-	
+
 	// On some platforms, the width and height both has 8 pixels missing for some reason
 	int widthDelta = ABS(width * 2 - m_pUI->m_mainWindow->w());
 	int heightDelta = ABS(height + 25 - m_pUI->m_mainWindow->h());
@@ -191,7 +194,6 @@ int ImpressionistDoc::loadImage(char *iname)
 			width * 2 + widthDelta,
 			height + 25 + heightDelta);
 	}
-	//printf("Width = %d, window->w() = %d, Height+25 = %d, window->h() = %d\n", width, m_pUI->m_mainWindow->w(), height + 25, m_pUI->m_mainWindow->h());
 
 	// display it on origView
 	m_pUI->m_origView->resizeWindow(width, height);	
@@ -201,7 +203,52 @@ int ImpressionistDoc::loadImage(char *iname)
 	m_pUI->m_paintView->resizeWindow(width, height);	
 	m_pUI->m_paintView->refresh();
 
+	////// compute gradient
 
+	// short-cut to get index of (x, y)
+#define IXY(x, y) (x + (y) * width)
+	// temp black and white image, intensity = 0.299R + 0.587G + 0.144B
+	unsigned char* bw = new unsigned char[width * height];
+	for (int i = 0; i < width*height; ++i)
+	{
+		double val = 0.299 * m_ucBitmap[i * 3]
+		             + 0.587 * m_ucBitmap[i * 3 + 1]
+		             + 0.144 * m_ucBitmap[i * 3 + 2];
+		
+		bw[i] = (val > 255.0) ? (unsigned char)val : 255;
+	}
+
+	m_iGradient = new int[width * height * 2];
+	memset(m_iGradient, 0, width * height * 2 * sizeof(int));
+	m_iGradientMagnitude = new int[width * height];
+	memset(m_iGradientMagnitude, 0, width * height * sizeof(int));
+	for (int x = 1; x < width - 1; ++x)
+		for (int y = 1; y < height - 1; ++y)
+		{
+			int idx = 2 * (x + y * width);
+			int dx = 0
+				+ m_ucBitmap[IXY(x + 1, y - 1)] 
+				+ m_ucBitmap[IXY(x + 1, y)] * 2 
+				+ m_ucBitmap[IXY(x + 1, y + 1)]
+				- m_ucBitmap[IXY(x - 1, y - 1)] 
+				- m_ucBitmap[IXY(x - 1, y)] * 2 
+				- m_ucBitmap[IXY(x - 1, y + 1)];
+
+			int dy = 0
+				+ m_ucBitmap[IXY(x - 1, y - 1)] 
+				+ m_ucBitmap[IXY(x, y - 1)] * 2 
+				+ m_ucBitmap[IXY(x + 1, y - 1)]
+				- m_ucBitmap[IXY(x - 1, y + 1)] 
+				- m_ucBitmap[IXY(x, y + 1)] * 2 
+				- m_ucBitmap[IXY(x + 1, y + 1)];
+
+			m_iGradient[idx] = dx;
+			m_iGradient[idx + 1] = dy;
+			m_iGradientMagnitude[x + y * width] = sqrt(dx * dx + dy * dy);
+		}
+	// release memory
+	delete bw;
+#undef IXY
 	return 1;
 }
 

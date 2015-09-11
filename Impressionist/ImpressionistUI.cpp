@@ -578,8 +578,6 @@ ImpressionistUI::ImpressionistUI() {
 		m_ClearCanvasButton->user_data((void*)(this));
 		m_ClearCanvasButton->callback(cb_clear_canvas_button);
 
-
-
 		// Add brush size slider to the dialog 
 		m_BrushSizeSlider = new Fl_Value_Slider(10, 80, 300, 25, "Size");
 		m_BrushSizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
@@ -606,6 +604,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_LineWidthSlider->align(FL_ALIGN_RIGHT);
 		m_LineWidthSlider->callback(cb_LineWidthSlides);
 		m_LineWidthSlider->deactivate();
+
 		// Add angle slider to the dialog 
 		m_AngleSlider = new Fl_Value_Slider(10, 130, 300, 25, "LineAngle");
 		m_AngleSlider->user_data((void*)(this));	// record self to be used by static callback functions
@@ -619,6 +618,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_AngleSlider->align(FL_ALIGN_RIGHT);
 		m_AngleSlider->callback(cb_AngleSlides);
 		m_AngleSlider->deactivate();
+
 		// Add alpha slider to the dialog
 		m_AlphaSlider = new Fl_Value_Slider(10, 155, 300, 25, "Alpha");
 		m_AlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions

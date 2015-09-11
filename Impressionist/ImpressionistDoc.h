@@ -53,6 +53,8 @@ public:
 	unsigned char*	m_ucBitmap;
 	unsigned char*	m_ucPainting;
 	unsigned char*  m_ucPreservedPainting;
+	int*  m_iGradient;
+	int* m_iGradientMagnitude;
 
 	// Undo
 	std::list<unsigned char*> m_lUndoList;
