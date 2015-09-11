@@ -11,6 +11,12 @@
 #include "bitmap.h"
 #include <list>
 
+enum DocDisplayMode {
+	DOC_DISPLAY_ORIGINAL,
+	DOC_DISPLAY_EDGE,
+	DOC_DISPLAY_ANOTHER
+};
+
 class ImpressionistUI;
 
 class ImpressionistDoc 
@@ -34,13 +40,19 @@ public:
 	void	setLineWidth(int size);
 	void	setAngle(int angle);
 	char*	getImageName();					// get the current image name
-	
+	int getDisplayMode();
+	void setDisplayMode(int mode);
+
 	int		autoDraw();
 
 	void undo();
 	void pushToUndo();
 
 	void updateBg();
+
+	void updateEdge();
+
+	
 // Attributes
 public:
 	// Dimensions of original window.
@@ -53,7 +65,8 @@ public:
 	unsigned char*	m_ucBitmap;
 	unsigned char*	m_ucPainting;
 	unsigned char*  m_ucPreservedPainting;
-	int*  m_iGradient;
+	unsigned char*  m_ucEdgeBitmap;
+	int* m_iGradient;
 	int* m_iGradientMagnitude;
 
 	// Undo
@@ -85,6 +98,7 @@ public:
 
 private:
 	char			m_imageName[256];
+	int m_nDisplayMode;
 };
 
 extern void MessageBox(char *message);

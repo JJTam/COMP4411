@@ -230,7 +230,10 @@ void ImpressionistUI::cb_exit(Fl_Menu_* o, void* v)
 
 }
 
-
+void ImpressionistUI::cb_ChooseDisplay(Fl_Menu_* o, void* v)
+{
+	whoami(o)->m_pDoc->setDisplayMode((int)v);
+}
 
 //-----------------------------------------------------------
 // Brings up an about dialog box
@@ -321,7 +324,16 @@ void ImpressionistUI::cb_randattr_button(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data())) ->m_bAttrRand = bool(((Fl_Button *)o)->value());
 }
-
+void ImpressionistUI::cb_EdgeThresholdSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nEdgeThreshold = int(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_EdgeUpdateButton(Fl_Widget* o, void* v)
+{
+	ImpressionistDoc* pDoc = ((ImpressionistUI*)(o->user_data()))->m_pDoc;
+	pDoc->updateEdge();
+	pDoc->setDisplayMode(DOC_DISPLAY_EDGE);
+}
 // Background dialog callbacks
 void ImpressionistUI::cb_background(Fl_Menu_* o, void* v)
 {
@@ -418,6 +430,10 @@ double ImpressionistUI::getBackgroundAlpha()
 {
 	return m_dBackgroundAlpha;
 }
+int ImpressionistUI::getEdgeThreshold()
+{
+	return m_nEdgeThreshold;
+}
 //-------------------------------------------------
 // Set the brush size
 //-------------------------------------------------
@@ -478,6 +494,13 @@ void ImpressionistUI::setBackgroundAlpha(double value)
 	if (m_pDoc)
 		m_pDoc->updateBg();
 }
+void ImpressionistUI::setEdgeThreshold(int value)
+{
+	if (value > 500) value = 500;
+	if (value < 1) value = 1;
+	m_nEdgeThreshold = value;
+	m_EdgeThresholdSlider->value(value);
+}
 // Main menu definition
 Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
@@ -491,10 +514,13 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 
 	{ "&Edit", 0, 0, 0, FL_SUBMENU },
 		{ "&Undo", FL_CTRL + 'z', (Fl_Callback *)ImpressionistUI::cb_undo },
+		{ "PaintView &Background", 0, (Fl_Callback *)ImpressionistUI::cb_background },
 		{ 0 },
 
 	{ "&Display", 0, 0, 0, FL_SUBMENU },
-		{ "&Background", 0, (Fl_Callback *)ImpressionistUI::cb_background },
+		{ "&Original", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_ORIGINAL },
+		{ "&Edge", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_EDGE },
+		{ "&Another", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_ANOTHER },
 		{ 0 },
 
 	{ "&Help",		0, 0, 0, FL_SUBMENU },
@@ -560,6 +586,7 @@ ImpressionistUI::ImpressionistUI() {
 	m_dAlpha = 1.0;
 	m_nSpacing = 4;
 	m_bAttrRand = false;
+	m_nEdgeThreshold = 128;
 
 	// brush dialog definition
 	m_brushDialog = new Fl_Window(400, 325, "Brush Dialog");
@@ -652,6 +679,22 @@ ImpressionistUI::ImpressionistUI() {
 		m_AutoDrawButton = new Fl_Button(320, 200, 50, 25, "&Paint");
 		m_AutoDrawButton->user_data((void*)(this));
 		m_AutoDrawButton->callback(cb_autodraw_button);
+
+		m_EdgeThresholdSlider = new Fl_Value_Slider(10, 235, 300, 25, "Edge T");
+		m_EdgeThresholdSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_EdgeThresholdSlider->type(FL_HOR_NICE_SLIDER);
+		m_EdgeThresholdSlider->labelfont(FL_COURIER);
+		m_EdgeThresholdSlider->labelsize(12);
+		m_EdgeThresholdSlider->minimum(1);
+		m_EdgeThresholdSlider->maximum(500);
+		m_EdgeThresholdSlider->step(1);
+		m_EdgeThresholdSlider->value(m_nEdgeThreshold);
+		m_EdgeThresholdSlider->align(FL_ALIGN_RIGHT);
+		m_EdgeThresholdSlider->callback(cb_EdgeThresholdSlides);
+
+		m_EdgeUpdateButton = new Fl_Button(330, 235, 50, 25, "Do it!");
+		m_EdgeUpdateButton->user_data((void*)(this));
+		m_EdgeUpdateButton->callback(cb_EdgeUpdateButton);
 
     m_brushDialog->end();	
 
