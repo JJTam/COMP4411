@@ -66,7 +66,19 @@ void OriginalView::draw()
 		if ( startrow < 0 ) 
 			startrow = 0;
 
-		bitstart = m_pDoc->m_ucBitmap + 3 * ((m_pDoc->m_nWidth * startrow) + scrollpos.x);
+		int bitstartOffset = 3 * ((m_pDoc->m_nWidth * startrow) + scrollpos.x);
+		switch (m_pDoc->getDisplayMode())
+		{
+		case DOC_DISPLAY_ORIGINAL:
+			bitstart = m_pDoc->m_ucBitmap + bitstartOffset;
+			break;
+		case DOC_DISPLAY_EDGE:
+			bitstart = m_pDoc->m_ucEdgeBitmap + bitstartOffset;
+			break;
+		default:
+			bitstart = m_pDoc->m_ucBitmap + bitstartOffset;
+			break;
+		}
 
 		GLubyte* bits = (GLubyte*)bitstart;
 

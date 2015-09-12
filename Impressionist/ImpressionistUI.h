@@ -48,6 +48,9 @@ public:
 	Fl_Button*	m_RandAttrButton;
 	Fl_Button*			m_AutoDrawButton;
 
+	Fl_Slider*			m_EdgeThresholdSlider;
+	Fl_Button*			m_EdgeUpdateButton;
+
 	// for background dialog
 	Fl_Window*			m_backgroundDialog;
 	Fl_Button*			m_BackgroundButton;
@@ -78,6 +81,8 @@ public:
 	void				setBackground(bool);
 	double				getBackgroundAlpha();
 	void				setBackgroundAlpha(double);
+	int					getEdgeThreshold();
+	void				setEdgeThreshold(int);
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document
 
@@ -91,6 +96,9 @@ private:
 
 	bool	m_bBackground;
 	double	m_dBackgroundAlpha;
+
+	int		m_nEdgeThreshold;
+
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
 	static Fl_Menu_Item		brushTypeMenu[NUM_BRUSH_TYPE+1];
@@ -122,6 +130,11 @@ private:
 	static void cb_background(Fl_Menu_* o, void* v);
 	static void cb_background_button(Fl_Widget* o, void* v);
 	static void cb_backgroundAlphaSlides(Fl_Widget* o, void* v);
+
+	static void cb_EdgeThresholdSlides(Fl_Widget* o, void* v);
+	static void cb_EdgeUpdateButton(Fl_Widget* o, void* v);
+
+	static void cb_ChooseDisplay(Fl_Menu_* o, void* v);
 };
 
 #endif
