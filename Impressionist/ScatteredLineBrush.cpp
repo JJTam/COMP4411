@@ -19,13 +19,6 @@ ImpBrush(pDoc, name)
 
 void ScatteredLineBrush::BrushBegin(const Point source, const Point target)
 {
-	ImpressionistDoc* pDoc = GetDocument();
-	ImpressionistUI* dlg = pDoc->m_pUI;
-
-	this->length = pDoc->getSize();
-	this->angle = pDoc->getAngle();
-	int width = pDoc->getLineWidth();
-	glLineWidth(width);
 	BrushMove(source, target);
 }
 
@@ -38,7 +31,12 @@ void ScatteredLineBrush::BrushMove(const Point source, const Point target)
 		printf("LineBrush::BrushMove  document is NULL\n");
 		return;
 	}
+
+	this->length = pDoc->getSize();
 	this->angle = pDoc->getAngle();
+	int width = pDoc->getLineWidth();
+	glLineWidth(width);
+
 	glBegin(GL_LINES);
 	int loop_time = irand(2) + 2;
 	for (int i = 0; i < loop_time; ++i)

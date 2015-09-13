@@ -19,7 +19,6 @@ ImpBrush(pDoc, name)
 
 void ScatteredPointBrush::BrushBegin(const Point source, const Point target)
 {
-	glPointSize(1);
 	BrushMove(source, target);
 }
 
@@ -32,6 +31,8 @@ void ScatteredPointBrush::BrushMove(const Point source, const Point target)
 		printf("PointBrush::BrushMove  document is NULL\n");
 		return;
 	}
+
+	glPointSize(1);
 
 	glBegin(GL_POINTS);
 	int loop_time = pDoc->getSize()*4;

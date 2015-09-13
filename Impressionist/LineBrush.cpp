@@ -19,13 +19,6 @@ ImpBrush(pDoc, name)
 
 void LineBrush::BrushBegin(const Point source, const Point target)
 {
-	ImpressionistDoc* pDoc = GetDocument();
-	ImpressionistUI* dlg = pDoc->m_pUI;
-
-	this->length = pDoc->getSize();
-	this->angle = pDoc->getAngle();
-	int length = pDoc->getLineWidth();
-	glLineWidth(length);
 	BrushMove(source, target);
 }
 
@@ -38,7 +31,12 @@ void LineBrush::BrushMove(const Point source, const Point target)
 		printf("LineBrush::BrushMove  document is NULL\n");
 		return;
 	}
+
 	this->angle = pDoc->getAngle();
+	this->length = pDoc->getSize();
+	int width = pDoc->getLineWidth();
+	glLineWidth(width);
+
 	glBegin(GL_LINES);
 	SetColor(source);
 

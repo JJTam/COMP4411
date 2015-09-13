@@ -13,11 +13,6 @@ ScatteredCircleBrush::ScatteredCircleBrush(ImpressionistDoc* pDoc, char* name) :
 
 void ScatteredCircleBrush::BrushBegin(const Point source, const Point target)
 {
-	ImpressionistDoc* pDoc = GetDocument();
-	ImpressionistUI* dlg = pDoc->m_pUI;
-
-	int size = pDoc->getSize();
-	this->radius = (double)size;
 	BrushMove(source, target);
 }
 
@@ -31,6 +26,10 @@ void ScatteredCircleBrush::BrushMove(const Point source, const Point target)
 		printf("CircleBrush::BrushMove document is NULL\n");
 		return;
 	}
+
+	int size = pDoc->getSize();
+	this->radius = (double)size;
+
 	int loop_time = irand(2) + 2;
 	for (int i = 0; i < loop_time; ++i)
 	{
