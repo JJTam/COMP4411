@@ -35,9 +35,11 @@ ImpressionistDoc::ImpressionistDoc()
 
 	m_nWidth		= -1;
 	m_ucBitmap		= NULL;
+	m_ucAnotherBitmap = NULL;
 	m_ucPainting	= NULL;
 	m_ucPreservedPainting = NULL;
 	m_iGradient = NULL;
+	m_iAnotherGradient = NULL;
 	m_iGradientMagnitude = NULL;
 	m_ucEdgeBitmap = NULL;
 
@@ -264,7 +266,87 @@ int ImpressionistDoc::loadImage(char *iname)
 	return 1;
 }
 
+int ImpressionistDoc::loadAnotherImage(char *iname)
+{
+	// try to open the image to read
+	unsigned char*	data;
+	int				width,
+		height;
 
+	if ((data = readBMP(iname, width, height)) == NULL)
+	{
+		fl_alert("Can't load bitmap file");
+		return 0;
+	}
+	if (!m_ucBitmap)
+	{
+		fl_alert("Must load original image first!");
+		return 0;
+	}
+	if (m_nWidth != width || m_nHeight != height)
+	{
+		fl_alert("The size must be same!");
+		return 0;
+	}
+
+
+	// release old storage
+	if (m_ucAnotherBitmap) delete[] m_ucAnotherBitmap;
+	if (m_iAnotherGradient) delete[] m_iAnotherGradient;
+
+	m_ucAnotherBitmap = data;
+
+	////// compute gradient
+
+	m_iAnotherGradient = new int[width * height * 2];
+	memset(m_iAnotherGradient, 0, width * height * 2 * sizeof(int));
+
+
+	// short-cut to get index of (x, y)
+#define IXY(x, y) (x + (y) * width)
+	// temp black and white image, intensity = 0.299R + 0.587G + 0.144B
+	unsigned char* bw = new unsigned char[width * height];
+	for (int i = 0; i < width*height; ++i)
+	{
+		double val = 0.299 * m_ucAnotherBitmap[i * 3]
+			+ 0.587 * m_ucAnotherBitmap[i * 3 + 1]
+			+ 0.144 * m_ucAnotherBitmap[i * 3 + 2];
+
+		// bw[i] = (val > 255.0) ? (unsigned char)val : 255; // What I wrote first. DO NOT code when you feel tired.
+		bw[i] = (val > 255.0) ? 255 : (unsigned char)val;
+	}
+
+	for (int y = 1; y < height - 1; ++y)
+		for (int x = 1; x < width - 1; ++x)
+		{
+			int idx = 2 * (x + y * width);
+			int dx = 0
+				+ (int)(bw[IXY(x + 1, y - 1)])
+				+ (int)(bw[IXY(x + 1, y)]) * 2
+				+ (int)(bw[IXY(x + 1, y + 1)])
+				- (int)(bw[IXY(x - 1, y - 1)])
+				- (int)(bw[IXY(x - 1, y)]) * 2
+				- (int)(bw[IXY(x - 1, y + 1)]);
+
+			int dy = 0
+				+ (int)(bw[IXY(x - 1, y - 1)])
+				+ (int)(bw[IXY(x, y - 1)]) * 2
+				+ (int)(bw[IXY(x + 1, y - 1)])
+				- (int)(bw[IXY(x - 1, y + 1)])
+				- (int)(bw[IXY(x, y + 1)]) * 2
+				- (int)(bw[IXY(x + 1, y + 1)]);
+
+			m_iAnotherGradient[idx] = dx;
+			m_iAnotherGradient[idx + 1] = dy;
+		}
+
+	// release memory
+	delete bw;
+
+
+#undef IXY
+	return 1;
+}
 //----------------------------------------------------------------
 // Save the specified image
 // This is called by the UI when the save image menu button is 

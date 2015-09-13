@@ -183,7 +183,15 @@ void ImpressionistUI::cb_load_image(Fl_Menu_* o, void* v)
 	}
 }
 
+void ImpressionistUI::cb_load_another_image(Fl_Menu_* o, void* v)
+{
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
 
+	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
+	if (newfile != NULL) {
+		pDoc->loadAnotherImage(newfile);
+	}
+}
 //------------------------------------------------------------------
 // Brings up a file chooser and then saves the painted image
 // This is called by the UI when the save image menu item is chosen
@@ -324,6 +332,10 @@ void ImpressionistUI::cb_randattr_button(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data())) ->m_bAttrRand = bool(((Fl_Button *)o)->value());
 }
+void ImpressionistUI::cb_anothergradient_button(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_bAnotherGradient = bool(((Fl_Button *)o)->value());
+}
 void ImpressionistUI::cb_EdgeThresholdSlides(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data()))->m_nEdgeThreshold = int(((Fl_Slider *)o)->value());
@@ -422,6 +434,10 @@ bool ImpressionistUI::getAttrRand()
 {
 	return m_bAttrRand;
 }
+bool ImpressionistUI::getAnotherGradient()
+{
+	return m_bAnotherGradient;
+}
 bool ImpressionistUI::getBackground()
 {
 	return m_bBackground;
@@ -473,11 +489,6 @@ void ImpressionistUI::setSpacing(int size)
 	m_nSpacing = size;
 	m_SpacingSlider->value(m_nSpacing);
 }
-void ImpressionistUI::setAttrRand(bool value)
-{
-	m_bAttrRand = value;
-	m_RandAttrButton->value(value);
-}
 void ImpressionistUI::setBackground(bool value)
 {
 	m_bBackground = value;
@@ -508,7 +519,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image },
 		{ "&Brushes...",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
 		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
-		
+		{ "Load &Another Image...", FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_another_image },
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
 		{ 0 },
 
@@ -587,6 +598,7 @@ ImpressionistUI::ImpressionistUI() {
 	m_nSpacing = 4;
 	m_bAttrRand = false;
 	m_nEdgeThreshold = 128;
+	m_bAnotherGradient = false;
 
 	// brush dialog definition
 	m_brushDialog = new Fl_Window(400, 325, "Brush Dialog");
@@ -596,7 +608,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_BrushTypeChoice->menu(brushTypeMenu);
 		m_BrushTypeChoice->callback(cb_brushChoice);
 
-		m_StrokeDirectionChoice = new Fl_Choice(120, 40, 150, 25, "&Stroke Direction");
+		m_StrokeDirectionChoice = new Fl_Choice(120, 40, 150, 25, "Stroke Direction");
 		m_StrokeDirectionChoice->user_data((void*)(this));	// record self to be used by static callback functions
 		m_StrokeDirectionChoice->menu(DirectionTypeMenu);
 		m_StrokeDirectionChoice->callback(cb_StrokeDirectionChoice);
@@ -671,12 +683,12 @@ ImpressionistUI::ImpressionistUI() {
 		m_SpacingSlider->align(FL_ALIGN_RIGHT);
 		m_SpacingSlider->callback(cb_SpacingSlides);
 
-		m_RandAttrButton = new Fl_Light_Button(215, 200, 100, 25, "&Attr Rand");
+		m_RandAttrButton = new Fl_Light_Button(215, 200, 100, 25, "Attr Rand");
 		m_RandAttrButton->user_data((void*)(this));
 		m_RandAttrButton->callback(cb_randattr_button);
 		m_RandAttrButton->value(m_bAttrRand);
 
-		m_AutoDrawButton = new Fl_Button(320, 200, 50, 25, "&Paint");
+		m_AutoDrawButton = new Fl_Button(320, 200, 50, 25, "Paint");
 		m_AutoDrawButton->user_data((void*)(this));
 		m_AutoDrawButton->callback(cb_autodraw_button);
 
@@ -695,6 +707,11 @@ ImpressionistUI::ImpressionistUI() {
 		m_EdgeUpdateButton = new Fl_Button(330, 235, 50, 25, "Do it!");
 		m_EdgeUpdateButton->user_data((void*)(this));
 		m_EdgeUpdateButton->callback(cb_EdgeUpdateButton);
+
+		m_AnotherGradientButton = new Fl_Light_Button(10, 270, 150, 25, "AnotherGradient");
+		m_AnotherGradientButton->user_data((void*)(this));
+		m_AnotherGradientButton->callback(cb_anothergradient_button);
+		m_AnotherGradientButton->value(m_bAnotherGradient);
 
     m_brushDialog->end();	
 

@@ -62,13 +62,18 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 	{
 		pointIndexes.push_back(i);
 	}
-
+	bool shallUpdatePointerDir = (((pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
+		&& (pDoc->m_nBrushDirection == BRUSH_DIRECTION || pDoc->m_nBrushDirection == GRADIENT));
 	// change this to brush type later
 	std::random_shuffle(pointIndexes.begin(), pointIndexes.end());
 
 	Point coord;
 	Point source;
 	Point target;
+	Point prevPoint;
+
+	prevPoint.x = pointIndexes[0] % x_counts * Spacing + Spacing / 2;
+	prevPoint.y = pointIndexes[0] / x_counts * Spacing + Spacing / 2;
 	for (int i = 0; i < total_points; ++i)
 	{
 		coord.x = pointIndexes[i] % x_counts * Spacing + Spacing / 2;
@@ -78,7 +83,45 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 		target.x = coord.x;
 		target.y = windowHeight - coord.y;
 
-		if (AttrRand)
+		if (shallUpdatePointerDir)
+		{
+			if (pDoc->m_nBrushDirection == BRUSH_DIRECTION)
+			{
+				if (prevPoint.x != target.x || prevPoint.y != target.y)
+				{
+					int newAngle = (int)(atan((double)((target.y - prevPoint.y)) / (target.x - prevPoint.x)) / 3.14159 * 180);
+					while (newAngle < 0)
+						newAngle += 180;
+
+					pDoc->m_pUI->setAngle(newAngle);
+				}
+				prevPoint.x = target.x;
+				prevPoint.y = target.y;
+			}
+			if (pDoc->m_pUI->getAnotherGradient() && pDoc->m_ucAnotherBitmap)
+			{
+				int idx = 2 * (target.x + pDoc->m_nPaintWidth * target.y);
+				int dx = pDoc->m_iAnotherGradient[idx];
+				int dy = pDoc->m_iAnotherGradient[idx + 1];
+				int newAngle = (dy == 0) ? 90 : (int)(atan(dx / dy) / 3.14159 * 180);
+				while (newAngle < 0)
+					newAngle += 180;
+
+				pDoc->m_pUI->setAngle(newAngle);
+			}
+			else
+			{
+				int idx = 2 * (target.x + pDoc->m_nPaintWidth * target.y);
+				int dx = pDoc->m_iGradient[idx];
+				int dy = pDoc->m_iGradient[idx + 1];
+				int newAngle = (dy == 0) ? 90 : (int)(atan(dx / dy) / 3.14159 * 180);
+				while (newAngle < 0)
+					newAngle += 180;
+
+				pDoc->m_pUI->setAngle(newAngle);
+			}
+		}
+		else if (AttrRand)
 		{
 			pUI->setSize(oSize + irand(10) - 5);
 			pUI->setLineWidth(oLineWidth + irand(10) - 5);
@@ -209,15 +252,28 @@ void PaintView::draw()
 			}
 			if (m_pDoc->m_nBrushDirection == GRADIENT)
 			{
-				int idx = 2*(target.x + m_pDoc->m_nPaintWidth * target.y);
-				int dx = m_pDoc->m_iGradient[idx];
-				int dy = m_pDoc->m_iGradient[idx+1];
-				std::cout << dx << " " << dy <<std::endl;
-				int newAngle = (dy == 0) ? 90 : -(int)(atan(dx / dy) / 3.14159 * 180);
-				while (newAngle < 0)
-					newAngle += 180;
+				if (m_pDoc->m_pUI->getAnotherGradient() && m_pDoc->m_ucAnotherBitmap)
+				{
+					int idx = 2 * (target.x + m_pDoc->m_nPaintWidth * target.y);
+					int dx = m_pDoc->m_iAnotherGradient[idx];
+					int dy = m_pDoc->m_iAnotherGradient[idx + 1];
+					int newAngle = (dy == 0) ? 90 : (int)(atan(dx / dy) / 3.14159 * 180);
+					while (newAngle < 0)
+						newAngle += 180;
 
-				m_pDoc->m_pUI->setAngle(newAngle);
+					m_pDoc->m_pUI->setAngle(newAngle);
+				}
+				else
+				{
+					int idx = 2 * (target.x + m_pDoc->m_nPaintWidth * target.y);
+					int dx = m_pDoc->m_iGradient[idx];
+					int dy = m_pDoc->m_iGradient[idx + 1];
+					int newAngle = (dy == 0) ? 90 : (int)(atan(dx / dy) / 3.14159 * 180);
+					while (newAngle < 0)
+						newAngle += 180;
+
+					m_pDoc->m_pUI->setAngle(newAngle);
+				}
 			}
 		}
 
