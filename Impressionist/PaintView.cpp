@@ -12,6 +12,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 #ifndef WIN32
 #define min(a, b)	( ( (a)<(b) ) ? (a) : (b) )
@@ -152,7 +153,7 @@ void PaintView::draw()
 
 	bool shallUpdatePointerDir = eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG &&
 		(((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
-		&& m_pDoc->m_nBrushDirection == BRUSH_DIRECTION);
+		&& (m_pDoc->m_nBrushDirection == BRUSH_DIRECTION || m_pDoc->m_nBrushDirection == GRADIENT));
 
 	bool shallBrush = !isDealingPending;
 
@@ -193,16 +194,31 @@ void PaintView::draw()
 
 		if (shallUpdatePointerDir)
 		{
-			if (prevPoint.x != target.x || prevPoint.y != target.y)
+			if (m_pDoc->m_nBrushDirection == BRUSH_DIRECTION)
 			{
-				int newAngle = (int)(atan((double)((target.y - prevPoint.y)) / (target.x - prevPoint.x)) / 3.14159 * 180);
+				if (prevPoint.x != target.x || prevPoint.y != target.y)
+				{
+					int newAngle = (int)(atan((double)((target.y - prevPoint.y)) / (target.x - prevPoint.x)) / 3.14159 * 180);
+					while (newAngle < 0)
+						newAngle += 180;
+
+					m_pDoc->m_pUI->setAngle(newAngle);
+				}
+				prevPoint.x = target.x;
+				prevPoint.y = target.y;
+			}
+			if (m_pDoc->m_nBrushDirection == GRADIENT)
+			{
+				int idx = 2*(target.x + m_pDoc->m_nPaintWidth * target.y);
+				int dx = m_pDoc->m_iGradient[idx];
+				int dy = m_pDoc->m_iGradient[idx+1];
+				std::cout << dx << " " << dy <<std::endl;
+				int newAngle = (dy == 0) ? 90 : -(int)(atan(dx / dy) / 3.14159 * 180);
 				while (newAngle < 0)
 					newAngle += 180;
 
 				m_pDoc->m_pUI->setAngle(newAngle);
 			}
-			prevPoint.x = target.x;
-			prevPoint.y = target.y;
 		}
 
 		if (shallBrush)
