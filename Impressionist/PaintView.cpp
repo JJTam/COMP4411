@@ -41,7 +41,7 @@ PaintView::PaintView(int			x,
 	this->mode(FL_ALPHA);
 }
 
-void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int windowHeight)
+void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int windowHeight, bool shallUpdatePointerDir)
 {
 	ImpressionistUI* pUI = pDoc->m_pUI;
 	ImpBrush* pBrush = pDoc->m_pCurrentBrush;
@@ -62,9 +62,7 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 	{
 		pointIndexes.push_back(i);
 	}
-	bool shallUpdatePointerDir = (((pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
-		&& (pDoc->m_nBrushDirection == BRUSH_DIRECTION || pDoc->m_nBrushDirection == GRADIENT));
-	// change this to brush type later
+
 	std::random_shuffle(pointIndexes.begin(), pointIndexes.end());
 
 	Point coord;
@@ -85,10 +83,15 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 
 		if (shallUpdatePointerDir)
 		{
+			int dx;
+			int dy;
+
 			if (pDoc->m_nBrushDirection == BRUSH_DIRECTION)
 			{
 				if (prevPoint.x != target.x || prevPoint.y != target.y)
 				{
+					dx = target.x - prevPoint.x;
+					dy = target.y - prevPoint.y;
 					int newAngle = (int)(atan((double)((target.y - prevPoint.y)) / (target.x - prevPoint.x)) / 3.14159 * 180);
 					while (newAngle < 0)
 						newAngle += 180;
@@ -194,9 +197,10 @@ void PaintView::draw()
 
 	bool shallPushUndo = (eventToDo == PV_LEFT_MOUSE_DOWN || (eventToDo == PV_LEFT_MOUSE_DRAG && prevEvent == PV_LEFT_MOUSE_UP) || eventToDo == PV_NORMAL_AUTO) && !isDealingPending;
 
-	bool shallUpdatePointerDir = eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG &&
-		(((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
-		&& (m_pDoc->m_nBrushDirection == BRUSH_DIRECTION || m_pDoc->m_nBrushDirection == GRADIENT));
+	bool isUsingPointerDir = (m_pDoc->m_pCurrentBrush == ImpBrush::c_pBrushes[BRUSH_LINES] || m_pDoc->m_pCurrentBrush == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
+		&& (m_pDoc->m_nBrushDirection == BRUSH_DIRECTION || m_pDoc->m_nBrushDirection == GRADIENT);
+
+	bool shallUpdatePointerDir = eventToDo == PV_LEFT_MOUSE_DOWN || (eventToDo == PV_LEFT_MOUSE_DRAG && isUsingPointerDir);
 
 	bool shallBrush = !isDealingPending;
 
@@ -294,7 +298,7 @@ void PaintView::draw()
 				m_pDoc->m_pCurrentBrush->BrushEnd( source, target );
 				break;
 			case PV_NORMAL_AUTO:
-				doAuto(m_pDoc, drawWidth, drawHeight, startrow, m_nWindowHeight);
+				doAuto(m_pDoc, drawWidth, drawHeight, startrow, m_nWindowHeight, isUsingPointerDir);
 				break;
 			case PV_RIGHT_MOUSE_DOWN:
 				rightClickBegin.x = target.x;

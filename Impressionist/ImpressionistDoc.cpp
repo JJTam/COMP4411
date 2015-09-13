@@ -19,6 +19,8 @@
 #include "ScatteredLineBrush.h"
 #include "ScatteredPointBrush.h"
 #include "ScatteredCircleBrush.h"
+
+#include "ImageUtils.h"
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -211,49 +213,21 @@ int ImpressionistDoc::loadImage(char *iname)
 
 	////// compute gradient
 
-	m_iGradient = new int[width * height * 2];
-	memset(m_iGradient, 0, width * height * 2 * sizeof(int));
+	// temp black and white image, intensity = 0.299R + 0.587G + 0.144B
+	unsigned char* bw = ImageUtils::getSingleChannel(0.299, 0.587, 0.144, m_ucBitmap, width, height);
+
+	m_iGradient = ImageUtils::getGradientBySobel(bw, width, height);
+
+	// compute gradient magnitude
 	m_iGradientMagnitude = new int[width * height];
 	memset(m_iGradientMagnitude, 0, width * height * sizeof(int));
 
-	// short-cut to get index of (x, y)
-#define IXY(x, y) (x + (y) * width)
-	// temp black and white image, intensity = 0.299R + 0.587G + 0.144B
-	unsigned char* bw = new unsigned char[width * height];
-	for (int i = 0; i < width*height; ++i)
+	for (int i = 0; i < width * height; ++i)
 	{
-		double val = 0.299 * m_ucBitmap[i * 3]
-		             + 0.587 * m_ucBitmap[i * 3 + 1]
-		             + 0.144 * m_ucBitmap[i * 3 + 2];
-		
-		// bw[i] = (val > 255.0) ? (unsigned char)val : 255; // What I wrote first. DO NOT code when you feel tired.
-		bw[i] = (val > 255.0) ? 255 : (unsigned char)val;
+		int dx = m_iGradient[i * 2];
+		int dy = m_iGradient[i * 2 + 1];
+		m_iGradientMagnitude[i] = sqrt(dx * dx + dy * dy);
 	}
-
-	for (int y = 1; y < height - 1; ++y)
-		for (int x = 1; x < width - 1; ++x)
-		{
-			int idx = 2 * (x + y * width);
-			int dx = 0
-				+ (int)(bw[IXY(x + 1, y - 1)])
-				+ (int)(bw[IXY(x + 1, y)]) * 2
-				+ (int)(bw[IXY(x + 1, y + 1)])
-				- (int)(bw[IXY(x - 1, y - 1)])
-				- (int)(bw[IXY(x - 1, y)]) * 2
-				- (int)(bw[IXY(x - 1, y + 1)]);
-
-			int dy = 0
-				+ (int)(bw[IXY(x - 1, y - 1)])
-				+ (int)(bw[IXY(x, y - 1)]) * 2
-				+ (int)(bw[IXY(x + 1, y - 1)])
-				- (int)(bw[IXY(x - 1, y + 1)])
-				- (int)(bw[IXY(x, y + 1)]) * 2
-				- (int)(bw[IXY(x + 1, y + 1)]);
-
-			m_iGradient[idx] = dx;
-			m_iGradient[idx + 1] = dy;
-			m_iGradientMagnitude[x + y * width] = sqrt(dx * dx + dy * dy);
-		}
 
 	// release memory
 	delete bw;
@@ -262,7 +236,6 @@ int ImpressionistDoc::loadImage(char *iname)
 	m_ucEdgeBitmap = new unsigned char[width * height * 3];
 	updateEdge();
 
-#undef IXY
 	return 1;
 }
 
@@ -270,8 +243,7 @@ int ImpressionistDoc::loadAnotherImage(char *iname)
 {
 	// try to open the image to read
 	unsigned char*	data;
-	int				width,
-		height;
+	int				width, height;
 
 	if ((data = readBMP(iname, width, height)) == NULL)
 	{
@@ -289,62 +261,20 @@ int ImpressionistDoc::loadAnotherImage(char *iname)
 		return 0;
 	}
 
-
 	// release old storage
 	if (m_ucAnotherBitmap) delete[] m_ucAnotherBitmap;
 	if (m_iAnotherGradient) delete[] m_iAnotherGradient;
 
 	m_ucAnotherBitmap = data;
 
-	////// compute gradient
+	// compute gradient
+	unsigned char* bw = ImageUtils::getSingleChannel(0.299, 0.587, 0.144, m_ucAnotherBitmap, width, height);
 
-	m_iAnotherGradient = new int[width * height * 2];
-	memset(m_iAnotherGradient, 0, width * height * 2 * sizeof(int));
-
-
-	// short-cut to get index of (x, y)
-#define IXY(x, y) (x + (y) * width)
-	// temp black and white image, intensity = 0.299R + 0.587G + 0.144B
-	unsigned char* bw = new unsigned char[width * height];
-	for (int i = 0; i < width*height; ++i)
-	{
-		double val = 0.299 * m_ucAnotherBitmap[i * 3]
-			+ 0.587 * m_ucAnotherBitmap[i * 3 + 1]
-			+ 0.144 * m_ucAnotherBitmap[i * 3 + 2];
-
-		// bw[i] = (val > 255.0) ? (unsigned char)val : 255; // What I wrote first. DO NOT code when you feel tired.
-		bw[i] = (val > 255.0) ? 255 : (unsigned char)val;
-	}
-
-	for (int y = 1; y < height - 1; ++y)
-		for (int x = 1; x < width - 1; ++x)
-		{
-			int idx = 2 * (x + y * width);
-			int dx = 0
-				+ (int)(bw[IXY(x + 1, y - 1)])
-				+ (int)(bw[IXY(x + 1, y)]) * 2
-				+ (int)(bw[IXY(x + 1, y + 1)])
-				- (int)(bw[IXY(x - 1, y - 1)])
-				- (int)(bw[IXY(x - 1, y)]) * 2
-				- (int)(bw[IXY(x - 1, y + 1)]);
-
-			int dy = 0
-				+ (int)(bw[IXY(x - 1, y - 1)])
-				+ (int)(bw[IXY(x, y - 1)]) * 2
-				+ (int)(bw[IXY(x + 1, y - 1)])
-				- (int)(bw[IXY(x - 1, y + 1)])
-				- (int)(bw[IXY(x, y + 1)]) * 2
-				- (int)(bw[IXY(x + 1, y + 1)]);
-
-			m_iAnotherGradient[idx] = dx;
-			m_iAnotherGradient[idx + 1] = dy;
-		}
+	m_iAnotherGradient = ImageUtils::getGradientBySobel(bw, width, height);
 
 	// release memory
 	delete bw;
 
-
-#undef IXY
 	return 1;
 }
 //----------------------------------------------------------------
