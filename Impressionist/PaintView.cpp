@@ -41,6 +41,15 @@ PaintView::PaintView(int			x,
 	this->mode(FL_ALPHA);
 }
 
+
+int getAngle(int dx, int dy)
+{
+	int angle = (dy == 0) ? 90 : (int)(atan((double)dx / dy) / M_PI * 180);
+	while (angle < 0)
+		angle += 180;
+	return angle;
+}
+
 void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int windowHeight, bool shallUpdatePointerDir)
 {
 	ImpressionistUI* pUI = pDoc->m_pUI;
@@ -83,46 +92,35 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 
 		if (shallUpdatePointerDir)
 		{
-			int dx;
-			int dy;
+			int dx = 0;
+			int dy = 0;
 
 			if (pDoc->m_nBrushDirection == BRUSH_DIRECTION)
 			{
-				if (prevPoint.x != target.x || prevPoint.y != target.y)
-				{
-					dx = target.x - prevPoint.x;
-					dy = target.y - prevPoint.y;
-					int newAngle = (int)(atan((double)((target.y - prevPoint.y)) / (target.x - prevPoint.x)) / 3.14159 * 180);
-					while (newAngle < 0)
-						newAngle += 180;
-
-					pDoc->m_pUI->setAngle(newAngle);
-				}
+				dx = target.x - prevPoint.x;
+				dy = target.y - prevPoint.y;
 				prevPoint.x = target.x;
 				prevPoint.y = target.y;
 			}
-			if (pDoc->m_pUI->getAnotherGradient() && pDoc->m_ucAnotherBitmap)
-			{
-				int idx = 2 * (target.x + pDoc->m_nPaintWidth * target.y);
-				int dx = pDoc->m_iAnotherGradient[idx];
-				int dy = pDoc->m_iAnotherGradient[idx + 1];
-				int newAngle = (dy == 0) ? 90 : (int)(atan(dx / dy) / 3.14159 * 180);
-				while (newAngle < 0)
-					newAngle += 180;
-
-				pDoc->m_pUI->setAngle(newAngle);
-			}
 			else
 			{
-				int idx = 2 * (target.x + pDoc->m_nPaintWidth * target.y);
-				int dx = pDoc->m_iGradient[idx];
-				int dy = pDoc->m_iGradient[idx + 1];
-				int newAngle = (dy == 0) ? 90 : (int)(atan(dx / dy) / 3.14159 * 180);
-				while (newAngle < 0)
-					newAngle += 180;
+				if (pDoc->m_pUI->getAnotherGradient() && pDoc->m_ucAnotherBitmap)
+				{
 
-				pDoc->m_pUI->setAngle(newAngle);
+					int idx = 2 * (target.x + pDoc->m_nPaintWidth * target.y);
+					dx = pDoc->m_iAnotherGradient[idx];
+					dy = pDoc->m_iAnotherGradient[idx + 1];
+				}
+				else
+				{
+					int idx = 2 * (target.x + pDoc->m_nPaintWidth * target.y);
+					dx = pDoc->m_iGradient[idx];
+					dy = pDoc->m_iGradient[idx + 1];
+				}
 			}
+
+			if (dx != 0 || dy != 0)
+				pDoc->m_pUI->setAngle(getAngle(dx, dy));
 		}
 		else if (AttrRand)
 		{
