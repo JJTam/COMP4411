@@ -27,6 +27,7 @@ public:
 	void	setUI(ImpressionistUI* ui);		// Assign the UI to use
 
 	int		loadImage(char *iname);			// called by the UI to load image
+	int		loadAnotherImage(char *iname);
 	int		saveImage(char *iname);			// called by the UI to save image
 
 
@@ -68,6 +69,9 @@ public:
 	unsigned char*  m_ucEdgeBitmap;
 	int* m_iGradient;
 	int* m_iGradientMagnitude;
+
+	unsigned char*	m_ucAnotherBitmap;
+	int* m_iAnotherGradient;
 
 	// Undo
 	std::list<unsigned char*> m_lUndoList;

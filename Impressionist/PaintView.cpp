@@ -12,6 +12,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 #ifndef WIN32
 #define min(a, b)	( ( (a)<(b) ) ? (a) : (b) )
@@ -40,7 +41,16 @@ PaintView::PaintView(int			x,
 	this->mode(FL_ALPHA);
 }
 
-void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int windowHeight)
+
+int getAngle(int dx, int dy)
+{
+	int angle = (dy == 0) ? 90 : (int)(atan((double)dx / dy) / M_PI * 180);
+	while (angle < 0)
+		angle += 180;
+	return angle;
+}
+
+void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int windowHeight, bool shallUpdatePointerDir)
 {
 	ImpressionistUI* pUI = pDoc->m_pUI;
 	ImpBrush* pBrush = pDoc->m_pCurrentBrush;
@@ -62,12 +72,16 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 		pointIndexes.push_back(i);
 	}
 
-	// change this to brush type later
 	std::random_shuffle(pointIndexes.begin(), pointIndexes.end());
 
 	Point coord;
 	Point source;
 	Point target;
+	Point prevPoint;
+	int currentAngle = oAngle;
+
+	prevPoint.x = pointIndexes[0] % x_counts * Spacing + Spacing / 2;
+	prevPoint.y = pointIndexes[0] / x_counts * Spacing + Spacing / 2;
 	for (int i = 0; i < total_points; ++i)
 	{
 		coord.x = pointIndexes[i] % x_counts * Spacing + Spacing / 2;
@@ -77,11 +91,47 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 		target.x = coord.x;
 		target.y = windowHeight - coord.y;
 
+		if (shallUpdatePointerDir)
+		{
+			int dx = 0;
+			int dy = 0;
+
+			if (pDoc->m_nBrushDirection == BRUSH_DIRECTION)
+			{
+				dx = target.x - prevPoint.x;
+				dy = target.y - prevPoint.y;
+				prevPoint.x = target.x;
+				prevPoint.y = target.y;
+			}
+			else
+			{
+				if (pDoc->m_pUI->getAnotherGradient() && pDoc->m_ucAnotherBitmap)
+				{
+
+					int idx = 2 * (target.x + pDoc->m_nPaintWidth * target.y);
+					dx = pDoc->m_iAnotherGradient[idx];
+					dy = pDoc->m_iAnotherGradient[idx + 1];
+				}
+				else
+				{
+					int idx = 2 * (target.x + pDoc->m_nPaintWidth * target.y);
+					dx = pDoc->m_iGradient[idx];
+					dy = pDoc->m_iGradient[idx + 1];
+				}
+			}
+
+			if (dx != 0 || dy != 0)
+			{
+				currentAngle = getAngle(dx, dy);
+				pDoc->m_pUI->setAngle(currentAngle);
+			}
+		}
+		
 		if (AttrRand)
 		{
 			pUI->setSize(oSize + irand(10) - 5);
 			pUI->setLineWidth(oLineWidth + irand(10) - 5);
-			pUI->setAngle(oAngle + irand(10) - 5);
+			pUI->setAngle(currentAngle + irand(10) - 5);
 		}
 		pBrush->BrushBegin(source, target);
 		pBrush->BrushEnd(source, target);
@@ -150,9 +200,10 @@ void PaintView::draw()
 
 	bool shallPushUndo = (eventToDo == PV_LEFT_MOUSE_DOWN || (eventToDo == PV_LEFT_MOUSE_DRAG && prevEvent == PV_LEFT_MOUSE_UP) || eventToDo == PV_NORMAL_AUTO) && !isDealingPending;
 
-	bool shallUpdatePointerDir = eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG &&
-		(((m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_LINES] || (m_pDoc->m_pCurrentBrush) == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
-		&& m_pDoc->m_nBrushDirection == BRUSH_DIRECTION);
+	bool isUsingPointerDir = (m_pDoc->m_pCurrentBrush == ImpBrush::c_pBrushes[BRUSH_LINES] || m_pDoc->m_pCurrentBrush == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
+		&& (m_pDoc->m_nBrushDirection == BRUSH_DIRECTION || m_pDoc->m_nBrushDirection == GRADIENT);
+
+	bool shallUpdatePointerDir = (eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG) && isUsingPointerDir;
 
 	bool shallBrush = !isDealingPending;
 
@@ -193,16 +244,35 @@ void PaintView::draw()
 
 		if (shallUpdatePointerDir)
 		{
-			if (prevPoint.x != target.x || prevPoint.y != target.y)
-			{
-				int newAngle = (int)(atan((double)((target.y - prevPoint.y)) / (target.x - prevPoint.x)) / 3.14159 * 180);
-				while (newAngle < 0)
-					newAngle += 180;
+			int dx = 0;
+			int dy = 0;
 
-				m_pDoc->m_pUI->setAngle(newAngle);
+			if (m_pDoc->m_nBrushDirection == BRUSH_DIRECTION)
+			{
+				dx = target.x - prevPoint.x;
+				dy = target.y - prevPoint.y;
+				prevPoint.x = target.x;
+				prevPoint.y = target.y;
 			}
-			prevPoint.x = target.x;
-			prevPoint.y = target.y;
+			else
+			{
+				if (m_pDoc->m_pUI->getAnotherGradient() && m_pDoc->m_ucAnotherBitmap)
+				{
+
+					int idx = 2 * (target.x + m_pDoc->m_nPaintWidth * target.y);
+					dx = m_pDoc->m_iAnotherGradient[idx];
+					dy = m_pDoc->m_iAnotherGradient[idx + 1];
+				}
+				else
+				{
+					int idx = 2 * (target.x + m_pDoc->m_nPaintWidth * target.y);
+					dx = m_pDoc->m_iGradient[idx];
+					dy = m_pDoc->m_iGradient[idx + 1];
+				}
+			}
+
+			if (dx != 0 || dy != 0)
+				m_pDoc->m_pUI->setAngle(getAngle(dx, dy));
 		}
 
 		if (shallBrush)
@@ -222,7 +292,7 @@ void PaintView::draw()
 				m_pDoc->m_pCurrentBrush->BrushEnd( source, target );
 				break;
 			case PV_NORMAL_AUTO:
-				doAuto(m_pDoc, drawWidth, drawHeight, startrow, m_nWindowHeight);
+				doAuto(m_pDoc, drawWidth, drawHeight, startrow, m_nWindowHeight, isUsingPointerDir);
 				break;
 			case PV_RIGHT_MOUSE_DOWN:
 				rightClickBegin.x = target.x;
