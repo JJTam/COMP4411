@@ -19,6 +19,7 @@
 #include "ScatteredLineBrush.h"
 #include "ScatteredPointBrush.h"
 #include "ScatteredCircleBrush.h"
+#include "CurvedBrush.h"
 
 #include "ImageUtils.h"
 #include <vector>
@@ -62,6 +63,8 @@ ImpressionistDoc::ImpressionistDoc()
 		= new ScatteredLineBrush( this, "Scattered Lines" );
 	ImpBrush::c_pBrushes[BRUSH_SCATTERED_CIRCLES]	
 		= new ScatteredCircleBrush(this, "Scattered Circles");
+	ImpBrush::c_pBrushes[BRUSH_CURVED]
+		= new CurvedBrush(this, "Scattered Circles");
 
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
