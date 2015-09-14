@@ -31,7 +31,7 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 		return;
 	}
 
-	radius = 8.0;
+	radius = pDoc->getSize();
 	minStrokeLength=4;
 	maxStrokeLength=16;
 	curvatureFilter=0.9;
@@ -78,8 +78,8 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 		double gx = pDoc->m_iGradient[2 * (y*pDoc->m_nWidth + x)];
 		double gy = pDoc->m_iGradient[2 * (y*pDoc->m_nWidth + x) + 1];
 		// Compute normalize direction
-		double dx = -gy / sqrt(gx*gx + gy*gy);
-		double dy = gx / sqrt(gx*gx + gy*gy);
+		double dx = -gy / sqrt(gx * gx + gy * gy);
+		double dy = gx / sqrt(gx * gx + gy * gy);
 
 		// If necessary, reverse direction
 		if (lastDx * dx + lastDy * dy < 0)
@@ -97,10 +97,14 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 		dy = gy;
 		x = x + radius * dx;
 		y = y + radius * dy;
-		if (x < 0)x = 0;
-		else if (x > (pDoc->m_nWidth - 1)) x = (pDoc->m_nWidth - 1);
-		if (y < 0)y = 0;
-		else if (y >(pDoc->m_nHeight - 1)) x = (pDoc->m_nHeight - 1);
+		if (x < 0)
+			x = 0;
+		else if (x >= pDoc->m_nWidth) 
+			x = (pDoc->m_nWidth - 1);
+		if (y < 0)
+			y = 0;
+		else if (y >= pDoc->m_nHeight)
+			y = (pDoc->m_nHeight - 1);
 		lastDx = dx;
 		lastDy = dy;
 		glBegin(GL_POLYGON);

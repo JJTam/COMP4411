@@ -114,6 +114,7 @@ void ImpressionistDoc::setBrushType(int type)
 	case BRUSH_CIRCLES:
 	case BRUSH_SCATTERED_POINTS:
 	case BRUSH_SCATTERED_CIRCLES:
+	case BRUSH_CURVED:
 		m_pUI->m_BrushSizeSlider->activate();
 		m_pUI->m_AlphaSlider->activate();
 		break;
