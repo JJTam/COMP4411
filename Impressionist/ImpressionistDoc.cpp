@@ -341,6 +341,16 @@ int ImpressionistDoc::autoDraw()
 //------------------------------------------------------------------
 GLubyte* ImpressionistDoc::GetOriginalPixel( int x, int y )
 {
+	unsigned char* bitmap;
+	if (m_nDisplayMode == DOC_DISPLAY_ANOTHER && m_ucAnotherBitmap)
+	{
+		bitmap = m_ucAnotherBitmap;
+	}
+	else
+	{
+		bitmap = m_ucBitmap;
+	}
+
 	if ( x < 0 ) 
 		x = 0;
 	else if ( x >= m_nWidth ) 
@@ -351,7 +361,7 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( int x, int y )
 	else if ( y >= m_nHeight ) 
 		y = m_nHeight-1;
 
-	return (GLubyte*)(m_ucBitmap + 3 * (y*m_nWidth + x));
+	return (GLubyte*)(bitmap + 3 * (y*m_nWidth + x));
 }
 
 //----------------------------------------------------------------
@@ -428,6 +438,11 @@ void ImpressionistDoc::setDisplayMode(int mode)
 	switch (mode)
 	{
 	case DOC_DISPLAY_ANOTHER:
+		if (!m_ucAnotherBitmap)
+		{
+			fl_alert("Please load another bitmap first.");
+			mode = DOC_DISPLAY_ORIGINAL;
+		}
 	case DOC_DISPLAY_EDGE:
 	case DOC_DISPLAY_ORIGINAL:
 		m_nDisplayMode = mode;

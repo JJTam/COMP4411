@@ -75,6 +75,9 @@ void OriginalView::draw()
 		case DOC_DISPLAY_EDGE:
 			bitstart = m_pDoc->m_ucEdgeBitmap + bitstartOffset;
 			break;
+		case DOC_DISPLAY_ANOTHER:
+			bitstart = m_pDoc->m_ucAnotherBitmap + bitstartOffset;
+			break;
 		default:
 			bitstart = m_pDoc->m_ucBitmap + bitstartOffset;
 			break;
