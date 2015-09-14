@@ -179,7 +179,14 @@ void ImpressionistUI::cb_load_image(Fl_Menu_* o, void* v)
 
 	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName() );
 	if (newfile != NULL) {
-		pDoc->loadImage(newfile);
+		if ((int)v == 1)
+		{
+			pDoc->loadImage(newfile, true);
+		}
+		else
+		{
+			pDoc->loadImage(newfile, false);
+		}
 	}
 }
 
@@ -515,11 +522,12 @@ void ImpressionistUI::setEdgeThreshold(int value)
 // Main menu definition
 Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
-		{ "&Load Image...",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image },
-		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image },
-		{ "&Brushes...",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
+		{ "&Load Image",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image, (void*)0 },
+		{ "Load &Mural Image", FL_ALT + 'm', (Fl_Callback *)ImpressionistUI::cb_load_image, (void*)1 },
+		{ "&Save Image",	FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image },
+		{ "&Brushes",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
 		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
-		{ "Load &Another Image...", FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_another_image },
+		{ "Load &Another Image", FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_another_image },
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
 		{ 0 },
 

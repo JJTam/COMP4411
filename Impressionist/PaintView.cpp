@@ -21,7 +21,7 @@
 
 extern int irand(int);
 
-static int		eventToDo;
+static int		eventToDo = PV_LEFT_MOUSE_UP;
 static int		isAnEvent=0;
 static Point    coord;
 static Point    rightClickBegin;

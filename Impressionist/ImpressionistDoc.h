@@ -26,7 +26,7 @@ public:
 
 	void	setUI(ImpressionistUI* ui);		// Assign the UI to use
 
-	int		loadImage(char *iname);			// called by the UI to load image
+	int		loadImage(char *iname, bool isMural);			// called by the UI to load image
 	int		loadAnotherImage(char *iname);
 	int		saveImage(char *iname);			// called by the UI to save image
 

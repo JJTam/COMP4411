@@ -151,7 +151,7 @@ double ImpressionistDoc::getAlpha()
 // This is called by the UI when the load image button is 
 // pressed.
 //---------------------------------------------------------
-int ImpressionistDoc::loadImage(char *iname) 
+int ImpressionistDoc::loadImage(char *iname, bool isMural) 
 {
 	// try to open the image to read
 	unsigned char*	data;
@@ -164,6 +164,16 @@ int ImpressionistDoc::loadImage(char *iname)
 		return 0;
 	}
 
+	// require the mural image to have the same dimension
+	if (isMural)
+	{
+		if (width != m_nWidth || height != m_nHeight)
+		{
+			fl_alert("Mural image shall have the same dimension as the original image.");
+			return 0;
+		}
+	}
+
 	// reflect the fact of loading the new image
 	m_nWidth		= width;
 	m_nPaintWidth	= width;
@@ -172,44 +182,12 @@ int ImpressionistDoc::loadImage(char *iname)
 
 	// release old storage
 	if ( m_ucBitmap ) delete [] m_ucBitmap;
-	if ( m_ucPainting ) delete [] m_ucPainting;
-	if (m_ucPreservedPainting) delete[] m_ucPreservedPainting;
 	if (m_iGradient) delete[] m_iGradient;
 	if (m_iGradientMagnitude) delete[] m_iGradientMagnitude;
 	if (m_ucEdgeBitmap) delete[] m_ucEdgeBitmap;
 
+	// setup new original image
 	m_ucBitmap		= data;
-
-	// allocate space for draw view
-	m_ucPainting = new unsigned char[width*height * 4];
-	memset(m_ucPainting, 0, width*height * 4);
-
-	m_ucPreservedPainting = new unsigned char[width*height * 4];
-	memset(m_ucPreservedPainting, 0, width*height * 4);
-
-	m_pUI->m_mainWindow->resize(m_pUI->m_mainWindow->x(), 
-								m_pUI->m_mainWindow->y(), 
-								width*2, 
-								height+25);
-
-	// On some platforms, the width and height both has 8 pixels missing for some reason
-	int widthDelta = ABS(width * 2 - m_pUI->m_mainWindow->w());
-	int heightDelta = ABS(height + 25 - m_pUI->m_mainWindow->h());
-	if (widthDelta > 0 || heightDelta > 0)
-	{
-		m_pUI->m_mainWindow->resize(m_pUI->m_mainWindow->x(),
-			m_pUI->m_mainWindow->y(),
-			width * 2 + widthDelta,
-			height + 25 + heightDelta);
-	}
-
-	// display it on origView
-	m_pUI->m_origView->resizeWindow(width, height);	
-	m_pUI->m_origView->refresh();
-
-	// refresh paint view as well
-	m_pUI->m_paintView->resizeWindow(width, height);	
-	m_pUI->m_paintView->refresh();
 
 	////// compute gradient
 
@@ -235,6 +213,46 @@ int ImpressionistDoc::loadImage(char *iname)
 	// update edge
 	m_ucEdgeBitmap = new unsigned char[width * height * 3];
 	updateEdge();
+
+	// conditionally clear canvas and resize window
+	if (!isMural)
+	{
+		// release memory
+		if (m_ucPainting) delete[] m_ucPainting;
+		if (m_ucPreservedPainting) delete[] m_ucPreservedPainting;
+		m_lUndoList.clear();
+
+		// allocate space for draw view
+		m_ucPainting = new unsigned char[width*height * 4];
+		memset(m_ucPainting, 0, width*height * 4);
+
+		m_ucPreservedPainting = new unsigned char[width*height * 4];
+		memset(m_ucPreservedPainting, 0, width*height * 4);
+
+		// Resize the window
+		m_pUI->m_mainWindow->resize(m_pUI->m_mainWindow->x(),
+			m_pUI->m_mainWindow->y(),
+			width * 2,
+			height + 25);
+
+		// On some platforms, the width and height both has 8 pixels missing for some reason
+		int widthDelta = ABS(width * 2 - m_pUI->m_mainWindow->w());
+		int heightDelta = ABS(height + 25 - m_pUI->m_mainWindow->h());
+		if (widthDelta > 0 || heightDelta > 0)
+		{
+			m_pUI->m_mainWindow->resize(m_pUI->m_mainWindow->x(),
+				m_pUI->m_mainWindow->y(),
+				width * 2 + widthDelta,
+				height + 25 + heightDelta);
+		}
+
+		// Resize windows
+		m_pUI->m_origView->resizeWindow(width, height);
+		m_pUI->m_paintView->resizeWindow(width, height);
+	}
+
+	m_pUI->m_origView->refresh();
+	m_pUI->m_paintView->refresh();
 
 	return 1;
 }
@@ -341,16 +359,6 @@ int ImpressionistDoc::autoDraw()
 //------------------------------------------------------------------
 GLubyte* ImpressionistDoc::GetOriginalPixel( int x, int y )
 {
-	unsigned char* bitmap;
-	if (m_nDisplayMode == DOC_DISPLAY_ANOTHER && m_ucAnotherBitmap)
-	{
-		bitmap = m_ucAnotherBitmap;
-	}
-	else
-	{
-		bitmap = m_ucBitmap;
-	}
-
 	if ( x < 0 ) 
 		x = 0;
 	else if ( x >= m_nWidth ) 
@@ -361,7 +369,7 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( int x, int y )
 	else if ( y >= m_nHeight ) 
 		y = m_nHeight-1;
 
-	return (GLubyte*)(bitmap + 3 * (y*m_nWidth + x));
+	return (GLubyte*)(m_ucBitmap + 3 * (y*m_nWidth + x));
 }
 
 //----------------------------------------------------------------
