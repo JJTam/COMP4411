@@ -29,6 +29,7 @@
 #define DESTROY(p)	{  if ((p)!=NULL) {delete [] p; p=NULL; } }
 #define ABS(x) (x >= 0 ? x : -x)
 extern int irand(int);
+
 ImpressionistDoc::ImpressionistDoc() 
 {
 	// Set NULL image name as init. 
@@ -197,6 +198,12 @@ int ImpressionistDoc::loadImage(char *iname, bool isMural)
 
 	// temp black and white image, intensity = 0.299R + 0.587G + 0.144B
 	unsigned char* bw = ImageUtils::getSingleChannel(0.299, 0.587, 0.144, m_ucBitmap, width, height);
+	unsigned char* bwBlurred = ImageUtils::fastGaussianBlur(1, bw, width, height);
+
+	/*
+	static double kernel[49] = { 0.005084, 0.009377, 0.013539, 0.015302, 0.013539, 0.009377, 0.005084, 0.009377, 0.017296, 0.024972, 0.028224, 0.024972, 0.017296, 0.009377, 0.013539, 0.024972, 0.036054, 0.040749, 0.036054, 0.024972, 0.013539, 0.015302, 0.028224, 0.040749, 0.046056, 0.040749, 0.028224, 0.015302, 0.013539, 0.024972, 0.036054, 0.040749, 0.036054, 0.024972, 0.013539, 0.009377, 0.017296, 0.024972, 0.028224, 0.024972, 0.017296, 0.009377, 0.005084, 0.009377, 0.013539, 0.015302, 0.013539, 0.009377, 0.005084 };
+	unsigned char* bwBlurred = ImageUtils::getFilteredImage(kernel, 7, 7, bw, width, height, 0, 0, 0, 0, 1, IMAGE_UTIL_WRAP_BOUNDARY);
+	*/
 
 	m_iGradient = ImageUtils::getGradientBySobel(bw, width, height);
 
@@ -213,7 +220,8 @@ int ImpressionistDoc::loadImage(char *iname, bool isMural)
 
 	// release memory
 	delete bw;
-
+    delete bwBlurred;
+    
 	// update edge
 	m_ucEdgeBitmap = new unsigned char[width * height * 3];
 	updateEdge();
@@ -291,11 +299,13 @@ int ImpressionistDoc::loadAnotherImage(char *iname)
 
 	// compute gradient
 	unsigned char* bw = ImageUtils::getSingleChannel(0.299, 0.587, 0.144, m_ucAnotherBitmap, width, height);
+	unsigned char* bwBlurred = ImageUtils::fastGaussianBlur(1, bw, width, height);
 
 	m_iAnotherGradient = ImageUtils::getGradientBySobel(bw, width, height);
 
 	// release memory
 	delete bw;
+	delete bwBlurred;
 
 	return 1;
 }
