@@ -173,9 +173,15 @@ ImpressionistUI* ImpressionistUI::whoami(Fl_Menu_* o)
 // Brings up a file chooser and then loads the chosen image
 // This is called by the UI when the load image menu item is chosen
 //------------------------------------------------------------------
-void ImpressionistUI::cb_load_image(Fl_Menu_* o, void* v) 
+void ImpressionistUI::cb_load_image(Fl_Menu_* o, void* v)
 {
-	ImpressionistDoc *pDoc=whoami(o)->getDocument();
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
+
+	if ((int)v == 1 && !pDoc->m_ucBitmap)
+	{
+		fl_alert("You must load an image before loading a mural image.");
+		return;
+	}
 
 	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName() );
 	if (newfile != NULL) {
