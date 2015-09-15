@@ -146,20 +146,45 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 
 void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 {
+	static double kernel[25];
+	static double e = 2.718281828;
+	static double prevSigma = -1;
+
 	ImpressionistUI* pUI = pDoc->m_pUI;
 	CurvedBrush* pBrush = (CurvedBrush*)ImpBrush::c_pBrushes[BRUSH_CURVED];
 	
 	// Apply Gaussian blur
-	static double kernel[25] = {
-		0.000106788745393375, 0.002144909288579413, 0.005830467942838339, 0.002144909288579413, 0.000106788745393375,
-		0.002144909288579413, 0.043081654712647834, 0.11710807914533564, 0.043081654712647834, 0.002144909288579413,
-		0.005830467942838339, 0.11710807914533564, 0.3183327635065042, 0.11710807914533564, 0.005830467942838339,
-		0.002144909288579413, 0.043081654712647834, 0.11710807914533564, 0.043081654712647834, 0.002144909288579413,
-		0.000106788745393375, 0.002144909288579413, 0.005830467942838339, 0.002144909288579413, 0.000106788745393375
-	};
-	unsigned char* blurred = ImageUtils::getFilteredImage(kernel, 5, 5, pDoc->m_ucBitmap, pDoc->m_nWidth, pDoc->m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
-	pBrush->blurredSource = blurred;
+	if (prevSigma != pUI->getBlurFactor() || pDoc->m_ucBitmapBlurred == NULL)
+	{
+		prevSigma = pUI->getBlurFactor();
+		if (pDoc->m_ucBitmapBlurred != NULL)
+		{
+			delete[] pDoc->m_ucBitmapBlurred;
+		}
 
+		if (prevSigma == 0.0)
+		{
+			pDoc->m_ucBitmapBlurred = new unsigned char[pDoc->m_nWidth * pDoc->m_nHeight * 3];
+			memcpy(pDoc->m_ucBitmapBlurred, pDoc->m_ucBitmap, pDoc->m_nWidth * pDoc->m_nHeight * 3);
+		}
+		else
+		{
+			for (int y = 0; y < 5; ++y)
+				for (int x = 0; x < 5; ++x)
+				{
+					int dx = x - 2;
+					int dy = y - 2;
+					double t = pow(e, -((dx * dx + dy * dy) / (2 * prevSigma)));
+					kernel[x + y * 5] = t / (sqrt(2 * M_PI * prevSigma));
+				}
+			pDoc->m_ucBitmapBlurred = ImageUtils::getFilteredImage(kernel, 5, 5, pDoc->m_ucBitmap, pDoc->m_nWidth, pDoc->m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
+			if (pDoc->getDisplayMode() == DOC_DISPLAY_BLURRED)
+			{
+				pUI->m_origView->refresh();
+			}
+		}
+	}
+	
 	// Create a pointwise difference image
 	double* differenceMap = new double[width*height];
 	for (int x = 0; x < width; x++)
@@ -168,7 +193,7 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 		{
 			GLubyte originColor[3];
 			GLubyte canvasColor[3];
-			memcpy(originColor, (void*)(blurred + 3 * (y * width + x)), 3);
+			memcpy(originColor, (void*)(pDoc->m_ucBitmapBlurred + 3 * (y * width + x)), 3);
 			memcpy(canvasColor, (GLubyte*)(pDoc->m_ucPainting + 4 * (y*pDoc->m_nWidth + x)), 3);
 
 			double currentDiff = sqrt(pow(originColor[0] - canvasColor[0], 2) + pow(originColor[1] - canvasColor[1], 2) + pow(originColor[2] - canvasColor[2], 2));

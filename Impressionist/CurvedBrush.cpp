@@ -36,7 +36,7 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 	maxStrokeLength = pDoc->m_pUI->getMaxStrokeLength();
 	curvatureFilter = pDoc->m_pUI->getCurvatureFilter();
 
-	unsigned char* imageSource = (blurredSource == NULL) ? pDoc->m_ucBitmap : blurredSource;
+	unsigned char* imageSource = (pDoc->m_ucBitmapBlurred == NULL) ? pDoc->m_ucBitmap : pDoc->m_ucBitmapBlurred;
 
 	glBegin(GL_POLYGON);
 	//SetColor(source);
@@ -46,9 +46,9 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 	color[3] = pDoc->getAlpha() * 255;
 	glColor4ubv(color);
 
-	for (int i = 0; i < 360; ++i)
+	for (int i = 0; i < 36; ++i)
 	{
-		double theta = i * 3.14159 / 180;
+		double theta = i * 10 * 3.14159 / 180;
 		glVertex2d(target.x - radius * cos(theta), target.y - radius * sin(theta));
 	}
 	glEnd();
@@ -121,9 +121,9 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 		memcpy(color, (void*)(imageSource + (source.y*pDoc->m_nWidth + source.x) * 3), 3);
 		color[3] = pDoc->getAlpha() * 255;
 		glColor4ubv(color);
-		for (int i = 0; i < 360; ++i)
+		for (int i = 0; i < 36; ++i)
 		{
-			double theta = i * 3.14159 / 180;
+			double theta = i * 10 * 3.14159 / 180;
 			glVertex2d(x - radius * cos(theta), y - radius * sin(theta));
 		}
 		glEnd();

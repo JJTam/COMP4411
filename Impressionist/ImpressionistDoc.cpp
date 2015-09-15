@@ -46,6 +46,7 @@ ImpressionistDoc::ImpressionistDoc()
 	m_iAnotherGradient = NULL;
 	m_iGradientMagnitude = NULL;
 	m_ucEdgeBitmap = NULL;
+	m_ucBitmapBlurred = NULL;
 
 	// create one instance of each brush
 	ImpBrush::c_nBrushCount	= NUM_BRUSH_TYPE;
@@ -186,10 +187,12 @@ int ImpressionistDoc::loadImage(char *iname, bool isMural)
 	m_nPaintHeight	= height;
 
 	// release old storage
-	if ( m_ucBitmap ) delete [] m_ucBitmap;
+	if (m_ucBitmap) delete [] m_ucBitmap;
 	if (m_iGradient) delete[] m_iGradient;
 	if (m_iGradientMagnitude) delete[] m_iGradientMagnitude;
 	if (m_ucEdgeBitmap) delete[] m_ucEdgeBitmap;
+	if (m_ucBitmapBlurred) delete[] m_ucBitmapBlurred;
+	m_ucBitmapBlurred = NULL;
 
 	// setup new original image
 	m_ucBitmap		= data;
@@ -467,6 +470,12 @@ void ImpressionistDoc::setDisplayMode(int mode)
 		if (!m_ucAnotherBitmap)
 		{
 			fl_alert("Please load another bitmap first.");
+			mode = DOC_DISPLAY_ORIGINAL;
+		}
+	case DOC_DISPLAY_BLURRED:
+		if (!m_ucBitmapBlurred)
+		{
+			fl_alert("The bitmap has not been blurred yet.");
 			mode = DOC_DISPLAY_ORIGINAL;
 		}
 	case DOC_DISPLAY_EDGE:

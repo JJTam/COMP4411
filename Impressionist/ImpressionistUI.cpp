@@ -608,6 +608,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ "&Original", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_ORIGINAL },
 		{ "&Edge", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_EDGE },
 		{ "&Another", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_ANOTHER },
+		{ "Blurred (for Paintly)", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_BLURRED },
 		{ 0 },
 
 	{ "&Help",		0, 0, 0, FL_SUBMENU },
@@ -883,7 +884,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_BlurFactorSlider->labelsize(12);
 		m_BlurFactorSlider->minimum(0.0);
 		m_BlurFactorSlider->maximum(1.0);
-		m_BlurFactorSlider->step(0.01);
+		m_BlurFactorSlider->step(0.05);
 		m_BlurFactorSlider->value(m_dBlurFactor);
 		m_BlurFactorSlider->align(FL_ALIGN_RIGHT);
 		m_BlurFactorSlider->callback(cb_BlurFactorSlides);

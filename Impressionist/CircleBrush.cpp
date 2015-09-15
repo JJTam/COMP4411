@@ -32,9 +32,9 @@ void CircleBrush::BrushMove(const Point source, const Point target)
 	glBegin(GL_POLYGON);
 	SetColor(source);
 	
-	for (int i = 0; i < 360; ++i)
+	for (int i = 0; i < 36; ++i)
 	{
-		double theta = i * 3.14159 / 180;
+		double theta = i * 10 * 3.14159 / 180;
 		glVertex2d(target.x - radius * cos(theta), target.y - radius * sin(theta));
 	}
 
