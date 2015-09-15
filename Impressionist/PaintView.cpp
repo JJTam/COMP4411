@@ -9,6 +9,8 @@
 #include "impressionistUI.h"
 #include "paintview.h"
 #include "ImpBrush.h"
+#include "ImageUtils.h"
+#include "CurvedBrush.h"
 #include <cmath>
 #include <vector>
 #include <algorithm>
@@ -142,6 +144,98 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 	pUI->setAngle(oAngle);
 }
 
+void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
+{
+	ImpressionistUI* pUI = pDoc->m_pUI;
+	CurvedBrush* pBrush = (CurvedBrush*)ImpBrush::c_pBrushes[BRUSH_CURVED];
+	
+	// Apply Gaussian blur
+	static double kernel[25] = {
+		0.000106788745393375, 0.002144909288579413, 0.005830467942838339, 0.002144909288579413, 0.000106788745393375,
+		0.002144909288579413, 0.043081654712647834, 0.11710807914533564, 0.043081654712647834, 0.002144909288579413,
+		0.005830467942838339, 0.11710807914533564, 0.3183327635065042, 0.11710807914533564, 0.005830467942838339,
+		0.002144909288579413, 0.043081654712647834, 0.11710807914533564, 0.043081654712647834, 0.002144909288579413,
+		0.000106788745393375, 0.002144909288579413, 0.005830467942838339, 0.002144909288579413, 0.000106788745393375
+	};
+	unsigned char* blurred = ImageUtils::getFilteredImage(kernel, 5, 5, pDoc->m_ucBitmap, pDoc->m_nWidth, pDoc->m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
+	pBrush->blurredSource = blurred;
+
+	// Create a pointwise difference image
+	double* differenceMap = new double[width*height];
+	for (int x = 0; x < width; x++)
+	{
+		for (int y = 0; y < height; y++)
+		{
+			GLubyte originColor[3];
+			GLubyte canvasColor[3];
+			memcpy(originColor, (void*)(blurred + 3 * (y * width + x)), 3);
+			memcpy(canvasColor, (GLubyte*)(pDoc->m_ucPainting + 4 * (y*pDoc->m_nWidth + x)), 3);
+
+			double currentDiff = sqrt(pow(originColor[0] - canvasColor[0], 2) + pow(originColor[1] - canvasColor[1], 2) + pow(originColor[2] - canvasColor[2], 2));
+			differenceMap[x + y*width] = currentDiff;
+		}
+
+	}
+	std::vector<int> pointIndexes;
+
+	// Get parameters
+	int threshold = pDoc->m_pUI->getThreshold();
+	double gridSize = pDoc->m_pUI->getGridSize();
+	int grid = gridSize * pUI->getSize();
+
+	for (int x = 0 + grid/2; x < width - grid/2; x += grid)
+	{
+		for (int y = 0 + grid/2; y < height - grid/2; y += grid)
+		{
+			// Sum the error near (x,y)
+			double areaError = 0;
+			for (int i = x - grid / 2; i < x + grid / 2 + 1; i++)
+			{
+				for (int j = y - grid / 2; j < y + grid / 2 + 1; j++)
+				{
+					areaError += differenceMap[i + j*width];
+				}
+			}
+			areaError /= pow(2 * (grid / 2) + 1, 2);
+
+			if (areaError > threshold)
+			{
+				// Find the largest error point
+
+				int maxX = x - grid / 2;
+				int maxY = y - grid / 2;
+				double maxError = differenceMap[maxX + maxY*width];
+
+				for (int i = x - grid / 2; i < x + grid / 2 + 1; i++)
+				{
+					for (int j = y - grid / 2; j < y + grid / 2 + 1; j++)
+					{
+						if (maxError < differenceMap[i + j*width]);
+						{
+							maxX = i;
+							maxY = j;
+							maxError = differenceMap[i + j*width];
+						}
+					}
+				}
+				pointIndexes.push_back(maxX + maxY*width);
+			}
+		}
+	}
+	delete differenceMap;
+
+	// DO the painting
+	std::random_shuffle(pointIndexes.begin(), pointIndexes.end());
+	for (int i = 0; i < pointIndexes.size(); ++i)
+	{
+		Point currentPoint;
+		currentPoint.x = pointIndexes[i] % width;
+		currentPoint.y = pointIndexes[i] / width;
+		pBrush->BrushBegin(currentPoint, currentPoint);
+		pBrush->BrushEnd(currentPoint, currentPoint);
+
+	}
+}
 void PaintView::draw()
 {
 	bool shallDrawBackground = m_pDoc->m_pUI->getBackground();
@@ -198,7 +292,7 @@ void PaintView::draw()
 
 	bool shallRestoreDrawing = shallDrawContent;
 
-	bool shallPushUndo = (eventToDo == PV_LEFT_MOUSE_DOWN || (eventToDo == PV_LEFT_MOUSE_DRAG && prevEvent == PV_LEFT_MOUSE_UP) || eventToDo == PV_NORMAL_AUTO) && !isDealingPending;
+	bool shallPushUndo = (eventToDo == PV_LEFT_MOUSE_DOWN || (eventToDo == PV_LEFT_MOUSE_DRAG && prevEvent == PV_LEFT_MOUSE_UP) || eventToDo == PV_NORMAL_AUTO || eventToDo == PV_PAINTLY_AUTO) && !isDealingPending;
 
 	bool isUsingPointerDir = (m_pDoc->m_pCurrentBrush == ImpBrush::c_pBrushes[BRUSH_LINES] || m_pDoc->m_pCurrentBrush == ImpBrush::c_pBrushes[BRUSH_SCATTERED_LINES])
 		&& (m_pDoc->m_nBrushDirection == BRUSH_DIRECTION || m_pDoc->m_nBrushDirection == GRADIENT);
@@ -207,7 +301,7 @@ void PaintView::draw()
 
 	bool shallBrush = !isDealingPending;
 
-	bool shallUpdatePreservedDrawing = (shallBrush && (eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG || eventToDo == PV_LEFT_MOUSE_UP || eventToDo == PV_NORMAL_AUTO));
+	bool shallUpdatePreservedDrawing = (shallBrush && (eventToDo == PV_LEFT_MOUSE_DOWN || eventToDo == PV_LEFT_MOUSE_DRAG || eventToDo == PV_LEFT_MOUSE_UP || eventToDo == PV_NORMAL_AUTO || eventToDo == PV_PAINTLY_AUTO));
 
 	bool shallUpdateContentView = true;
 
@@ -293,6 +387,9 @@ void PaintView::draw()
 				break;
 			case PV_NORMAL_AUTO:
 				doAuto(m_pDoc, drawWidth, drawHeight, startrow, m_nWindowHeight, isUsingPointerDir);
+				break;
+			case PV_PAINTLY_AUTO:
+				doPaintlyAuto(m_pDoc, drawWidth, drawHeight);
 				break;
 			case PV_RIGHT_MOUSE_DOWN:
 				rightClickBegin.x = target.x;
@@ -408,7 +505,7 @@ void PaintView::draw()
 	m_pDoc->m_bHasPendingBgUpdate = false;
 
 	// Edge clipping
-	if (eventToDo == PV_NORMAL_AUTO)
+	if (eventToDo == PV_NORMAL_AUTO || eventToDo == PV_PAINTLY_AUTO)
 	{
 		this->refresh();
 	}

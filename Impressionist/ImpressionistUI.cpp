@@ -229,6 +229,10 @@ void ImpressionistUI::cb_brushes(Fl_Menu_* o, void* v)
 	whoami(o)->m_brushDialog->show();
 }
 
+void ImpressionistUI::cb_paintly(Fl_Menu_* o, void* v)
+{
+	whoami(o)->m_paintlyDialog->show();
+}
 //------------------------------------------------------------
 // Clears the paintview canvas.
 // Called by the UI when the clear canvas menu item is chosen
@@ -315,6 +319,12 @@ void ImpressionistUI::cb_autodraw_button(Fl_Widget* o, void* v)
 
 	pDoc->autoDraw();
 }
+void ImpressionistUI::cb_paintlydraw_button(Fl_Widget* o, void* v)
+{
+	ImpressionistDoc * pDoc = ((ImpressionistUI*)(o->user_data()))->getDocument();
+
+	pDoc->paintlyDraw();
+}
 //-----------------------------------------------------------
 // Updates the brush size to use from the value of the size
 // slider
@@ -378,6 +388,32 @@ void ImpressionistUI::cb_backgroundAlphaSlides(Fl_Widget* o, void* v)
 	pUI->setBackground(true);
 	if (pUI->m_pDoc)
 		pUI->m_pDoc->updateBg();
+}
+
+//paintly dialog callbacks
+void ImpressionistUI::cb_ThresholdSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nThreshold = int(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_CurvatureFilterSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_dCurvatureFilter = double(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_BlurFactorSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_dBlurFactor = double(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_MinStrokeLengthSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nMinStrokeLength = int(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_MaxStrokeLengthSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nMaxStrokeLength = int(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_GridSizeSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_dGridSize = double(((Fl_Slider *)o)->value());
 }
 
 //---------------------------------- per instance functions --------------------------------------
@@ -463,6 +499,31 @@ int ImpressionistUI::getEdgeThreshold()
 {
 	return m_nEdgeThreshold;
 }
+int	ImpressionistUI::getThreshold()
+{
+	return m_nThreshold;
+}
+double ImpressionistUI::getCurvatureFilter()
+{
+	return m_dCurvatureFilter;
+}
+double ImpressionistUI::getBlurFactor()
+{
+	return m_dBlurFactor;
+}
+int ImpressionistUI::getMinStrokeLength()
+{
+	return m_nMinStrokeLength;
+}
+int ImpressionistUI::getMaxStrokeLength()
+{
+	return m_nMaxStrokeLength;
+}
+double ImpressionistUI::getGridSize()
+{
+	return m_dGridSize;
+}
+
 //-------------------------------------------------
 // Set the brush size
 //-------------------------------------------------
@@ -534,6 +595,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ "&Brushes",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
 		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
 		{ "Load &Another Image", FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_another_image },
+		{ "&Paintly", FL_ALT + 'p', (Fl_Callback *)ImpressionistUI::cb_paintly, 0, FL_MENU_DIVIDER },
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
 		{ 0 },
 
@@ -615,6 +677,12 @@ ImpressionistUI::ImpressionistUI() {
 	m_nEdgeThreshold = 128;
 	m_bAnotherGradient = false;
 
+	m_nThreshold = 100;
+	m_dCurvatureFilter = 1.0;
+	m_dBlurFactor = 0.5;
+	m_nMinStrokeLength = 4;
+	m_nMaxStrokeLength = 16;
+	m_dGridSize = 1.0;
 	// brush dialog definition
 	m_brushDialog = new Fl_Window(400, 325, "Brush Dialog");
 		// Add a brush type choice to the dialog
@@ -751,6 +819,110 @@ ImpressionistUI::ImpressionistUI() {
 		m_BackgroundAlphaSlider->user_data((void*)(this));
 		m_BackgroundAlphaSlider->callback(cb_backgroundAlphaSlides);
 		m_BackgroundAlphaSlider->value(m_dBackgroundAlpha);
+
+	m_backgroundDialog->end();
+
+	m_paintlyDialog = new Fl_Window(400, 325, "Paintly Dialog");
+
+		m_pAutoDrawButton = new Fl_Button(10, 20, 50, 25, "Paint");
+		m_pAutoDrawButton->user_data((void*)(this));
+		m_pAutoDrawButton->callback(cb_paintlydraw_button);
+
+		m_pBrushSizeSlider = new Fl_Value_Slider(10, 60, 300, 25, "Size");
+		m_pBrushSizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_pBrushSizeSlider->type(FL_HOR_NICE_SLIDER);
+		m_pBrushSizeSlider->labelfont(FL_COURIER);
+		m_pBrushSizeSlider->labelsize(12);
+		m_pBrushSizeSlider->minimum(1);
+		m_pBrushSizeSlider->maximum(40);
+		m_pBrushSizeSlider->step(1);
+		m_pBrushSizeSlider->value(m_nSize);
+		m_pBrushSizeSlider->align(FL_ALIGN_RIGHT);
+		m_pBrushSizeSlider->callback(cb_sizeSlides);
+
+		m_pAlphaSlider = new Fl_Value_Slider(10, 90, 300, 25, "Alpha");
+		m_pAlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_pAlphaSlider->type(FL_HOR_NICE_SLIDER);
+		m_pAlphaSlider->labelfont(FL_COURIER);
+		m_pAlphaSlider->labelsize(12);
+		m_pAlphaSlider->minimum(0.0);
+		m_pAlphaSlider->maximum(1.0);
+		m_pAlphaSlider->step(0.01);
+		m_pAlphaSlider->value(m_dAlpha);
+		m_pAlphaSlider->align(FL_ALIGN_RIGHT);
+		m_pAlphaSlider->callback(cb_AlphaSlides);
+
+		m_ThresholdSlider = new Fl_Value_Slider(10, 120, 300, 25, "Threshold");
+		m_ThresholdSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_ThresholdSlider->type(FL_HOR_NICE_SLIDER);
+		m_ThresholdSlider->labelfont(FL_COURIER);
+		m_ThresholdSlider->labelsize(12);
+		m_ThresholdSlider->minimum(0);
+		m_ThresholdSlider->maximum(250);
+		m_ThresholdSlider->step(1);
+		m_ThresholdSlider->value(m_nThreshold);
+		m_ThresholdSlider->align(FL_ALIGN_RIGHT);
+		m_ThresholdSlider->callback(cb_ThresholdSlides);
+
+		m_CurvatureFilterSlider = new Fl_Value_Slider(10, 150, 300, 25, "Curvature");
+		m_CurvatureFilterSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_CurvatureFilterSlider->type(FL_HOR_NICE_SLIDER);
+		m_CurvatureFilterSlider->labelfont(FL_COURIER);
+		m_CurvatureFilterSlider->labelsize(12);
+		m_CurvatureFilterSlider->minimum(0.0);
+		m_CurvatureFilterSlider->maximum(1.0);
+		m_CurvatureFilterSlider->step(0.01);
+		m_CurvatureFilterSlider->value(m_dCurvatureFilter);
+		m_CurvatureFilterSlider->align(FL_ALIGN_RIGHT);
+		m_CurvatureFilterSlider->callback(cb_CurvatureFilterSlides);
+
+		m_BlurFactorSlider = new Fl_Value_Slider(10, 180, 300, 25, "Blur");
+		m_BlurFactorSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_BlurFactorSlider->type(FL_HOR_NICE_SLIDER);
+		m_BlurFactorSlider->labelfont(FL_COURIER);
+		m_BlurFactorSlider->labelsize(12);
+		m_BlurFactorSlider->minimum(0.0);
+		m_BlurFactorSlider->maximum(1.0);
+		m_BlurFactorSlider->step(0.01);
+		m_BlurFactorSlider->value(m_dBlurFactor);
+		m_BlurFactorSlider->align(FL_ALIGN_RIGHT);
+		m_BlurFactorSlider->callback(cb_BlurFactorSlides);
+
+		m_MinStrokeLengthSlider = new Fl_Value_Slider(10, 210, 300, 25, "MinStrokeLength");
+		m_MinStrokeLengthSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_MinStrokeLengthSlider->type(FL_HOR_NICE_SLIDER);
+		m_MinStrokeLengthSlider->labelfont(FL_COURIER);
+		m_MinStrokeLengthSlider->labelsize(12);
+		m_MinStrokeLengthSlider->minimum(0);
+		m_MinStrokeLengthSlider->maximum(30);
+		m_MinStrokeLengthSlider->step(1);
+		m_MinStrokeLengthSlider->value(m_nMinStrokeLength);
+		m_MinStrokeLengthSlider->align(FL_ALIGN_RIGHT);
+		m_MinStrokeLengthSlider->callback(cb_MinStrokeLengthSlides);
+
+		m_MaxStrokeLengthSlider = new Fl_Value_Slider(10, 240, 300, 25, "MaxStrokeLength");
+		m_MaxStrokeLengthSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_MaxStrokeLengthSlider->type(FL_HOR_NICE_SLIDER);
+		m_MaxStrokeLengthSlider->labelfont(FL_COURIER);
+		m_MaxStrokeLengthSlider->labelsize(12);
+		m_MaxStrokeLengthSlider->minimum(0);
+		m_MaxStrokeLengthSlider->maximum(30);
+		m_MaxStrokeLengthSlider->step(1);
+		m_MaxStrokeLengthSlider->value(m_nMaxStrokeLength);
+		m_MaxStrokeLengthSlider->align(FL_ALIGN_RIGHT);
+		m_MaxStrokeLengthSlider->callback(cb_MaxStrokeLengthSlides);
+
+		m_GridSizeSlider = new Fl_Value_Slider(10, 270, 300, 25, "Grid Size");
+		m_GridSizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_GridSizeSlider->type(FL_HOR_NICE_SLIDER);
+		m_GridSizeSlider->labelfont(FL_COURIER);
+		m_GridSizeSlider->labelsize(12);
+		m_GridSizeSlider->minimum(0.0);
+		m_GridSizeSlider->maximum(1.0);
+		m_GridSizeSlider->step(0.01);
+		m_GridSizeSlider->value(m_dGridSize);
+		m_GridSizeSlider->align(FL_ALIGN_RIGHT);
+		m_GridSizeSlider->callback(cb_GridSizeSlides);
 
 	m_backgroundDialog->end();
 }

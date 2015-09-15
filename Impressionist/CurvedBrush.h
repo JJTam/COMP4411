@@ -23,6 +23,7 @@ public:
 	int minStrokeLength;
 	int maxStrokeLength;
 	double curvatureFilter;
+	unsigned char* blurredSource = NULL;
 };
 
 #endif

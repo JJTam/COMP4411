@@ -45,6 +45,7 @@ public:
 	void setDisplayMode(int mode);
 
 	int		autoDraw();
+	int 	paintlyDraw();
 
 	void undo();
 	void pushToUndo();

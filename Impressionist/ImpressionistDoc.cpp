@@ -367,7 +367,11 @@ int ImpressionistDoc::autoDraw()
 	m_pUI->m_paintView->SimulateMouse(0, 0, PV_NORMAL_AUTO);
 	return 0;
 }
-
+int ImpressionistDoc::paintlyDraw()
+{
+	m_pUI->m_paintView->SimulateMouse(0, 0, PV_PAINTLY_AUTO);
+	return 0;
+}
 //------------------------------------------------------------------
 // Get the color of the pixel in the original image at coord x and y
 //------------------------------------------------------------------

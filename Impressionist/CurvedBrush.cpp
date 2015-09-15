@@ -32,11 +32,19 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 	}
 
 	radius = pDoc->getSize();
-	minStrokeLength=4;
-	maxStrokeLength=16;
-	curvatureFilter=0.9;
+	minStrokeLength = pDoc->m_pUI->getMinStrokeLength();
+	maxStrokeLength = pDoc->m_pUI->getMaxStrokeLength();
+	curvatureFilter = pDoc->m_pUI->getCurvatureFilter();
+
+	unsigned char* imageSource = (blurredSource == NULL) ? pDoc->m_ucBitmap : blurredSource;
+
 	glBegin(GL_POLYGON);
-	SetColor(source);
+	//SetColor(source);
+	GLubyte color[4];
+
+	memcpy(color, (void*)(imageSource + (source.y*pDoc->m_nWidth + source.x)*3), 3);
+	color[3] = pDoc->getAlpha() * 255;
+	glColor4ubv(color);
 
 	for (int i = 0; i < 360; ++i)
 	{
@@ -48,7 +56,7 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 	int y = source.y;
 	double dx = 0, dy = 0, lastDx = 0, lastDy = 0;
 
-	for (int i = 0; i < maxStrokeLength; ++i)
+	for (int i = 1; i < maxStrokeLength; ++i)
 	{
 		if (i > minStrokeLength)
 		{
@@ -56,12 +64,12 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 			GLubyte brushColor[3];
 			GLubyte canvasColor[3];
 
-			memcpy(originColor, pDoc->GetOriginalPixel(x, y), 3);
-			memcpy(brushColor, pDoc->GetOriginalPixel(source.x, source.y), 3);
+			memcpy(originColor, (void*)(imageSource + (y*pDoc->m_nWidth + x)*3), 3);
+			memcpy(brushColor, (void*)(imageSource + (source.y*pDoc->m_nWidth + source.x)*3), 3);
 			memcpy(canvasColor, (GLubyte*)(pDoc->m_ucPainting + 4 * (y*pDoc->m_nWidth + x)), 3);
 
-			int drawDiff = sqrt(pow(originColor[0] - brushColor[0], 2) + pow(originColor[1] - brushColor[1], 2) + pow(originColor[2] - brushColor[2], 2));
-			int currentDiff = sqrt(pow(originColor[0] - canvasColor[0], 2) + pow(originColor[1] - canvasColor[1], 2) + pow(originColor[2] - canvasColor[2], 2));
+			double drawDiff = sqrt(pow(originColor[0] - brushColor[0], 2) + pow(originColor[1] - brushColor[1], 2) + pow(originColor[2] - brushColor[2], 2));
+			double currentDiff = sqrt(pow(originColor[0] - canvasColor[0], 2) + pow(originColor[1] - canvasColor[1], 2) + pow(originColor[2] - canvasColor[2], 2));
 			if (currentDiff < drawDiff)
 			{
 				break;
@@ -74,12 +82,12 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 			break;
 		}
 
-		// Get unit vector of gradient
+		// Get vector of gradient
 		double gx = pDoc->m_iGradient[2 * (y*pDoc->m_nWidth + x)];
 		double gy = pDoc->m_iGradient[2 * (y*pDoc->m_nWidth + x) + 1];
 		// Compute normalize direction
-		double dx = -gy / sqrt(gx * gx + gy * gy);
-		double dy = gx / sqrt(gx * gx + gy * gy);
+		dx = -gy / sqrt(gx * gx + gy * gy);
+		dy = gx / sqrt(gx * gx + gy * gy);
 
 		// If necessary, reverse direction
 		if (lastDx * dx + lastDy * dy < 0)
@@ -108,7 +116,11 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 		lastDx = dx;
 		lastDy = dy;
 		glBegin(GL_POLYGON);
-		SetColor(source);
+		GLubyte color[4];
+
+		memcpy(color, (void*)(imageSource + (source.y*pDoc->m_nWidth + source.x) * 3), 3);
+		color[3] = pDoc->getAlpha() * 255;
+		glColor4ubv(color);
 		for (int i = 0; i < 360; ++i)
 		{
 			double theta = i * 3.14159 / 180;
