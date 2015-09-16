@@ -78,6 +78,9 @@ void OriginalView::draw()
 		case DOC_DISPLAY_ANOTHER:
 			bitstart = m_pDoc->m_ucAnotherBitmap + bitstartOffset;
 			break;
+		case DOC_DISPLAY_BLURRED:
+			bitstart = m_pDoc->m_ucBitmapBlurred + bitstartOffset;
+			break;
 		default:
 			bitstart = m_pDoc->m_ucBitmap + bitstartOffset;
 			break;

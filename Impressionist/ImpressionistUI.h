@@ -35,6 +35,7 @@ public:
 
 	// for brush dialog
 	Fl_Window*			m_brushDialog;
+	Fl_Window*			m_paintlyDialog;
 	Fl_Choice*			m_BrushTypeChoice;
 	Fl_Choice*			m_StrokeDirectionChoice;
 
@@ -45,7 +46,7 @@ public:
 	Fl_Button*          m_ClearCanvasButton;
 
 	Fl_Slider*			m_SpacingSlider;
-	Fl_Button*	m_RandAttrButton;
+	Fl_Button*			m_RandAttrButton;
 	Fl_Button*			m_AutoDrawButton;
 
 	Fl_Slider*			m_EdgeThresholdSlider;
@@ -55,6 +56,17 @@ public:
 	Fl_Window*			m_backgroundDialog;
 	Fl_Button*			m_BackgroundButton;
 	Fl_Slider*			m_BackgroundAlphaSlider;
+
+	// for paintly dialog
+	Fl_Button*			m_pAutoDrawButton;
+	Fl_Slider*			m_pBrushSizeSlider;
+	Fl_Slider*			m_pAlphaSlider;
+	Fl_Slider*			m_ThresholdSlider;
+	Fl_Slider*			m_CurvatureFilterSlider;
+	Fl_Slider*			m_BlurFactorSlider;
+	Fl_Slider*			m_MinStrokeLengthSlider;
+	Fl_Slider*			m_MaxStrokeLengthSlider;
+	Fl_Slider*			m_GridSizeSlider;
 
 	// Member functions
 	void				setDocument(ImpressionistDoc* doc);
@@ -83,6 +95,13 @@ public:
 	void				setBackgroundAlpha(double);
 	int					getEdgeThreshold();
 	void				setEdgeThreshold(int);
+
+	int					getThreshold();
+	double				getCurvatureFilter();
+	double				getBlurFactor();
+	int					getMinStrokeLength();
+	int					getMaxStrokeLength();
+	double				getGridSize();
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document
 
@@ -99,6 +118,13 @@ private:
 
 	int		m_nEdgeThreshold;
 
+	int		m_nThreshold;
+	double	m_dCurvatureFilter;
+	double  m_dBlurFactor;
+	int		m_nMinStrokeLength;
+	int		m_nMaxStrokeLength;
+	double	m_dGridSize;
+
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
 	static Fl_Menu_Item		brushTypeMenu[NUM_BRUSH_TYPE+1];
@@ -112,6 +138,7 @@ private:
 	static void	cb_load_another_image(Fl_Menu_* o, void* v);
 	static void	cb_save_image(Fl_Menu_* o, void* v);
 	static void	cb_brushes(Fl_Menu_* o, void* v);
+	static void cb_paintly(Fl_Menu_* o, void* v);
 	static void	cb_clear_canvas(Fl_Menu_* o, void* v);
 	static void	cb_exit(Fl_Menu_* o, void* v);
 	static void	cb_about(Fl_Menu_* o, void* v);
@@ -137,6 +164,15 @@ private:
 	static void cb_EdgeUpdateButton(Fl_Widget* o, void* v);
 
 	static void cb_ChooseDisplay(Fl_Menu_* o, void* v);
+
+	static void cb_ThresholdSlides(Fl_Widget* o, void* v);
+	static void cb_CurvatureFilterSlides(Fl_Widget* o, void* v);
+	static void cb_BlurFactorSlides(Fl_Widget* o, void* v);
+	static void cb_MinStrokeLengthSlides(Fl_Widget* o, void* v);
+	static void cb_MaxStrokeLengthSlides(Fl_Widget* o, void* v);
+	static void cb_GridSizeSlides(Fl_Widget* o, void* v);
+	static void cb_paintlydraw_button(Fl_Widget* o, void* v);
+
 };
 
 #endif

@@ -56,7 +56,7 @@ int* ImageUtils::getGradientBySobel(const unsigned char* image, int width, int h
 /* Fast gaussian algorithm found here:
    http://blog.ivank.net/fastest-gaussian-blur.html
 */
-int* getGaussianBoxes(int sigma, int n)
+int* getGaussianBoxes(double sigma, int n)
 {
 	double idealWidth = sqrtf(12 * sigma * sigma / (float)n + 1);
 	int widthLower = floor(idealWidth);
@@ -159,7 +159,7 @@ void boxBlur(unsigned char* image, unsigned char* target, int width, int height,
 	boxBlurT(image, target, width, height, radius);
 }
 
-unsigned char* ImageUtils::fastGaussianBlur(int sigma, const unsigned char* image, int width, int height)
+unsigned char* ImageUtils::fastGaussianBlur(double sigma, const unsigned char* image, int width, int height)
 {
 	unsigned char* image2 = new unsigned char[width * height];
 	unsigned char* result = new unsigned char[width * height];

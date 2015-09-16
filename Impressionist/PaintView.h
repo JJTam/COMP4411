@@ -20,6 +20,7 @@
 #define PV_RIGHT_MOUSE_DRAG    5
 #define PV_RIGHT_MOUSE_UP		6
 #define PV_NORMAL_AUTO	7
+#define	PV_PAINTLY_AUTO 8
 
 class ImpressionistDoc;
 

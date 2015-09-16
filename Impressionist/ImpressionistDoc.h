@@ -14,7 +14,8 @@
 enum DocDisplayMode {
 	DOC_DISPLAY_ORIGINAL,
 	DOC_DISPLAY_EDGE,
-	DOC_DISPLAY_ANOTHER
+	DOC_DISPLAY_ANOTHER,
+	DOC_DISPLAY_BLURRED
 };
 
 class ImpressionistUI;
@@ -45,6 +46,7 @@ public:
 	void setDisplayMode(int mode);
 
 	int		autoDraw();
+	int 	paintlyDraw();
 
 	void undo();
 	void pushToUndo();
@@ -67,6 +69,8 @@ public:
 	unsigned char*	m_ucPainting;
 	unsigned char*  m_ucPreservedPainting;
 	unsigned char*  m_ucEdgeBitmap;
+	unsigned char*	m_ucBitmapBlurred;
+
 	int* m_iGradient;
 	int* m_iGradientMagnitude;
 
