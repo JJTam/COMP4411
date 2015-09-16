@@ -157,6 +157,23 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	ImpressionistUI* pUI = pDoc->m_pUI;
 	CurvedBrush* pBrush = (CurvedBrush*)ImpBrush::c_pBrushes[BRUSH_CURVED];
 	
+	int sumOfAlpha = 0;
+	for (int i = 0; i < width * height; ++i)
+	{
+		sumOfAlpha += pDoc->m_ucPreservedPainting[4 * i + 3];
+	}
+
+	if (sumOfAlpha == 0)
+	{
+		glBegin(GL_POLYGON);
+		glColor3ub(255, 255, 255);
+		glVertex2i(0, 0);
+		glVertex2i(width, 0);
+		glVertex2i(width, height);
+		glVertex2i(0, height);
+		glEnd();
+	}
+
 	int radius = pUI->getSize();
 	int minStrokeLength = pDoc->m_pUI->getMinStrokeLength();
 	int maxStrokeLength = pDoc->m_pUI->getMaxStrokeLength();
@@ -276,7 +293,7 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 		}
 	}
 
-	random_shuffle(allCenters.begin(), allCenters.end());
+	// random_shuffle(allCenters.begin(), allCenters.end());
 
 	GLubyte color[4];
 	color[3] = pDoc->getAlpha() * 255;

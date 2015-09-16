@@ -18,7 +18,7 @@ class ImageUtils
 public:
 	static unsigned char* getSingleChannel(double rFactor, double gFactor, double bFactor,
 		const unsigned char * image, int width, int height);
-	static unsigned char* fastGaussianBlur(int sigma, const unsigned char* image, int width, int height);
+	static unsigned char* fastGaussianBlur(double sigma, const unsigned char* image, int width, int height);
 	static int* getGradientBySobel(const unsigned char* image, int width, int height);
 
 	// Get an array of dimension (xEnd-xBegin)*(yEnd-yBegin)*channels that contains the image

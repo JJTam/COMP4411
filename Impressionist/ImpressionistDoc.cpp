@@ -201,14 +201,20 @@ int ImpressionistDoc::loadImage(char *iname, bool isMural)
 
 	// temp black and white image, intensity = 0.299R + 0.587G + 0.144B
 	unsigned char* bw = ImageUtils::getSingleChannel(0.299, 0.587, 0.144, m_ucBitmap, width, height);
-	unsigned char* bwBlurred = ImageUtils::fastGaussianBlur(1, bw, width, height);
+	//unsigned char* bwBlurred = ImageUtils::fastGaussianBlur(1, bw, width, height);
 
-	/*
-	static double kernel[49] = { 0.005084, 0.009377, 0.013539, 0.015302, 0.013539, 0.009377, 0.005084, 0.009377, 0.017296, 0.024972, 0.028224, 0.024972, 0.017296, 0.009377, 0.013539, 0.024972, 0.036054, 0.040749, 0.036054, 0.024972, 0.013539, 0.015302, 0.028224, 0.040749, 0.046056, 0.040749, 0.028224, 0.015302, 0.013539, 0.024972, 0.036054, 0.040749, 0.036054, 0.024972, 0.013539, 0.009377, 0.017296, 0.024972, 0.028224, 0.024972, 0.017296, 0.009377, 0.005084, 0.009377, 0.013539, 0.015302, 0.013539, 0.009377, 0.005084 };
-	unsigned char* bwBlurred = ImageUtils::getFilteredImage(kernel, 7, 7, bw, width, height, 0, 0, 0, 0, 1, IMAGE_UTIL_WRAP_BOUNDARY);
-	*/
+	
+	static double kernel[25] = {
+		0.000106788745393375, 0.002144909288579413, 0.005830467942838339, 0.002144909288579413, 0.000106788745393375,
+		0.002144909288579413, 0.043081654712647834, 0.11710807914533564, 0.043081654712647834, 0.002144909288579413,
+		0.005830467942838339, 0.11710807914533564, 0.3183327635065042, 0.11710807914533564, 0.005830467942838339,
+		0.002144909288579413, 0.043081654712647834, 0.11710807914533564, 0.043081654712647834, 0.002144909288579413,
+		0.000106788745393375, 0.002144909288579413, 0.005830467942838339, 0.002144909288579413, 0.000106788745393375
+	};
+	unsigned char* bwBlurred = ImageUtils::getFilteredImage(kernel, 5, 5, bw, width, height, 0, 0, 0, 0, 1, IMAGE_UTIL_WRAP_BOUNDARY);
+	
 
-	m_iGradient = ImageUtils::getGradientBySobel(bw, width, height);
+	m_iGradient = ImageUtils::getGradientBySobel(bwBlurred, width, height);
 
 	// compute gradient magnitude
 	m_iGradientMagnitude = new int[width * height];
