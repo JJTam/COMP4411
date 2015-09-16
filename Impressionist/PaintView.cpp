@@ -236,6 +236,8 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	int threshold = pDoc->m_pUI->getThreshold();
 	double gridSize = pDoc->m_pUI->getGridSize();
 	int grid = gridSize * pUI->getSize();
+	if (grid < 1)
+		grid = 1;
 
 	for (int x = 0 + grid/2; x < width - grid/2; x += grid)
 	{
@@ -278,7 +280,7 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	}
 	delete differenceMap;
 
-	vector< pair< pair<int, int>, tuple<unsigned char, unsigned char, unsigned char> > > allCenters;
+	vector< vector< pair< pair<int, int>, tuple<unsigned char, unsigned char, unsigned char> > > > allCenters;
 	// DO the painting
 	for (int i = 0; i < pointIndexes.size(); ++i)
 	{
@@ -287,32 +289,40 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 		int y = pointIndexes[i] / width;
 
 		vector<pair< pair<int, int>, tuple<unsigned char, unsigned char, unsigned char> > > centers = CurvedBrushHelper::getCurvedBrushPoints(pDoc->m_ucBitmapBlurred, pDoc->m_iGradient, pDoc->m_ucPreservedPainting, width, height, x, y, radius, minStrokeLength, maxStrokeLength, curvatureFilter);
-		for (auto c : centers)
-		{
-			allCenters.push_back(c);
-		}
+		allCenters.push_back(centers);
 	}
 
-	// random_shuffle(allCenters.begin(), allCenters.end());
+	random_shuffle(allCenters.begin(), allCenters.end());
 
 	GLubyte color[4];
 	color[3] = pDoc->getAlpha() * 255;
-	for (auto c : allCenters)
+	for (auto centers : allCenters)
 	{
-		auto point = c.first;
-		auto color3 = c.second;
+		GLubyte color[4];
+		color[3] = pDoc->getAlpha() * 255;
+		auto color3 = centers[0].second;
 		color[0] = get<0>(color3);
 		color[1] = get<1>(color3);
 		color[2] = get<2>(color3);
 		glColor4ubv(color);
 
-		glBegin(GL_POLYGON);
-		for (int i = 0; i < 36; ++i)
+		for (auto c : centers)
 		{
-			double theta = i * 10 * 3.14159 / 180;
-			glVertex2d(point.first - radius * cos(theta), point.second - radius * sin(theta));
+			auto point = c.first;
+			auto color3 = c.second;
+			color[0] = get<0>(color3);
+			color[1] = get<1>(color3);
+			color[2] = get<2>(color3);
+			glColor4ubv(color);
+
+			glBegin(GL_POLYGON);
+			for (int i = 0; i < 36; ++i)
+			{
+				double theta = i * 10 * 3.14159 / 180;
+				glVertex2d(point.first - radius * cos(theta), point.second - radius * sin(theta));
+			}
+			glEnd();
 		}
-		glEnd();
 	}
 
 }
