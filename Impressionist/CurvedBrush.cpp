@@ -8,7 +8,13 @@
 #include "impressionistDoc.h"
 #include "impressionistUI.h"
 #include "curvedbrush.h"
+#include "CurvedBrushHelper.h"
 #include <iostream>
+#include <vector>
+#include <tuple>
+
+using namespace std;
+
 extern float frand();
 
 CurvedBrush::CurvedBrush(ImpressionistDoc* pDoc, char* name) :
@@ -41,99 +47,27 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 
 	unsigned char* imageSource = (pDoc->m_ucBitmapBlurred == NULL) ? pDoc->m_ucBitmap : pDoc->m_ucBitmapBlurred;
 
-	glBegin(GL_POLYGON);
+	vector<pair< pair<int, int>, tuple<unsigned char, unsigned char, unsigned char> > > centers = CurvedBrushHelper::getCurvedBrushPoints(imageSource, pDoc->m_iGradient, pDoc->m_ucPreservedPainting, width, height, source.x, source.y, radius, minStrokeLength, maxStrokeLength, curvatureFilter);
 
 	GLubyte color[4];
-	memcpy(color, (void*)(imageSource + (source.y*width + source.x)*3), 3);
 	color[3] = pDoc->getAlpha() * 255;
-	glColor4ubv(color);
-
-	for (int i = 0; i < 36; ++i)
+	for (auto c : centers)
 	{
-		double theta = i * 10 * 3.14159 / 180;
-		glVertex2d(target.x - radius * cos(theta), target.y - radius * sin(theta));
-	}
-	glEnd();
-
-	int x = source.x;
-	int y = source.y;
-	double dx = 0, dy = 0, lastDx = 0, lastDy = 0;
-
-	for (int i = 1; i <= maxStrokeLength; ++i)
-	{
-		if (i > minStrokeLength)
-		{
-			int originColor[3];
-			int canvasColor[3];
-			int brushColor[3];
-			for (int i = 0; i < 3; ++i)
-			{
-				originColor[i] = imageSource[3 * (y * width + x) + i];
-				brushColor[i] = imageSource[3 * (source.y*width + source.x)+ i];
-				canvasColor[i] = pDoc->m_ucPainting[4 * (y*width + x) + i];
-			}
-
-			double drawDiff = sqrt(pow(originColor[0] - brushColor[0], 2) + pow(originColor[1] - brushColor[1], 2) + pow(originColor[2] - brushColor[2], 2));
-			double currentDiff = sqrt(pow(originColor[0] - canvasColor[0], 2) + pow(originColor[1] - canvasColor[1], 2) + pow(originColor[2] - canvasColor[2], 2));
-			if (currentDiff < drawDiff)
-			{
-				break;
-			}
-		}
-
-		// Detect vanishing gradient
-		if (pDoc->m_iGradientMagnitude[y*width + x] == 0)
-		{
-			break;
-		}
-
-		// Get vector of gradient
-		double gx = pDoc->m_iGradient[2 * (y*width + x)];
-		double gy = pDoc->m_iGradient[2 * (y*width + x) + 1];
-		// Compute normalize direction
-		dx = -gy / sqrt(gx * gx + gy * gy);
-		dy = gx / sqrt(gx * gx + gy * gy);
-
-		// If necessary, reverse direction
-		if (lastDx * dx + lastDy * dy < 0)
-		{
-			dx = -dx;
-			dy = -dy;
-		}
-
-		// Filter the stroke direction
-		dx = curvatureFilter * dx + (1 - curvatureFilter) * lastDx;
-		dy = curvatureFilter * dy + (1 - curvatureFilter) * lastDy;
-		gx = dx / sqrt(dx*dx + dy*dy);
-		gy = dy / sqrt(dx*dx + dy*dy);
-		dx = gx;
-		dy = gy;
-		x = x + radius * dx;
-		y = y + radius * dy;
-		if (x < 0)
-			x = 0;
-		else if (x >= width) 
-			x = (width - 1);
-		if (y < 0)
-			y = 0;
-		else if (y >= height)
-			y = (height - 1);
-		lastDx = dx;
-		lastDy = dy;
-		glBegin(GL_POLYGON);
-		GLubyte color[4];
-
-		memcpy(color, (void*)(imageSource + (source.y*width + source.x) * 3), 3);
-		color[3] = pDoc->getAlpha() * 255;
+		auto point = c.first;
+		auto color3 = c.second;
+		color[0] = get<0>(color3);
+		color[1] = get<1>(color3);
+		color[2] = get<2>(color3);
 		glColor4ubv(color);
+
+		glBegin(GL_POLYGON);
 		for (int i = 0; i < 36; ++i)
 		{
 			double theta = i * 10 * 3.14159 / 180;
-			glVertex2d(x - radius * cos(theta), y - radius * sin(theta));
+			glVertex2d(point.first - radius * cos(theta), point.second - radius * sin(theta));
 		}
 		glEnd();
 	}
-
 }
 
 void CurvedBrush::BrushEnd(const Point source, const Point target)

@@ -11,8 +11,10 @@
 #include "ImpBrush.h"
 #include "ImageUtils.h"
 #include "CurvedBrush.h"
+#include "CurvedBrushHelper.h"
 #include <cmath>
 #include <vector>
+#include <tuple>
 #include <algorithm>
 #include <iostream>
 
@@ -20,6 +22,8 @@
 #define min(a, b)	( ( (a)<(b) ) ? (a) : (b) )
 #define max(a, b)	( ( (a)>(b) ) ? (a) : (b) )
 #endif
+
+using namespace std;
 
 extern int irand(int);
 
@@ -153,6 +157,11 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	ImpressionistUI* pUI = pDoc->m_pUI;
 	CurvedBrush* pBrush = (CurvedBrush*)ImpBrush::c_pBrushes[BRUSH_CURVED];
 	
+	int radius = pUI->getSize();
+	int minStrokeLength = pDoc->m_pUI->getMinStrokeLength();
+	int maxStrokeLength = pDoc->m_pUI->getMaxStrokeLength();
+	double curvatureFilter = pDoc->m_pUI->getCurvatureFilter();
+
 	// Apply Gaussian blur
 	if (prevSigma != pUI->getBlurFactor() || pDoc->m_ucBitmapBlurred == NULL)
 	{
@@ -252,17 +261,43 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	}
 	delete differenceMap;
 
+	vector< pair< pair<int, int>, tuple<unsigned char, unsigned char, unsigned char> > > allCenters;
 	// DO the painting
-	std::random_shuffle(pointIndexes.begin(), pointIndexes.end());
 	for (int i = 0; i < pointIndexes.size(); ++i)
 	{
-		Point currentPoint;
-		currentPoint.x = pointIndexes[i] % width;
-		currentPoint.y = pointIndexes[i] / width;
-		pBrush->BrushBegin(currentPoint, currentPoint);
-		pBrush->BrushEnd(currentPoint, currentPoint);
+		
+		int x = pointIndexes[i] % width;
+		int y = pointIndexes[i] / width;
 
+		vector<pair< pair<int, int>, tuple<unsigned char, unsigned char, unsigned char> > > centers = CurvedBrushHelper::getCurvedBrushPoints(pDoc->m_ucBitmapBlurred, pDoc->m_iGradient, pDoc->m_ucPreservedPainting, width, height, x, y, radius, minStrokeLength, maxStrokeLength, curvatureFilter);
+		for (auto c : centers)
+		{
+			allCenters.push_back(c);
+		}
 	}
+
+	random_shuffle(allCenters.begin(), allCenters.end());
+
+	GLubyte color[4];
+	color[3] = pDoc->getAlpha() * 255;
+	for (auto c : allCenters)
+	{
+		auto point = c.first;
+		auto color3 = c.second;
+		color[0] = get<0>(color3);
+		color[1] = get<1>(color3);
+		color[2] = get<2>(color3);
+		glColor4ubv(color);
+
+		glBegin(GL_POLYGON);
+		for (int i = 0; i < 36; ++i)
+		{
+			double theta = i * 10 * 3.14159 / 180;
+			glVertex2d(point.first - radius * cos(theta), point.second - radius * sin(theta));
+		}
+		glEnd();
+	}
+
 }
 void PaintView::draw()
 {
