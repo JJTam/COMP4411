@@ -6,6 +6,7 @@
 
 #include "impressionist.h"
 #include "impressionistDoc.h"
+#include "ImpressionistUI.h"
 #include "originalview.h"
 
 #ifndef WIN32
@@ -97,9 +98,9 @@ void OriginalView::draw()
 		{
 			//printf("GetOriginalPixel(%d, %d)\n", mouse_indicator_x, mouse_indicator_draw_y);
 			GLubyte* centerByte = m_pDoc->GetOriginalPixel(mouse_indicator_x, mouse_indicator_draw_y + startrow);
-			GLubyte R = centerByte[0];
-			GLubyte G = centerByte[1];
-			GLubyte B = centerByte[2];
+			GLubyte R = centerByte[0] * m_pDoc->m_pUI->m_colorSelector->r();
+			GLubyte G = centerByte[1] * m_pDoc->m_pUI->m_colorSelector->g();
+			GLubyte B = centerByte[2] * m_pDoc->m_pUI->m_colorSelector->b();
 			// draw the mouse indicator
 			for (int i = 0; i < 11; ++i)
 			{

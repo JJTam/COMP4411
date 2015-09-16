@@ -233,6 +233,10 @@ void ImpressionistUI::cb_paintly(Fl_Menu_* o, void* v)
 {
 	whoami(o)->m_paintlyDialog->show();
 }
+void ImpressionistUI::cb_colorSelector(Fl_Menu_* o, void* v)
+{
+	whoami(o)->m_colorSelectorDialog->show();
+}
 //------------------------------------------------------------
 // Clears the paintview canvas.
 // Called by the UI when the clear canvas menu item is chosen
@@ -595,6 +599,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ "&Brushes",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
 		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
 		{ "Load &Another Image", FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_another_image },
+		{"Colors", FL_ALT+'k',(Fl_Callback *)ImpressionistUI::cb_colorSelector},
 		{ "&Paintly", FL_ALT + 'p', (Fl_Callback *)ImpressionistUI::cb_paintly, 0, FL_MENU_DIVIDER },
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
 		{ 0 },
@@ -926,4 +931,9 @@ ImpressionistUI::ImpressionistUI() {
 		m_GridSizeSlider->callback(cb_GridSizeSlides);
 
 	m_backgroundDialog->end();
+
+	m_colorSelectorDialog = new Fl_Window(420, 210, "Color Selector");
+		m_colorSelector = new Fl_Color_Chooser(10, 10, 400, 190);
+		m_colorSelector->rgb(1.0, 1.0, 1.0);
+	m_colorSelectorDialog->end();
 }

@@ -300,9 +300,9 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	{
 		GLubyte color[4];
 		auto color3 = centers[0].second;
-		color[0] = get<0>(color3);
-		color[1] = get<1>(color3);
-		color[2] = get<2>(color3);
+		color[0] = get<0>(color3) * pDoc->m_pUI->m_colorSelector->r();
+		color[1] = get<1>(color3) * pDoc->m_pUI->m_colorSelector->g();
+		color[2] = get<2>(color3) * pDoc->m_pUI->m_colorSelector->b();
 		glColor4ubv(color);
 
 		for (auto c : centers)
