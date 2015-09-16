@@ -51,6 +51,9 @@ void ImpBrush::SetColor(int x, int y)
 	GLubyte color[4];
 
 	memcpy(color, pDoc->GetOriginalPixel(x,y), 3);
+	color[0] *= pDoc->m_pUI->m_colorSelector->r();
+	color[1] *= pDoc->m_pUI->m_colorSelector->g();
+	color[2] *= pDoc->m_pUI->m_colorSelector->b();
 	color[3] = m_pDoc->getAlpha() * 255;
 
 	glColor4ubv(color);

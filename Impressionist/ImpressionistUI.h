@@ -16,6 +16,7 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Light_Button.H>
 #include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Color_Chooser.H>
 #include "Impressionist.h"
 #include "OriginalView.h"
 #include "PaintView.h"
@@ -36,6 +37,7 @@ public:
 	// for brush dialog
 	Fl_Window*			m_brushDialog;
 	Fl_Window*			m_paintlyDialog;
+	Fl_Window*			m_colorSelectorDialog;
 	Fl_Choice*			m_BrushTypeChoice;
 	Fl_Choice*			m_StrokeDirectionChoice;
 
@@ -67,6 +69,9 @@ public:
 	Fl_Slider*			m_MinStrokeLengthSlider;
 	Fl_Slider*			m_MaxStrokeLengthSlider;
 	Fl_Slider*			m_GridSizeSlider;
+
+	//for color selection
+	Fl_Color_Chooser* m_colorSelector;
 
 	// Member functions
 	void				setDocument(ImpressionistDoc* doc);
@@ -139,6 +144,7 @@ private:
 	static void	cb_save_image(Fl_Menu_* o, void* v);
 	static void	cb_brushes(Fl_Menu_* o, void* v);
 	static void cb_paintly(Fl_Menu_* o, void* v);
+	static void cb_colorSelector(Fl_Menu_* o, void* v);
 	static void	cb_clear_canvas(Fl_Menu_* o, void* v);
 	static void	cb_exit(Fl_Menu_* o, void* v);
 	static void	cb_about(Fl_Menu_* o, void* v);
