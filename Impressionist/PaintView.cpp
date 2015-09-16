@@ -191,10 +191,13 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	{
 		for (int y = 0; y < height; y++)
 		{
-			GLubyte originColor[3];
-			GLubyte canvasColor[3];
-			memcpy(originColor, (void*)(pDoc->m_ucBitmapBlurred + 3 * (y * width + x)), 3);
-			memcpy(canvasColor, (GLubyte*)(pDoc->m_ucPainting + 4 * (y*pDoc->m_nWidth + x)), 3);
+			int originColor[3];
+			int canvasColor[3];
+			for (int i = 0; i < 3; ++i)
+			{
+				originColor[i] = pDoc->m_ucBitmapBlurred[3 * (y * width + x) + i];
+				canvasColor[i] = pDoc->m_ucPainting[4 * (y*pDoc->m_nWidth + x) + i];
+			}
 
 			double currentDiff = sqrt(pow(originColor[0] - canvasColor[0], 2) + pow(originColor[1] - canvasColor[1], 2) + pow(originColor[2] - canvasColor[2], 2));
 			differenceMap[x + y*width] = currentDiff;
@@ -235,7 +238,7 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 				{
 					for (int j = y - grid / 2; j < y + grid / 2 + 1; j++)
 					{
-						if (maxError < differenceMap[i + j*width]);
+						if (maxError < differenceMap[i + j*width])
 						{
 							maxX = i;
 							maxY = j;
