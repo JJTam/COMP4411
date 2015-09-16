@@ -299,7 +299,6 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	for (auto centers : allCenters)
 	{
 		GLubyte color[4];
-		color[3] = pDoc->getAlpha() * 255;
 		auto color3 = centers[0].second;
 		color[0] = get<0>(color3);
 		color[1] = get<1>(color3);
@@ -309,11 +308,6 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 		for (auto c : centers)
 		{
 			auto point = c.first;
-			auto color3 = c.second;
-			color[0] = get<0>(color3);
-			color[1] = get<1>(color3);
-			color[2] = get<2>(color3);
-			glColor4ubv(color);
 
 			glBegin(GL_POLYGON);
 			for (int i = 0; i < 36; ++i)
