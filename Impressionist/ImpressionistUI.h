@@ -54,6 +54,7 @@ public:
 	Fl_Slider*			m_EdgeThresholdSlider;
 	Fl_Button*			m_EdgeUpdateButton;
 	Fl_Button*			m_AnotherGradientButton;
+	Fl_Button*			m_EdgeClippingButton;
 	// for background dialog
 	Fl_Window*			m_backgroundDialog;
 	Fl_Button*			m_BackgroundButton;
@@ -94,6 +95,8 @@ public:
 	void				setSpacing(int);
 	bool				getAttrRand();
 	bool				getAnotherGradient();
+	bool				getEdgeClipping();
+
 	bool				getBackground();
 	void				setBackground(bool);
 	double				getBackgroundAlpha();
@@ -118,6 +121,8 @@ private:
 	int		m_nSpacing;
 	bool    m_bAttrRand;
 	bool	m_bAnotherGradient;
+	bool	m_bEdgeClipping;
+
 	bool	m_bBackground;
 	double	m_dBackgroundAlpha;
 
@@ -141,6 +146,7 @@ private:
 	// static
 	static void	cb_load_image(Fl_Menu_* o, void* v);
 	static void	cb_load_another_image(Fl_Menu_* o, void* v);
+	static void cb_load_edge_image(Fl_Menu_* o, void* v);
 	static void	cb_save_image(Fl_Menu_* o, void* v);
 	static void	cb_brushes(Fl_Menu_* o, void* v);
 	static void cb_paintly(Fl_Menu_* o, void* v);
@@ -161,6 +167,7 @@ private:
 	static void cb_randattr_button(Fl_Widget* o, void* v);
 	static void cb_autodraw_button(Fl_Widget* o, void* v);
 	static void cb_anothergradient_button(Fl_Widget* o, void* v);
+	static void cb_edgeclipping_button(Fl_Widget* o, void* v);
 
 	static void cb_background(Fl_Menu_* o, void* v);
 	static void cb_background_button(Fl_Widget* o, void* v);

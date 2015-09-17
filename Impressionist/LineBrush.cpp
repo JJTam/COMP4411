@@ -9,6 +9,7 @@
 #include "impressionistUI.h"
 #include "LineBrush.h"
 #include <cmath>
+#include <iostream>
 
 extern float frand();
 
@@ -40,9 +41,87 @@ void LineBrush::BrushMove(const Point source, const Point target)
 	glBegin(GL_LINES);
 	SetColor(source);
 
-	glVertex2f(target.x - this->length / 2 * cos(this->angle * 3.14159 / 180), target.y - this->length / 2 * sin(this->angle * 3.14159 / 180));
-	glVertex2f(target.x + this->length / 2 * cos(this->angle * 3.14159 / 180), target.y + this->length / 2 * sin(this->angle * 3.14159 / 180));
+	if (!dlg->getEdgeClipping())
+	{
+		glVertex2f(target.x - this->length / 2 * cos(this->angle * 3.14159 / 180), target.y - this->length / 2 * sin(this->angle * 3.14159 / 180));
+		glVertex2f(target.x + this->length / 2 * cos(this->angle * 3.14159 / 180), target.y + this->length / 2 * sin(this->angle * 3.14159 / 180));
+	}
+	else
+	{
+		bool reachLine = false;
+		Point endPoint;
+		//calculate first endpoint
+		endPoint.x = target.x;
+		endPoint.y = target.y;
+		for (int i = 0; i <= length / 2; ++i)
+		{
+			endPoint.x = target.x - i * cos(this->angle * 3.14159 / 180);
+			endPoint.y = target.y - i * sin(this->angle * 3.14159 / 180);
+			if (endPoint.x < 0)
+			{
+				endPoint.x = 0;
+				reachLine = true;
+			}
+			if (endPoint.x > pDoc->m_nWidth)
+			{
+				endPoint.x = pDoc->m_nWidth;
+				reachLine = true;
+			}
+			if (endPoint.y < 0)
+			{
+				endPoint.y = 0;
+				reachLine = true;
+			}
+			if (endPoint.y > pDoc->m_nHeight)
+			{
+				endPoint.y = pDoc->m_nHeight;
+				reachLine = true;
+			}
 
+			int pointIndex = endPoint.x + endPoint.y * pDoc->m_nWidth;
+			if (reachLine || pDoc->m_ucEdgeBitmap[3 * pointIndex] != 0 || i == length / 2)
+			{
+				glVertex2f(endPoint.x, endPoint.y);
+				break;
+			}
+		}
+		//calculate second endpoint
+		reachLine = false;
+		endPoint.x = target.x;
+		endPoint.y = target.y;
+		for (int i = 0; i <= length / 2; ++i)
+		{
+			endPoint.x = target.x + i * cos(this->angle * 3.14159 / 180);
+			endPoint.y = target.y + i * sin(this->angle * 3.14159 / 180);
+			if (endPoint.x < 0)
+			{
+				endPoint.x = 0;
+				reachLine = true;
+			}
+			if (endPoint.x > pDoc->m_nWidth)
+			{
+				endPoint.x = pDoc->m_nWidth;
+				reachLine = true;
+			}
+			if (endPoint.y < 0)
+			{
+				endPoint.y = 0;
+				reachLine = true;
+			}
+			if (endPoint.y > pDoc->m_nHeight)
+			{
+				endPoint.y = pDoc->m_nHeight;
+				reachLine = true;
+			}
+
+			int pointIndex = endPoint.x + endPoint.y * pDoc->m_nWidth;
+			if (reachLine || pDoc->m_ucEdgeBitmap[3 * pointIndex] != 0 || i == length / 2)
+			{
+				glVertex2f(endPoint.x, endPoint.y);
+				break;
+			}
+		}
+	}
 	glEnd();
 }
 

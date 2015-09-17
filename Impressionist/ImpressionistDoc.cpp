@@ -318,6 +318,36 @@ int ImpressionistDoc::loadAnotherImage(char *iname)
 
 	return 1;
 }
+
+int ImpressionistDoc::loadEdgeImage(char *iname)
+{
+	// try to open the image to read
+	unsigned char*	data;
+	int				width, height;
+
+	if ((data = readBMP(iname, width, height)) == NULL)
+	{
+		fl_alert("Can't load bitmap file");
+		return 0;
+	}
+	if (!m_ucBitmap)
+	{
+		fl_alert("Must load original image first!");
+		return 0;
+	}
+	if (m_nWidth != width || m_nHeight != height)
+	{
+		fl_alert("The size must be same!");
+		return 0;
+	}
+
+	// release old storage
+	if (m_ucEdgeBitmap) delete[] m_ucEdgeBitmap;
+
+	m_ucEdgeBitmap = data;
+
+	return 1;
+}
 //----------------------------------------------------------------
 // Save the specified image
 // This is called by the UI when the save image menu button is 
