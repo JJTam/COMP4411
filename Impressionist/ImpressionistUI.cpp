@@ -743,9 +743,9 @@ ImpressionistUI::ImpressionistUI() {
 	m_bAnotherGradient = false;
 	m_bEdgeClipping = false;
 
-	m_nThreshold = 100;
+	m_nThreshold = 50;
 	m_dCurvatureFilter = 1.0;
-	m_dBlurFactor = 0.5;
+	m_dBlurFactor = 0.25;
 	m_nMinStrokeLength = 4;
 	m_nMaxStrokeLength = 16;
 	m_dGridSize = 1.0;

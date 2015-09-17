@@ -47,7 +47,11 @@ void CurvedBrush::BrushMove(const Point source, const Point target)
 
 	unsigned char* imageSource = (pDoc->m_ucBitmapBlurred == NULL) ? pDoc->m_ucBitmap : pDoc->m_ucBitmapBlurred;
 
-	vector<pair< pair<int, int>, tuple<unsigned char, unsigned char, unsigned char> > > centers = CurvedBrushHelper::getCurvedBrushPoints(imageSource, pDoc->m_iGradient, pDoc->m_ucPreservedPainting, width, height, source.x, source.y, radius, minStrokeLength, maxStrokeLength, curvatureFilter);
+	if (target.x < 0 || target.x >= width || target.y < 0 || target.y >= height)
+	{
+		return;
+	}
+	vector<pair< pair<int, int>, tuple<unsigned char, unsigned char, unsigned char> > > centers = CurvedBrushHelper::getCurvedBrushPoints(imageSource, pDoc->m_iGradient, pDoc->m_ucPreservedPainting, width, height, target.x, target.y, radius, minStrokeLength, maxStrokeLength, curvatureFilter);
 	
 	GLubyte color[4];
 	color[3] = pDoc->getAlpha() * 255;
