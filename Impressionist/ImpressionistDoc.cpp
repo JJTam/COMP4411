@@ -176,6 +176,7 @@ int ImpressionistDoc::loadImage(char *iname, bool isMural)
 		if (width != m_nWidth || height != m_nHeight)
 		{
 			fl_alert("Mural image shall have the same dimension as the original image.");
+			delete[] data;
 			return 0;
 		}
 	}
@@ -289,14 +290,11 @@ int ImpressionistDoc::loadAnotherImage(char *iname)
 		fl_alert("Can't load bitmap file");
 		return 0;
 	}
-	if (!m_ucBitmap)
-	{
-		fl_alert("Must load original image first!");
-		return 0;
-	}
+
 	if (m_nWidth != width || m_nHeight != height)
 	{
 		fl_alert("The size must be same!");
+		delete[] data;
 		return 0;
 	}
 
@@ -330,14 +328,11 @@ int ImpressionistDoc::loadEdgeImage(char *iname)
 		fl_alert("Can't load bitmap file");
 		return 0;
 	}
-	if (!m_ucBitmap)
-	{
-		fl_alert("Must load original image first!");
-		return 0;
-	}
+
 	if (m_nWidth != width || m_nHeight != height)
 	{
 		fl_alert("The size must be same!");
+		delete[] data;
 		return 0;
 	}
 

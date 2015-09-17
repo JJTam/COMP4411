@@ -200,6 +200,12 @@ void ImpressionistUI::cb_load_another_image(Fl_Menu_* o, void* v)
 {
 	ImpressionistDoc *pDoc = whoami(o)->getDocument();
 
+	if (!pDoc->m_ucBitmap)
+	{
+		fl_alert("You must load the original image before loading another image.");
+		return;
+	}
+
 	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
 	if (newfile != NULL) {
 		pDoc->loadAnotherImage(newfile);
@@ -208,6 +214,12 @@ void ImpressionistUI::cb_load_another_image(Fl_Menu_* o, void* v)
 void ImpressionistUI::cb_load_edge_image(Fl_Menu_* o, void* v)
 {
 	ImpressionistDoc *pDoc = whoami(o)->getDocument();
+
+	if (!pDoc->m_ucBitmap)
+	{
+		fl_alert("You must load the original image before loading an edge image.");
+		return;
+	}
 
 	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
 	if (newfile != NULL) {
