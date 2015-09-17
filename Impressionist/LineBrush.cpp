@@ -41,13 +41,14 @@ void LineBrush::BrushMove(const Point source, const Point target)
 	glBegin(GL_LINES);
 	SetColor(source);
 
-	if (!dlg->getEdgeClipping())
+	if (!dlg->getEdgeClipping() || !pDoc->m_ucEdgeBitmap)
 	{
 		glVertex2f(target.x - this->length / 2 * cos(this->angle * 3.14159 / 180), target.y - this->length / 2 * sin(this->angle * 3.14159 / 180));
 		glVertex2f(target.x + this->length / 2 * cos(this->angle * 3.14159 / 180), target.y + this->length / 2 * sin(this->angle * 3.14159 / 180));
 	}
 	else
 	{
+		bool sourceIsEdge = pDoc->m_ucEdgeBitmap[target.y * pDoc->m_nWidth + target.x] != 0;
 		bool reachLine = false;
 		Point endPoint;
 		//calculate first endpoint
@@ -79,9 +80,10 @@ void LineBrush::BrushMove(const Point source, const Point target)
 			}
 
 			int pointIndex = endPoint.x + endPoint.y * pDoc->m_nWidth;
-			if (reachLine || pDoc->m_ucEdgeBitmap[3 * pointIndex] != 0 || i == length / 2)
+			bool pointIsEdge = pDoc->m_ucEdgeBitmap[3 * pointIndex] != 0;
+			if (reachLine || (pointIsEdge != sourceIsEdge) || i == length / 2)
 			{
-				glVertex2f(endPoint.x, endPoint.y);
+				glVertex2d(endPoint.x, endPoint.y);
 				break;
 			}
 		}
@@ -115,9 +117,10 @@ void LineBrush::BrushMove(const Point source, const Point target)
 			}
 
 			int pointIndex = endPoint.x + endPoint.y * pDoc->m_nWidth;
-			if (reachLine || pDoc->m_ucEdgeBitmap[3 * pointIndex] != 0 || i == length / 2)
+			bool pointIsEdge = pDoc->m_ucEdgeBitmap[3 * pointIndex] != 0;
+			if (reachLine || (pointIsEdge != sourceIsEdge) || i == length / 2)
 			{
-				glVertex2f(endPoint.x, endPoint.y);
+				glVertex2d(endPoint.x, endPoint.y);
 				break;
 			}
 		}

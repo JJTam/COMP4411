@@ -44,13 +44,14 @@ void ScatteredLineBrush::BrushMove(const Point source, const Point target)
 		int Xoffset = irand(this->length) - this->length / 2;
 		int Yoffset = irand(this->length) - this->length / 2;
 		SetColor(source.x + Xoffset, source.y + Yoffset);
-		if (!dlg->getEdgeClipping())
+		if (!dlg->getEdgeClipping() || !pDoc->m_ucEdgeBitmap)
 		{
 			glVertex2f(target.x + Xoffset - this->length / 2 * cos(this->angle * 3.14159 / 180), target.y + Yoffset - this->length / 2 * sin(this->angle * 3.14159 / 180));
 			glVertex2f(target.x + Xoffset + this->length / 2 * cos(this->angle * 3.14159 / 180), target.y + Yoffset + this->length / 2 * sin(this->angle * 3.14159 / 180));
 		}
 		else
 		{
+			bool sourceIsEdge = pDoc->m_ucEdgeBitmap[target.y * pDoc->m_nWidth + target.x] != 0;
 			bool reachLine = false;
 			Point endPoint;
 			//calculate first endpoint
@@ -82,9 +83,10 @@ void ScatteredLineBrush::BrushMove(const Point source, const Point target)
 				}
 
 				int pointIndex = endPoint.x + endPoint.y * pDoc->m_nWidth;
-				if (reachLine || pDoc->m_ucEdgeBitmap[3 * pointIndex] != 0 || i == length / 2)
+				bool pointIsEdge = pDoc->m_ucEdgeBitmap[3 * pointIndex] != 0;
+				if (reachLine || (pointIsEdge != sourceIsEdge) || i == length / 2)
 				{
-					glVertex2f(endPoint.x, endPoint.y);
+					glVertex2d(endPoint.x, endPoint.y);
 					break;
 				}
 			}
@@ -118,9 +120,10 @@ void ScatteredLineBrush::BrushMove(const Point source, const Point target)
 				}
 
 				int pointIndex = endPoint.x + endPoint.y * pDoc->m_nWidth;
-				if (reachLine || pDoc->m_ucEdgeBitmap[3 * pointIndex] != 0 || i == length / 2)
+				bool pointIsEdge = pDoc->m_ucEdgeBitmap[3 * pointIndex] != 0;
+				if (reachLine || (pointIsEdge != sourceIsEdge) || i == length / 2)
 				{
-					glVertex2f(endPoint.x, endPoint.y);
+					glVertex2d(endPoint.x, endPoint.y);
 					break;
 				}
 			}
