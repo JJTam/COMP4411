@@ -97,6 +97,10 @@ public:
 	int m_nAngle;
 	ImpressionistUI*	m_pUI;
 
+	// Paintly
+	bool m_bIsPaintlyBegin;
+	int m_nPaintlySize;
+
 // Operations
 public:
 	// Get the color of the original picture at the specified coord

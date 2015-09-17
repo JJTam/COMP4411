@@ -62,7 +62,6 @@ public:
 
 	// for paintly dialog
 	Fl_Button*			m_pAutoDrawButton;
-	Fl_Slider*			m_pBrushSizeSlider;
 	Fl_Slider*			m_pAlphaSlider;
 	Fl_Slider*			m_ThresholdSlider;
 	Fl_Slider*			m_CurvatureFilterSlider;
@@ -70,6 +69,10 @@ public:
 	Fl_Slider*			m_MinStrokeLengthSlider;
 	Fl_Slider*			m_MaxStrokeLengthSlider;
 	Fl_Slider*			m_GridSizeSlider;
+	Fl_Slider*			m_PaintlyLevelSlider;
+	Fl_Slider*			m_PaintlyR0Slider;
+	Fl_Button*			m_PaintlyControlDirButton;
+	Fl_Button*			m_PaintlyCheckColorButton;
 
 	//for color selection
 	Fl_Color_Chooser* m_colorSelector;
@@ -110,6 +113,11 @@ public:
 	int					getMinStrokeLength();
 	int					getMaxStrokeLength();
 	double				getGridSize();
+	int					getPaintlyLevel();
+	int					getPaintlyR0();
+	bool					getPaintlyControlDir();
+	bool					getPaintlyCheckColor();
+
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document
 
@@ -134,6 +142,11 @@ private:
 	int		m_nMinStrokeLength;
 	int		m_nMaxStrokeLength;
 	double	m_dGridSize;
+
+	int m_nPaintlyLevel;
+	int m_nPaintlyR0;
+	bool m_bPaintlyControlDir;
+	bool m_bPaintlyCheckColor;
 
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
@@ -185,6 +198,10 @@ private:
 	static void cb_MaxStrokeLengthSlides(Fl_Widget* o, void* v);
 	static void cb_GridSizeSlides(Fl_Widget* o, void* v);
 	static void cb_paintlydraw_button(Fl_Widget* o, void* v);
+	static void cb_PaintlyLevelSlides(Fl_Widget* o, void* v);
+	static void cb_PaintlyR0Slides(Fl_Widget* o, void* v);
+	static void cb_PaintlyControlDirButton(Fl_Widget* o, void* v);
+	static void cb_PaintlyCheckColorButton(Fl_Widget* o, void* v);
 
 };
 

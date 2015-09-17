@@ -157,13 +157,7 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	ImpressionistUI* pUI = pDoc->m_pUI;
 	CurvedBrush* pBrush = (CurvedBrush*)ImpBrush::c_pBrushes[BRUSH_CURVED];
 	
-	int sumOfAlpha = 0;
-	for (int i = 0; i < width * height; ++i)
-	{
-		sumOfAlpha += pDoc->m_ucPreservedPainting[4 * i + 3];
-	}
-
-	if (sumOfAlpha == 0)
+	if (pDoc->m_bIsPaintlyBegin)
 	{
 		glBegin(GL_POLYGON);
 		glColor3ub(255, 255, 255);
@@ -174,7 +168,7 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 		glEnd();
 	}
 
-	int radius = pUI->getSize();
+	int radius = pDoc->m_nPaintlySize;
 	int minStrokeLength = pDoc->m_pUI->getMinStrokeLength();
 	int maxStrokeLength = pDoc->m_pUI->getMaxStrokeLength();
 	double curvatureFilter = pDoc->m_pUI->getCurvatureFilter();
@@ -235,7 +229,7 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	// Get parameters
 	int threshold = pDoc->m_pUI->getThreshold();
 	double gridSize = pDoc->m_pUI->getGridSize();
-	int grid = gridSize * pUI->getSize();
+	int grid = gridSize * pDoc->m_nPaintlySize;
 	if (grid < 1)
 		grid = 1;
 
@@ -296,7 +290,7 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 
 	GLubyte color[4];
 	color[3] = pDoc->getAlpha() * 255;
-	for (auto centers : allCenters)
+	for (auto& centers : allCenters)
 	{
 		GLubyte color[4];
 		auto color3 = centers[0].second;
@@ -305,15 +299,55 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 		color[2] = get<2>(color3) * pDoc->m_pUI->m_colorSelector->b();
 		glColor4ubv(color);
 
-		for (auto c : centers)
+		for (int i = 0; i < centers.size(); ++i)
 		{
-			auto point = c.first;
+			auto& c = centers[i];
+			auto& point = c.first;
+			
+			if (pUI->getPaintlyControlDir())
+			{
+				if (i > 0 && i < centers.size() - 1)
+				{
+					const auto& pprev = centers[i - 1].first;
+					const auto& pnext = centers[i + 1].first;
+
+					double x1 = pprev.first - point.first;
+					double y1 = pprev.second - point.second;
+					double m1 = sqrt(x1*x1 + y1*y1);
+					double x2 = pnext.first - point.first;
+					double y2 = pnext.second - point.second;
+					double m2 = sqrt(x2*x2 + y2*y2);
+					double innerprod = x1*x2 + y1*y2;
+
+					if (m1 > 0 && m2 > 0)
+					{
+						double ang = acos(innerprod / (m1 * m2)) * 180 / M_PI;
+						if (ang < 120)
+						{
+							point.first = (pprev.first + pnext.first) / 2;
+							point.second = (pprev.second + pnext.second) / 2;
+						}
+					}
+				}
+			}
+
+			if (pUI->getPaintlyCheckColor())
+			{
+				unsigned char* currColor = pDoc->GetOriginalPixel(point.first, point.second);
+				if (sqrt(pow(currColor[0] - color[0], 2) + pow(currColor[1] - color[1], 2) +
+					pow(currColor[2] - color[2], 2)) > 80)
+				{
+					continue;
+				}
+			}
 
 			glBegin(GL_POLYGON);
 			for (int i = 0; i < 36; ++i)
 			{
 				double theta = i * 10 * 3.14159 / 180;
-				glVertex2d(point.first - radius * cos(theta), point.second - radius * sin(theta));
+				int X = point.first - radius * cos(theta);
+				int Y = point.second - radius * sin(theta);
+				glVertex2d(X, Y);
 			}
 			glEnd();
 		}

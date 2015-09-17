@@ -403,7 +403,22 @@ int ImpressionistDoc::autoDraw()
 }
 int ImpressionistDoc::paintlyDraw()
 {
-	m_pUI->m_paintView->SimulateMouse(0, 0, PV_PAINTLY_AUTO);
+	m_bIsPaintlyBegin = true;
+	for (int l = 0; l < m_pUI->getPaintlyLevel(); ++l)
+	{
+		int currentR = m_pUI->getPaintlyR0() - l;
+		if (currentR < 0)
+		{
+			break;
+		}
+		else
+		{
+			m_nPaintlySize = 1 << currentR;
+			m_pUI->m_paintView->SimulateMouse(0, 0, PV_PAINTLY_AUTO);
+		}
+		m_bIsPaintlyBegin = false;
+	}
+	
 	return 0;
 }
 //------------------------------------------------------------------
