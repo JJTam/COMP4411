@@ -44,6 +44,7 @@ int* ImageUtils::getGradientBySobel(const unsigned char* image, int width, int h
 				- (int)(image[IXY(x - 1, y + 1)])
 				- (int)(image[IXY(x, y + 1)]) * 2
 				- (int)(image[IXY(x + 1, y + 1)]);
+			dy = -dy;
 
 			result[idx] = dx;
 			result[idx + 1] = dy;

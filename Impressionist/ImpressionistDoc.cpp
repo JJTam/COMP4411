@@ -403,6 +403,9 @@ int ImpressionistDoc::autoDraw()
 }
 int ImpressionistDoc::paintlyDraw()
 {
+	clearCanvas();
+	m_pUI->m_paintView->flush();
+
 	m_bIsPaintlyBegin = true;
 	for (int l = 0; l < m_pUI->getPaintlyLevel(); ++l)
 	{

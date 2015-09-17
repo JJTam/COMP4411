@@ -292,7 +292,6 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	color[3] = pDoc->getAlpha() * 255;
 	for (auto& centers : allCenters)
 	{
-		GLubyte color[4];
 		auto color3 = centers[0].second;
 		color[0] = get<0>(color3) * pDoc->m_pUI->m_colorSelector->r();
 		color[1] = get<1>(color3) * pDoc->m_pUI->m_colorSelector->g();
