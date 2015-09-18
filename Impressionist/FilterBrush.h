@@ -5,6 +5,8 @@
 
 enum FilterTypes {
 	FB_GAUSSIAN_FILTER = 0,
+	FB_MEAN_FILTER,
+	FB_MEDIAN_FILTER,
 	FB_CUSTOM_FILTER,
 	NUM_FILTER_TYPE // Make sure this stays at the end!
 };

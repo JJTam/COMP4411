@@ -82,6 +82,9 @@ void OriginalView::draw()
 		case DOC_DISPLAY_BLURRED:
 			bitstart = m_pDoc->m_ucBitmapBlurred + bitstartOffset;
 			break;
+		case DOC_DISPLAY_FILTERED:
+			bitstart = m_pDoc->m_ucBitmapFiltered + bitstartOffset;
+			break;
 		default:
 			bitstart = m_pDoc->m_ucBitmap + bitstartOffset;
 			break;

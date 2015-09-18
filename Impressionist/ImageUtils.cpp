@@ -54,6 +54,22 @@ int* ImageUtils::getGradientBySobel(const unsigned char* image, int width, int h
 	return result;
 }
 
+double* ImageUtils::getGaussianKernel(double sigma, unsigned int radius)
+{
+	static double e = 2.718281828;
+	int size = radius * 2 + 1;
+	double* kernel = new double[size * size];
+	for (int y = 0; y < size; ++y)
+		for (int x = 0; x < size; ++x)
+		{
+			int dx = x - radius;
+			int dy = y - radius;
+			double t = pow(e, -((dx * dx + dy * dy) / (2 * sigma)));
+			kernel[x + y * size] = t / (sqrt(2 * 3.14159265 * sigma));
+		}
+	return kernel;
+}
+
 /* Fast gaussian algorithm found here:
    http://blog.ivank.net/fastest-gaussian-blur.html
 */
@@ -268,6 +284,91 @@ unsigned char* ImageUtils::getFilteredImage(
 			{
 				currSum = sum[channel] / kernelWeightSum;
 				result[resultIdx + channel] = (unsigned char)BOUND_TO(currSum, 0, 255);
+			}
+			resultIdx += channels;
+		}
+
+	return result;
+}
+
+unsigned char* ImageUtils::getFilteredImageCB(
+	unsigned char(*kernel)(unsigned char*, int, int, int, int), unsigned int kernelWidth, unsigned int kernelHeight,
+	const unsigned char* image, unsigned int width, unsigned int height,
+	unsigned int xBegin, unsigned int xEnd, unsigned int yBegin, unsigned int yEnd,
+	unsigned int channels, int boundaryMode)
+{
+	if (kernelWidth == 0 ||
+		kernelHeight == 0 ||
+		width == 0 ||
+		height == 0 ||
+		xBegin >= width ||
+		yBegin >= height ||
+		xEnd >= width ||
+		yEnd >= height ||
+		channels == 0 ||
+		channels > 4 ||
+		kernelWidth % 2 != 1 ||
+		kernelHeight % 2 != 1)
+	{
+		return NULL;
+	}
+
+	if (xEnd <= xBegin)
+		xEnd = width - 1;
+	if (yEnd <= yBegin)
+		yEnd = height - 1;
+
+	unsigned int resultSize = (xEnd - xBegin + 1) * (yEnd - yBegin + 1) * channels;
+	unsigned char* result = new unsigned char[resultSize];
+	memset(result, 0, resultSize);
+
+	int dxMax = (kernelWidth - 1) / 2;
+	int dyMax = (kernelHeight - 1) / 2;
+
+	unsigned char* kernelParam = new unsigned char[kernelWidth * kernelHeight];
+	unsigned int resultIdx = 0;
+	for (int y = yBegin; y <= yEnd; ++y)
+		for (int x = xBegin; x <= xEnd; ++x)
+		{
+			for (int channel = 0; channel < channels; ++channel)
+			{
+				memset(kernelParam, 0, kernelWidth * kernelHeight);
+				int kernelX = 0;
+				int kernelY = 0;
+				// prepare the kernel parameters
+				bool innerRunning = true;
+				for (int fy = y - dyMax; innerRunning && fy <= y + dyMax; ++fy, ++kernelY)
+				{
+					kernelX = 0;
+					for (int fx = x - dxMax; fx <= x + dxMax; ++fx, ++kernelX)
+					{
+						int cx = fx;
+						int cy = fy;
+						if (cx < 0 || cx >= width || cy < 0 || cy >= height)
+						{
+							switch (boundaryMode)
+							{
+							case IMAGE_UTIL_EXTEND_BOUNDARY:
+								cx = BOUND_TO(cx, 0, width - 1);
+								cy = BOUND_TO(cy, 0, height - 1);
+								break;
+							case IMAGE_UTIL_WRAP_BOUNDARY:
+								cx = cx < 0 ? -cx : (cx >= width ? 2 * width - cx - 1 : cx);
+								cy = cy < 0 ? -cy : (cy >= height ? 2 * height - cy - 1 : cy);
+								break;
+							case IMAGE_UTIL_IGNORE_BOUNDARY:
+								innerRunning = false;
+								break;
+							default:
+								cx = BOUND_TO(cx, 0, width - 1);
+								cy = BOUND_TO(cy, 0, height - 1);
+								break;
+							}
+						}
+						kernelParam[kernelY * kernelHeight + kernelX] = image[(cx + cy * width) * channels + channel];
+					}
+				}
+				result[resultIdx + channel] = kernel(kernelParam, kernelWidth, kernelHeight, x, y);
 			}
 			resultIdx += channels;
 		}

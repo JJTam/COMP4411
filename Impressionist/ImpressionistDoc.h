@@ -106,13 +106,16 @@ public:
 	bool m_bIsPaintlyBegin;
 	int m_nPaintlySize;
 
+	// Filter
+	int m_nFilterType;
+
 // Operations
 public:
 	// Get the color of the original picture at the specified coord
 	GLubyte* GetOriginalPixel( int x, int y );   
 	// Get the color of the original picture at the specified point	
 	GLubyte* GetOriginalPixel( const Point p );  
-
+	GLubyte* GetFilteredPixel(int x, int y);
 
 private:
 	char			m_imageName[256];

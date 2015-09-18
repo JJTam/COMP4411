@@ -746,8 +746,10 @@ Fl_Menu_Item ImpressionistUI::DirectionTypeMenu[NUM_DIRECTION_TYPE + 1] = {
 };
 
 Fl_Menu_Item ImpressionistUI::filterTypeMenu[NUM_FILTER_TYPE + 1] = {
-	{ "Gaussian Filter", FL_ALT + 'g', (Fl_Callback *)ImpressionistUI::cb_FilterTypeChoose, (void *)FB_GAUSSIAN_FILTER },
-	{ "Custom Filter", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_FilterTypeChoose, (void *)FB_CUSTOM_FILTER },
+	{ "Gaussian Filter", 0, (Fl_Callback *)ImpressionistUI::cb_FilterTypeChoose, (void *)FB_GAUSSIAN_FILTER },
+	{ "Mean Filter", 0, (Fl_Callback *)ImpressionistUI::cb_FilterTypeChoose, (void *)FB_MEAN_FILTER },
+	{ "Median Filter", 0, (Fl_Callback *)ImpressionistUI::cb_FilterTypeChoose, (void *)FB_MEDIAN_FILTER },
+	{ "Custom Filter", 0, (Fl_Callback *)ImpressionistUI::cb_FilterTypeChoose, (void *)FB_CUSTOM_FILTER },
 	{ 0 }
 };
 
@@ -946,7 +948,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_FilterRadiusSlider->type(FL_HOR_NICE_SLIDER);
 		m_FilterRadiusSlider->labelfont(FL_COURIER);
 		m_FilterRadiusSlider->labelsize(12);
-		m_FilterRadiusSlider->minimum(1);
+		m_FilterRadiusSlider->minimum(0);
 		m_FilterRadiusSlider->maximum(10);
 		m_FilterRadiusSlider->step(1);
 		m_FilterRadiusSlider->value(m_nFilterRadius);
