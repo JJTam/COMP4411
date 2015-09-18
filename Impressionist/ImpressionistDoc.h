@@ -29,6 +29,7 @@ public:
 
 	int		loadImage(char *iname, bool isMural);			// called by the UI to load image
 	int		loadAnotherImage(char *iname);
+	int		loadEdgeImage(char *iname);
 	int		saveImage(char *iname);			// called by the UI to save image
 
 
@@ -95,6 +96,10 @@ public:
 	int m_nLineWidth;
 	int m_nAngle;
 	ImpressionistUI*	m_pUI;
+
+	// Paintly
+	bool m_bIsPaintlyBegin;
+	int m_nPaintlySize;
 
 // Operations
 public:

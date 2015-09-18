@@ -200,9 +200,30 @@ void ImpressionistUI::cb_load_another_image(Fl_Menu_* o, void* v)
 {
 	ImpressionistDoc *pDoc = whoami(o)->getDocument();
 
+	if (!pDoc->m_ucBitmap)
+	{
+		fl_alert("You must load the original image before loading another image.");
+		return;
+	}
+
 	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
 	if (newfile != NULL) {
 		pDoc->loadAnotherImage(newfile);
+	}
+}
+void ImpressionistUI::cb_load_edge_image(Fl_Menu_* o, void* v)
+{
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
+
+	if (!pDoc->m_ucBitmap)
+	{
+		fl_alert("You must load the original image before loading an edge image.");
+		return;
+	}
+
+	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
+	if (newfile != NULL) {
+		pDoc->loadEdgeImage(newfile);
 	}
 }
 //------------------------------------------------------------------
@@ -336,9 +357,8 @@ void ImpressionistUI::cb_paintlydraw_button(Fl_Widget* o, void* v)
 //-----------------------------------------------------------
 void ImpressionistUI::cb_sizeSlides(Fl_Widget* o, void* v)
 {
-	((ImpressionistUI*)(o->user_data()))->m_nSize=int( ((Fl_Slider *)o)->value() ) ;
+	((ImpressionistUI*)(o->user_data()))->m_nSize = int(((Fl_Slider *)o)->value());
 }
-
 void ImpressionistUI::cb_LineWidthSlides(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data()))->m_nLineWidth = int(((Fl_Slider *)o)->value());
@@ -362,6 +382,10 @@ void ImpressionistUI::cb_randattr_button(Fl_Widget* o, void* v)
 void ImpressionistUI::cb_anothergradient_button(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data()))->m_bAnotherGradient = bool(((Fl_Button *)o)->value());
+}
+void ImpressionistUI::cb_edgeclipping_button(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_bEdgeClipping = bool(((Fl_Button *)o)->value());
 }
 void ImpressionistUI::cb_EdgeThresholdSlides(Fl_Widget* o, void* v)
 {
@@ -419,7 +443,22 @@ void ImpressionistUI::cb_GridSizeSlides(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data()))->m_dGridSize = double(((Fl_Slider *)o)->value());
 }
-
+void ImpressionistUI::cb_PaintlyLevelSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nPaintlyLevel = int(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_PaintlyR0Slides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nPaintlyR0 = int(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_PaintlyCheckColorButton(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_bPaintlyCheckColor = bool(((Fl_Button *)o)->value());
+}
+void ImpressionistUI::cb_PaintlyControlDirButton(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_bPaintlyControlDir = bool(((Fl_Button *)o)->value());
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -491,6 +530,10 @@ bool ImpressionistUI::getAnotherGradient()
 {
 	return m_bAnotherGradient;
 }
+bool ImpressionistUI::getEdgeClipping()
+{
+	return m_bEdgeClipping;
+}
 bool ImpressionistUI::getBackground()
 {
 	return m_bBackground;
@@ -527,7 +570,22 @@ double ImpressionistUI::getGridSize()
 {
 	return m_dGridSize;
 }
-
+int ImpressionistUI::getPaintlyLevel()
+{
+	return m_nPaintlyLevel;
+}
+int ImpressionistUI::getPaintlyR0()
+{
+	return m_nPaintlyR0;
+}
+bool ImpressionistUI::getPaintlyCheckColor()
+{
+	return m_bPaintlyCheckColor;
+}
+bool ImpressionistUI::getPaintlyControlDir()
+{
+	return m_bPaintlyControlDir;
+}
 //-------------------------------------------------
 // Set the brush size
 //-------------------------------------------------
@@ -599,6 +657,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ "&Brushes",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
 		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
 		{ "Load &Another Image", FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_another_image },
+		{ "Load &Edge Image", FL_ALT + 'e', (Fl_Callback *)ImpressionistUI::cb_load_edge_image,0, FL_MENU_DIVIDER },
 		{"Colors", FL_ALT+'k',(Fl_Callback *)ImpressionistUI::cb_colorSelector},
 		{ "&Paintly", FL_ALT + 'p', (Fl_Callback *)ImpressionistUI::cb_paintly, 0, FL_MENU_DIVIDER },
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
@@ -682,13 +741,20 @@ ImpressionistUI::ImpressionistUI() {
 	m_bAttrRand = false;
 	m_nEdgeThreshold = 128;
 	m_bAnotherGradient = false;
+	m_bEdgeClipping = false;
 
-	m_nThreshold = 100;
+	m_nThreshold = 50;
 	m_dCurvatureFilter = 1.0;
-	m_dBlurFactor = 0.5;
+	m_dBlurFactor = 0.25;
 	m_nMinStrokeLength = 4;
 	m_nMaxStrokeLength = 16;
 	m_dGridSize = 1.0;
+
+	m_nPaintlyLevel = 3;
+	m_nPaintlyR0 = 3;
+	m_bPaintlyControlDir = false;
+	m_bPaintlyCheckColor = true;
+
 	// brush dialog definition
 	m_brushDialog = new Fl_Window(400, 325, "Brush Dialog");
 		// Add a brush type choice to the dialog
@@ -802,6 +868,10 @@ ImpressionistUI::ImpressionistUI() {
 		m_AnotherGradientButton->callback(cb_anothergradient_button);
 		m_AnotherGradientButton->value(m_bAnotherGradient);
 
+		m_EdgeClippingButton = new Fl_Light_Button(180, 270, 150, 25, "Edge Clipping");
+		m_EdgeClippingButton->user_data((void*)(this));
+		m_EdgeClippingButton->callback(cb_edgeclipping_button);
+		m_EdgeClippingButton->value(m_bEdgeClipping);
     m_brushDialog->end();	
 
 	m_bBackground = false;
@@ -828,25 +898,23 @@ ImpressionistUI::ImpressionistUI() {
 
 	m_backgroundDialog->end();
 
-	m_paintlyDialog = new Fl_Window(400, 325, "Paintly Dialog");
+	m_paintlyDialog = new Fl_Window(430, 350, "Paintly Dialog");
 
 		m_pAutoDrawButton = new Fl_Button(10, 20, 50, 25, "Paint");
 		m_pAutoDrawButton->user_data((void*)(this));
 		m_pAutoDrawButton->callback(cb_paintlydraw_button);
 
-		m_pBrushSizeSlider = new Fl_Value_Slider(10, 60, 300, 25, "Size");
-		m_pBrushSizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
-		m_pBrushSizeSlider->type(FL_HOR_NICE_SLIDER);
-		m_pBrushSizeSlider->labelfont(FL_COURIER);
-		m_pBrushSizeSlider->labelsize(12);
-		m_pBrushSizeSlider->minimum(1);
-		m_pBrushSizeSlider->maximum(40);
-		m_pBrushSizeSlider->step(1);
-		m_pBrushSizeSlider->value(m_nSize);
-		m_pBrushSizeSlider->align(FL_ALIGN_RIGHT);
-		m_pBrushSizeSlider->callback(cb_sizeSlides);
+		m_PaintlyCheckColorButton = new Fl_Light_Button(70, 20, 100, 25, "Chk Color");
+		m_PaintlyCheckColorButton->user_data((void*)(this));
+		m_PaintlyCheckColorButton->callback(cb_PaintlyCheckColorButton);
+		m_PaintlyCheckColorButton->value(m_bPaintlyCheckColor);
 
-		m_pAlphaSlider = new Fl_Value_Slider(10, 90, 300, 25, "Alpha");
+		m_PaintlyControlDirButton = new Fl_Light_Button(180, 20, 100, 25, "Ctrl Dir");
+		m_PaintlyControlDirButton->user_data((void*)(this));
+		m_PaintlyControlDirButton->callback(cb_PaintlyControlDirButton);
+		m_PaintlyControlDirButton->value(m_bPaintlyControlDir);
+
+		m_pAlphaSlider = new Fl_Value_Slider(10, 50, 300, 25, "Alpha");
 		m_pAlphaSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_pAlphaSlider->type(FL_HOR_NICE_SLIDER);
 		m_pAlphaSlider->labelfont(FL_COURIER);
@@ -858,7 +926,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_pAlphaSlider->align(FL_ALIGN_RIGHT);
 		m_pAlphaSlider->callback(cb_AlphaSlides);
 
-		m_ThresholdSlider = new Fl_Value_Slider(10, 120, 300, 25, "Threshold");
+		m_ThresholdSlider = new Fl_Value_Slider(10, 80, 300, 25, "Threshold");
 		m_ThresholdSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_ThresholdSlider->type(FL_HOR_NICE_SLIDER);
 		m_ThresholdSlider->labelfont(FL_COURIER);
@@ -870,7 +938,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_ThresholdSlider->align(FL_ALIGN_RIGHT);
 		m_ThresholdSlider->callback(cb_ThresholdSlides);
 
-		m_CurvatureFilterSlider = new Fl_Value_Slider(10, 150, 300, 25, "Curvature");
+		m_CurvatureFilterSlider = new Fl_Value_Slider(10, 110, 300, 25, "Curvature");
 		m_CurvatureFilterSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_CurvatureFilterSlider->type(FL_HOR_NICE_SLIDER);
 		m_CurvatureFilterSlider->labelfont(FL_COURIER);
@@ -882,7 +950,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_CurvatureFilterSlider->align(FL_ALIGN_RIGHT);
 		m_CurvatureFilterSlider->callback(cb_CurvatureFilterSlides);
 
-		m_BlurFactorSlider = new Fl_Value_Slider(10, 180, 300, 25, "Blur");
+		m_BlurFactorSlider = new Fl_Value_Slider(10, 140, 300, 25, "Blur");
 		m_BlurFactorSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_BlurFactorSlider->type(FL_HOR_NICE_SLIDER);
 		m_BlurFactorSlider->labelfont(FL_COURIER);
@@ -894,7 +962,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_BlurFactorSlider->align(FL_ALIGN_RIGHT);
 		m_BlurFactorSlider->callback(cb_BlurFactorSlides);
 
-		m_MinStrokeLengthSlider = new Fl_Value_Slider(10, 210, 300, 25, "MinStrokeLength");
+		m_MinStrokeLengthSlider = new Fl_Value_Slider(10, 170, 300, 25, "MinStrokeLength");
 		m_MinStrokeLengthSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_MinStrokeLengthSlider->type(FL_HOR_NICE_SLIDER);
 		m_MinStrokeLengthSlider->labelfont(FL_COURIER);
@@ -906,7 +974,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_MinStrokeLengthSlider->align(FL_ALIGN_RIGHT);
 		m_MinStrokeLengthSlider->callback(cb_MinStrokeLengthSlides);
 
-		m_MaxStrokeLengthSlider = new Fl_Value_Slider(10, 240, 300, 25, "MaxStrokeLength");
+		m_MaxStrokeLengthSlider = new Fl_Value_Slider(10, 200, 300, 25, "MaxStrokeLength");
 		m_MaxStrokeLengthSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_MaxStrokeLengthSlider->type(FL_HOR_NICE_SLIDER);
 		m_MaxStrokeLengthSlider->labelfont(FL_COURIER);
@@ -918,7 +986,7 @@ ImpressionistUI::ImpressionistUI() {
 		m_MaxStrokeLengthSlider->align(FL_ALIGN_RIGHT);
 		m_MaxStrokeLengthSlider->callback(cb_MaxStrokeLengthSlides);
 
-		m_GridSizeSlider = new Fl_Value_Slider(10, 270, 300, 25, "Grid Size");
+		m_GridSizeSlider = new Fl_Value_Slider(10, 230, 300, 25, "Grid Size");
 		m_GridSizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_GridSizeSlider->type(FL_HOR_NICE_SLIDER);
 		m_GridSizeSlider->labelfont(FL_COURIER);
@@ -929,6 +997,30 @@ ImpressionistUI::ImpressionistUI() {
 		m_GridSizeSlider->value(m_dGridSize);
 		m_GridSizeSlider->align(FL_ALIGN_RIGHT);
 		m_GridSizeSlider->callback(cb_GridSizeSlides);
+
+		m_PaintlyLevelSlider = new Fl_Value_Slider(10, 260, 300, 25, "Levels");
+		m_PaintlyLevelSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_PaintlyLevelSlider->type(FL_HOR_NICE_SLIDER);
+		m_PaintlyLevelSlider->labelfont(FL_COURIER);
+		m_PaintlyLevelSlider->labelsize(12);
+		m_PaintlyLevelSlider->minimum(1);
+		m_PaintlyLevelSlider->maximum(5);
+		m_PaintlyLevelSlider->step(1);
+		m_PaintlyLevelSlider->value(m_nPaintlyLevel);
+		m_PaintlyLevelSlider->align(FL_ALIGN_RIGHT);
+		m_PaintlyLevelSlider->callback(cb_PaintlyLevelSlides);
+
+		m_PaintlyR0Slider = new Fl_Value_Slider(10, 290, 300, 25, "R0");
+		m_PaintlyR0Slider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_PaintlyR0Slider->type(FL_HOR_NICE_SLIDER);
+		m_PaintlyR0Slider->labelfont(FL_COURIER);
+		m_PaintlyR0Slider->labelsize(12);
+		m_PaintlyR0Slider->minimum(1);
+		m_PaintlyR0Slider->maximum(5);
+		m_PaintlyR0Slider->step(1);
+		m_PaintlyR0Slider->value(m_nPaintlyR0);
+		m_PaintlyR0Slider->align(FL_ALIGN_RIGHT);
+		m_PaintlyR0Slider->callback(cb_PaintlyR0Slides);
 
 	m_backgroundDialog->end();
 

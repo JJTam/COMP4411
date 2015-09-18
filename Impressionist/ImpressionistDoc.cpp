@@ -176,6 +176,7 @@ int ImpressionistDoc::loadImage(char *iname, bool isMural)
 		if (width != m_nWidth || height != m_nHeight)
 		{
 			fl_alert("Mural image shall have the same dimension as the original image.");
+			delete[] data;
 			return 0;
 		}
 	}
@@ -289,14 +290,11 @@ int ImpressionistDoc::loadAnotherImage(char *iname)
 		fl_alert("Can't load bitmap file");
 		return 0;
 	}
-	if (!m_ucBitmap)
-	{
-		fl_alert("Must load original image first!");
-		return 0;
-	}
+
 	if (m_nWidth != width || m_nHeight != height)
 	{
 		fl_alert("The size must be same!");
+		delete[] data;
 		return 0;
 	}
 
@@ -315,6 +313,33 @@ int ImpressionistDoc::loadAnotherImage(char *iname)
 	// release memory
 	delete bw;
 	delete bwBlurred;
+
+	return 1;
+}
+
+int ImpressionistDoc::loadEdgeImage(char *iname)
+{
+	// try to open the image to read
+	unsigned char*	data;
+	int				width, height;
+
+	if ((data = readBMP(iname, width, height)) == NULL)
+	{
+		fl_alert("Can't load bitmap file");
+		return 0;
+	}
+
+	if (m_nWidth != width || m_nHeight != height)
+	{
+		fl_alert("The size must be same!");
+		delete[] data;
+		return 0;
+	}
+
+	// release old storage
+	if (m_ucEdgeBitmap) delete[] m_ucEdgeBitmap;
+
+	m_ucEdgeBitmap = data;
 
 	return 1;
 }
@@ -378,7 +403,25 @@ int ImpressionistDoc::autoDraw()
 }
 int ImpressionistDoc::paintlyDraw()
 {
-	m_pUI->m_paintView->SimulateMouse(0, 0, PV_PAINTLY_AUTO);
+	clearCanvas();
+	m_pUI->m_paintView->flush();
+
+	m_bIsPaintlyBegin = true;
+	for (int l = 0; l < m_pUI->getPaintlyLevel(); ++l)
+	{
+		int currentR = m_pUI->getPaintlyR0() - l;
+		if (currentR < 0)
+		{
+			break;
+		}
+		else
+		{
+			m_nPaintlySize = 1 << currentR;
+			m_pUI->m_paintView->SimulateMouse(0, 0, PV_PAINTLY_AUTO);
+		}
+		m_bIsPaintlyBegin = false;
+	}
+	
 	return 0;
 }
 //------------------------------------------------------------------
