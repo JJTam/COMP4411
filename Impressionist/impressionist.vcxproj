@@ -139,6 +139,7 @@
     <ClCompile Include="CircleBrush.cpp" />
     <ClCompile Include="CurvedBrush.cpp" />
     <ClCompile Include="CurvedBrushHelper.cpp" />
+    <ClCompile Include="FilterBrush.cpp" />
     <ClCompile Include="ImageUtils.cpp" />
     <ClCompile Include="ImpBrush.cpp" />
     <ClCompile Include="Impressionist.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="CircleBrush.h" />
     <ClInclude Include="CurvedBrush.h" />
     <ClInclude Include="CurvedBrushHelper.h" />
+    <ClInclude Include="FilterBrush.h" />
     <ClInclude Include="ImageUtils.h" />
     <ClInclude Include="ImpBrush.h" />
     <ClInclude Include="impressionist.h" />

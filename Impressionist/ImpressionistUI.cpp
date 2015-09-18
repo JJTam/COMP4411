@@ -277,7 +277,10 @@ void ImpressionistUI::cb_exit(Fl_Menu_* o, void* v)
 {
 	whoami(o)->m_mainWindow->hide();
 	whoami(o)->m_brushDialog->hide();
-
+	whoami(o)->m_backgroundDialog->hide();
+	whoami(o)->m_paintlyDialog->hide();
+	whoami(o)->m_colorSelectorDialog->hide();
+	whoami(o)->m_FilterDialog->hide();
 }
 
 void ImpressionistUI::cb_ChooseDisplay(Fl_Menu_* o, void* v)
@@ -300,7 +303,10 @@ void ImpressionistUI::cb_undo(Fl_Menu_* o, void* v) {
 
 	pDoc->undo();
 }
-
+void ImpressionistUI::cb_FilterDialogButton(Fl_Widget* o, void* v) {
+	ImpressionistUI* pUI = ((ImpressionistUI *)(o->user_data()));
+	pUI->m_FilterDialog->show();
+}
 
 //------- UI should keep track of the current for all the controls for answering the query from Doc ---------
 //-------------------------------------------------------------
@@ -459,6 +465,33 @@ void ImpressionistUI::cb_PaintlyControlDirButton(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data()))->m_bPaintlyControlDir = bool(((Fl_Button *)o)->value());
 }
+// filter dialog callbacks
+void ImpressionistUI::cb_FilterRadiusSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_nFilterRadius = int(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_FilterSigmaSlides(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_dFilterSigma = double(((Fl_Slider *)o)->value());
+}
+void ImpressionistUI::cb_FilterUpdateButton(Fl_Widget* o, void* v)
+{
+	ImpressionistUI* pUI = (ImpressionistUI*)(o->user_data());
+	if (pUI->m_pDoc)
+		pUI->m_pDoc->updateFiltered();
+}
+void ImpressionistUI::cb_FilterTypeChoose(Fl_Widget* o, void* v)
+{
+	ImpressionistUI* pUI = (ImpressionistUI*)(o->user_data());
+	if (pUI->m_pDoc)
+		pUI->m_pDoc->setFilterType((int)v);
+}
+void ImpressionistUI::cb_FilterNormalizeKernelButton(Fl_Widget* o, void* v)
+{
+	ImpressionistUI* pUI = (ImpressionistUI*)(o->user_data());
+	if (pUI->m_pDoc)
+		pUI->m_pDoc->normalizeKernel();
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -586,6 +619,14 @@ bool ImpressionistUI::getPaintlyControlDir()
 {
 	return m_bPaintlyControlDir;
 }
+int	ImpressionistUI::getFilterRadius()
+{
+	return m_nFilterRadius;
+}
+double ImpressionistUI::getFilterSigma()
+{
+	return m_dFilterSigma;
+}
 //-------------------------------------------------
 // Set the brush size
 //-------------------------------------------------
@@ -670,6 +711,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 
 	{ "&Display", 0, 0, 0, FL_SUBMENU },
 		{ "&Original", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_ORIGINAL },
+		{ "&Filtered", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_FILTERED },
 		{ "&Edge", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_EDGE },
 		{ "&Another", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_ANOTHER },
 		{ "Blurred (for Paintly)", 0, (Fl_Callback *)ImpressionistUI::cb_ChooseDisplay, (void*)DOC_DISPLAY_BLURRED },
@@ -691,6 +733,7 @@ Fl_Menu_Item ImpressionistUI::brushTypeMenu[NUM_BRUSH_TYPE+1] = {
   {"Scattered Lines",	FL_ALT+'m', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SCATTERED_LINES},
   {"Scattered Circles",	FL_ALT+'d', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SCATTERED_CIRCLES},
   {"Curved Brush", FL_ALT + 't', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_CURVED},
+  {"Filter Brush", FL_ALT + 'f', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_FILTERED },
   {0}
 };
 
@@ -699,6 +742,12 @@ Fl_Menu_Item ImpressionistUI::DirectionTypeMenu[NUM_DIRECTION_TYPE + 1] = {
 	{ "Slider/Right Mouse", FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_StrokeDirectionChoice, (void *)SLIDER_AND_RIGHT_MOUSE },
 	{ "Gradient", FL_ALT + 'g', (Fl_Callback *)ImpressionistUI::cb_StrokeDirectionChoice, (void *)GRADIENT },
 	{ "Brush Direction", FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_StrokeDirectionChoice, (void *)BRUSH_DIRECTION },
+	{ 0 }
+};
+
+Fl_Menu_Item ImpressionistUI::filterTypeMenu[NUM_FILTER_TYPE + 1] = {
+	{ "Gaussian Filter", FL_ALT + 'g', (Fl_Callback *)ImpressionistUI::cb_FilterTypeChoose, (void *)FB_GAUSSIAN_FILTER },
+	{ "Custom Filter", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_FilterTypeChoose, (void *)FB_CUSTOM_FILTER },
 	{ 0 }
 };
 
@@ -739,7 +788,7 @@ ImpressionistUI::ImpressionistUI() {
 	m_dAlpha = 1.0;
 	m_nSpacing = 4;
 	m_bAttrRand = false;
-	m_nEdgeThreshold = 128;
+	m_nEdgeThreshold = 200;
 	m_bAnotherGradient = false;
 	m_bEdgeClipping = false;
 
@@ -755,22 +804,29 @@ ImpressionistUI::ImpressionistUI() {
 	m_bPaintlyControlDir = false;
 	m_bPaintlyCheckColor = true;
 
+	m_nFilterRadius = 2;
+	m_dFilterSigma = 1.0;
+
 	// brush dialog definition
-	m_brushDialog = new Fl_Window(400, 325, "Brush Dialog");
+	m_brushDialog = new Fl_Window(410, 325, "Brush Dialog");
 		// Add a brush type choice to the dialog
-		m_BrushTypeChoice = new Fl_Choice(50,10,150,25,"&Brush");
+		m_BrushTypeChoice = new Fl_Choice(50,10,213,25,"&Brush");
 		m_BrushTypeChoice->user_data((void*)(this));	// record self to be used by static callback functions
 		m_BrushTypeChoice->menu(brushTypeMenu);
 		m_BrushTypeChoice->callback(cb_brushChoice);
 
-		m_StrokeDirectionChoice = new Fl_Choice(120, 40, 150, 25, "Stroke Direction");
+		m_StrokeDirectionChoice = new Fl_Choice(113, 40, 150, 25, "Stroke Direction");
 		m_StrokeDirectionChoice->user_data((void*)(this));	// record self to be used by static callback functions
 		m_StrokeDirectionChoice->menu(DirectionTypeMenu);
 		m_StrokeDirectionChoice->callback(cb_StrokeDirectionChoice);
 
-		m_ClearCanvasButton = new Fl_Button(240,10,150,25,"&Clear Canvas");
+		m_ClearCanvasButton = new Fl_Button(275,10,115,25,"&Clear Canvas");
 		m_ClearCanvasButton->user_data((void*)(this));
 		m_ClearCanvasButton->callback(cb_clear_canvas_button);
+
+		m_FilterDialogButton = new Fl_Button(275, 40, 115, 25, "Edit Filter");
+		m_FilterDialogButton->user_data((void*)(this));
+		m_FilterDialogButton->callback(cb_FilterDialogButton);
 
 		// Add brush size slider to the dialog 
 		m_BrushSizeSlider = new Fl_Value_Slider(10, 80, 300, 25, "Size");
@@ -838,16 +894,16 @@ ImpressionistUI::ImpressionistUI() {
 		m_SpacingSlider->align(FL_ALIGN_RIGHT);
 		m_SpacingSlider->callback(cb_SpacingSlides);
 
-		m_RandAttrButton = new Fl_Light_Button(215, 200, 100, 25, "Attr Rand");
+		m_RandAttrButton = new Fl_Light_Button(223, 200, 95, 25, "Attr Rand");
 		m_RandAttrButton->user_data((void*)(this));
 		m_RandAttrButton->callback(cb_randattr_button);
 		m_RandAttrButton->value(m_bAttrRand);
 
-		m_AutoDrawButton = new Fl_Button(320, 200, 50, 25, "Paint");
+		m_AutoDrawButton = new Fl_Button(330, 200, 60, 25, "Paint");
 		m_AutoDrawButton->user_data((void*)(this));
 		m_AutoDrawButton->callback(cb_autodraw_button);
 
-		m_EdgeThresholdSlider = new Fl_Value_Slider(10, 235, 300, 25, "Edge T");
+		m_EdgeThresholdSlider = new Fl_Value_Slider(10, 235, 270, 25, "Edge T");
 		m_EdgeThresholdSlider->user_data((void*)(this));	// record self to be used by static callback functions
 		m_EdgeThresholdSlider->type(FL_HOR_NICE_SLIDER);
 		m_EdgeThresholdSlider->labelfont(FL_COURIER);
@@ -859,20 +915,67 @@ ImpressionistUI::ImpressionistUI() {
 		m_EdgeThresholdSlider->align(FL_ALIGN_RIGHT);
 		m_EdgeThresholdSlider->callback(cb_EdgeThresholdSlides);
 
-		m_EdgeUpdateButton = new Fl_Button(330, 235, 50, 25, "Do it!");
+		m_EdgeUpdateButton = new Fl_Button(330, 235, 60, 25, "Update");
 		m_EdgeUpdateButton->user_data((void*)(this));
 		m_EdgeUpdateButton->callback(cb_EdgeUpdateButton);
 
-		m_AnotherGradientButton = new Fl_Light_Button(10, 270, 150, 25, "AnotherGradient");
+		m_AnotherGradientButton = new Fl_Light_Button(10, 270, 184, 25, "Another Gradient");
 		m_AnotherGradientButton->user_data((void*)(this));
 		m_AnotherGradientButton->callback(cb_anothergradient_button);
 		m_AnotherGradientButton->value(m_bAnotherGradient);
 
-		m_EdgeClippingButton = new Fl_Light_Button(180, 270, 150, 25, "Edge Clipping");
+		m_EdgeClippingButton = new Fl_Light_Button(206, 270, 184, 25, "Edge Clipping");
 		m_EdgeClippingButton->user_data((void*)(this));
 		m_EdgeClippingButton->callback(cb_edgeclipping_button);
 		m_EdgeClippingButton->value(m_bEdgeClipping);
     m_brushDialog->end();	
+
+	m_FilterDialog = new Fl_Window(380, 300, "Filter");
+
+		m_FilterChoice = new Fl_Choice(82, 10, 150, 25, "&Filter Type");
+		m_FilterChoice->user_data((void*)(this));	// record self to be used by static callback functions
+		m_FilterChoice->menu(filterTypeMenu);
+		m_FilterChoice->callback(cb_FilterTypeChoose);
+
+		m_FilterUpdateButton = new Fl_Button(242, 10, 118, 25, "Update");
+		m_FilterUpdateButton->user_data((void*)(this));
+		m_FilterUpdateButton->callback(cb_FilterUpdateButton);
+
+		m_FilterRadiusSlider = new Fl_Value_Slider(10, 45, 300, 25, "Radius");
+		m_FilterRadiusSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_FilterRadiusSlider->type(FL_HOR_NICE_SLIDER);
+		m_FilterRadiusSlider->labelfont(FL_COURIER);
+		m_FilterRadiusSlider->labelsize(12);
+		m_FilterRadiusSlider->minimum(1);
+		m_FilterRadiusSlider->maximum(10);
+		m_FilterRadiusSlider->step(1);
+		m_FilterRadiusSlider->value(m_nFilterRadius);
+		m_FilterRadiusSlider->align(FL_ALIGN_RIGHT);
+		m_FilterRadiusSlider->callback(cb_FilterRadiusSlides);
+
+		m_FilterRadiusSlider = new Fl_Value_Slider(10, 80, 300, 25, "Sigma");
+		m_FilterRadiusSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_FilterRadiusSlider->type(FL_HOR_NICE_SLIDER);
+		m_FilterRadiusSlider->labelfont(FL_COURIER);
+		m_FilterRadiusSlider->labelsize(12);
+		m_FilterRadiusSlider->minimum(0.0);
+		m_FilterRadiusSlider->maximum(10.0);
+		m_FilterRadiusSlider->step(0.05);
+		m_FilterRadiusSlider->value(m_dFilterSigma);
+		m_FilterRadiusSlider->align(FL_ALIGN_RIGHT);
+		m_FilterRadiusSlider->callback(cb_FilterSigmaSlides);
+
+		m_FilterKernelInput = new Fl_Multiline_Input(10, 115, 300, 100, "Kernel");
+		m_FilterKernelInput->user_data((void*)(this));
+		m_FilterKernelInput->labelfont(FL_COURIER);
+		m_FilterKernelInput->labelsize(12);
+		m_FilterKernelInput->align(FL_ALIGN_RIGHT);
+
+		m_FilterNormalizeKernelButton = new Fl_Button(10, 225, 120, 25, "Normalize");
+		m_FilterNormalizeKernelButton->user_data((void*)(this));
+		m_FilterNormalizeKernelButton->callback(cb_FilterNormalizeKernelButton);
+
+	m_FilterDialog->end();
 
 	m_bBackground = false;
 	m_dBackgroundAlpha = 0.4;

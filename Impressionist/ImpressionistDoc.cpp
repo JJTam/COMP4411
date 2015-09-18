@@ -20,6 +20,7 @@
 #include "ScatteredPointBrush.h"
 #include "ScatteredCircleBrush.h"
 #include "CurvedBrush.h"
+#include "FilterBrush.h"
 
 #include "ImageUtils.h"
 #include <vector>
@@ -66,7 +67,9 @@ ImpressionistDoc::ImpressionistDoc()
 	ImpBrush::c_pBrushes[BRUSH_SCATTERED_CIRCLES]	
 		= new ScatteredCircleBrush(this, "Scattered Circles");
 	ImpBrush::c_pBrushes[BRUSH_CURVED]
-		= new CurvedBrush(this, "Scattered Circles");
+		= new CurvedBrush(this, "Curved Brush");
+	ImpBrush::c_pBrushes[BRUSH_FILTERED]
+		= new FilterBrush(this, "Filter Brush");
 
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
@@ -117,6 +120,7 @@ void ImpressionistDoc::setBrushType(int type)
 	case BRUSH_SCATTERED_POINTS:
 	case BRUSH_SCATTERED_CIRCLES:
 	case BRUSH_CURVED:
+	case BRUSH_FILTERED:
 		m_pUI->m_BrushSizeSlider->activate();
 		m_pUI->m_AlphaSlider->activate();
 		break;
@@ -519,20 +523,40 @@ void ImpressionistDoc::setDisplayMode(int mode)
 		if (!m_ucAnotherBitmap)
 		{
 			fl_alert("Please load another bitmap first.");
-			mode = DOC_DISPLAY_ORIGINAL;
+			mode = m_nDisplayMode;
 		}
+		break;
 	case DOC_DISPLAY_BLURRED:
 		if (!m_ucBitmapBlurred)
 		{
 			fl_alert("The bitmap has not been blurred yet.");
-			mode = DOC_DISPLAY_ORIGINAL;
+			mode = m_nDisplayMode;
 		}
+		break;
 	case DOC_DISPLAY_EDGE:
 	case DOC_DISPLAY_ORIGINAL:
-		m_nDisplayMode = mode;
+	case DOC_DISPLAY_FILTERED:
 		break;
 	default:
+		mode = DOC_DISPLAY_ORIGINAL;
 		break;
 	}
+
+	m_nDisplayMode = mode;
 	m_pUI->m_origView->refresh();
+}
+
+void ImpressionistDoc::setFilterType(int type)
+{
+
+}
+
+void ImpressionistDoc::updateFiltered()
+{
+
+}
+
+void ImpressionistDoc::normalizeKernel()
+{
+
 }

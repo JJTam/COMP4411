@@ -15,7 +15,8 @@ enum DocDisplayMode {
 	DOC_DISPLAY_ORIGINAL,
 	DOC_DISPLAY_EDGE,
 	DOC_DISPLAY_ANOTHER,
-	DOC_DISPLAY_BLURRED
+	DOC_DISPLAY_BLURRED,
+	DOC_DISPLAY_FILTERED
 };
 
 class ImpressionistUI;
@@ -56,7 +57,10 @@ public:
 
 	void updateEdge();
 
-	
+	void updateFiltered();
+	void setFilterType(int type);
+	void normalizeKernel();
+
 // Attributes
 public:
 	// Dimensions of original window.
@@ -71,6 +75,7 @@ public:
 	unsigned char*  m_ucPreservedPainting;
 	unsigned char*  m_ucEdgeBitmap;
 	unsigned char*	m_ucBitmapBlurred;
+	unsigned char*  m_ucBitmapFiltered;
 
 	int* m_iGradient;
 	int* m_iGradientMagnitude;
