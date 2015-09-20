@@ -20,6 +20,7 @@ public:
 		const unsigned char * image, int width, int height);
 	static unsigned char* fastGaussianBlur(double sigma, const unsigned char* image, int width, int height);
 	static int* getGradientBySobel(const unsigned char* image, int width, int height);
+	static double* getGaussianKernel(double sigma, unsigned int radius);
 
 	// Get an array of dimension (xEnd-xBegin)*(yEnd-yBegin)*channels that contains the image
 	// filtered by the input filter channel-wise.
@@ -29,6 +30,16 @@ public:
 		const unsigned char* image, unsigned int width, unsigned int height,
 		unsigned int xBegin, unsigned int xEnd, unsigned int yBegin, unsigned int yEnd,
 		unsigned int channels, int boundaryMode = IMAGE_UTIL_EXTEND_BOUNDARY);
+
+	// Similar to getFilteredImage, but for each pixel it calls the kernel callback, the parameters are:
+	// [1] a pointer to a unsigned char array of size (kernelWidth*kernelHeight) that contians the pixels around the target,
+	// [2][3] kernelWidth and kernelHeight (for Lambda)
+	// [4][5] two numbers indicating the center (for kernel to perform IGNORE_BOUNDARY)
+	static unsigned char* getFilteredImageCB(unsigned char(*kernel)(unsigned char*, int, int, int, int), unsigned int kernelWidth, unsigned int kernelHeight,
+		const unsigned char* image, unsigned int width, unsigned int height,
+		unsigned int xBegin, unsigned int xEnd, unsigned int yBegin, unsigned int yEnd,
+		unsigned int channels, int boundaryMode = IMAGE_UTIL_EXTEND_BOUNDARY);
+
 };
 
 #endif // _IMAGE_UTILS

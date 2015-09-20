@@ -17,11 +17,13 @@
 #include <FL/Fl_Light_Button.H>
 #include <FL/Fl_Check_Button.H>
 #include <FL/Fl_Color_Chooser.H>
+#include <FL/Fl_Multiline_Input.H>
 #include "Impressionist.h"
 #include "OriginalView.h"
 #include "PaintView.h"
 
 #include "ImpBrush.h"
+#include "FilterBrush.h"
 
 class ImpressionistUI {
 public:
@@ -55,6 +57,18 @@ public:
 	Fl_Button*			m_EdgeUpdateButton;
 	Fl_Button*			m_AnotherGradientButton;
 	Fl_Button*			m_EdgeClippingButton;
+	Fl_Button*			m_FilterDialogButton;
+
+	// for filter dialog
+	Fl_Window*			m_FilterDialog;
+	Fl_Choice*			m_FilterChoice;
+	Fl_Slider*			m_FilterRadiusSlider;
+	Fl_Slider*			m_FilterParamSlider;
+	Fl_Multiline_Input* m_FilterKernelInput;
+	Fl_Button*			m_FilterUpdateButton;
+	Fl_Button*			m_FilterNormalizeKernelButton;
+	Fl_Button*			m_FilterOnCurrentButton;
+
 	// for background dialog
 	Fl_Window*			m_backgroundDialog;
 	Fl_Button*			m_BackgroundButton;
@@ -118,6 +132,9 @@ public:
 	bool					getPaintlyControlDir();
 	bool					getPaintlyCheckColor();
 
+	int					getFilterRadius();
+	double				getFilterSigma();
+	bool				getFilterOnCurrent();
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document
 
@@ -148,11 +165,15 @@ private:
 	bool m_bPaintlyControlDir;
 	bool m_bPaintlyCheckColor;
 
+	int m_nFilterRadius;
+	double m_dFilterSigma;
+	bool m_bFilterOnCurrent;
+
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
 	static Fl_Menu_Item		brushTypeMenu[NUM_BRUSH_TYPE+1];
 	static Fl_Menu_Item		DirectionTypeMenu[NUM_DIRECTION_TYPE + 1];
-
+	static Fl_Menu_Item		filterTypeMenu[NUM_FILTER_TYPE + 1];
 	static ImpressionistUI*	whoami(Fl_Menu_* o);
 
 	// All callbacks here.  Callbacks are declared 
@@ -175,6 +196,7 @@ private:
 	static void	cb_AngleSlides(Fl_Widget* o, void* v);
 	static void cb_AlphaSlides(Fl_Widget* o, void* v);
 	static void cb_undo(Fl_Menu_* o, void* v);
+	static void cb_FilterDialogButton(Fl_Widget* o, void* v);
 
 	static void cb_SpacingSlides(Fl_Widget* o, void* v);
 	static void cb_randattr_button(Fl_Widget* o, void* v);
@@ -203,6 +225,12 @@ private:
 	static void cb_PaintlyControlDirButton(Fl_Widget* o, void* v);
 	static void cb_PaintlyCheckColorButton(Fl_Widget* o, void* v);
 
+	static void cb_FilterTypeChoose(Fl_Widget* o, void* v);
+	static void cb_FilterRadiusSlides(Fl_Widget* o, void* v);
+	static void cb_FilterSigmaSlides(Fl_Widget* o, void* v);
+	static void cb_FilterUpdateButton(Fl_Widget* o, void* v);
+	static void cb_FilterNormalizeKernelButton(Fl_Widget* o, void* v);
+	static void cb_FilterOnCurrentButton(Fl_Widget* o, void* v);
 };
 
 #endif

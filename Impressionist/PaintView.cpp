@@ -50,7 +50,7 @@ PaintView::PaintView(int			x,
 
 int getAngle(int dx, int dy)
 {
-	int angle = (dy == 0) ? 90 : (int)(atan((double)dx / dy) / M_PI * 180);
+	int angle = (dx == 0) ? 90 : (int)(atan((double)dy / dx) / M_PI * 180);
 	while (angle < 0)
 		angle += 180;
 	return angle;
@@ -150,8 +150,6 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 
 void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 {
-	static double kernel[25];
-	static double e = 2.718281828;
 	static double prevSigma = -1;
 
 	ImpressionistUI* pUI = pDoc->m_pUI;
@@ -189,15 +187,9 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 		}
 		else
 		{
-			for (int y = 0; y < 5; ++y)
-				for (int x = 0; x < 5; ++x)
-				{
-					int dx = x - 2;
-					int dy = y - 2;
-					double t = pow(e, -((dx * dx + dy * dy) / (2 * prevSigma)));
-					kernel[x + y * 5] = t / (sqrt(2 * M_PI * prevSigma));
-				}
+			double* kernel = ImageUtils::getGaussianKernel(prevSigma, 2);
 			pDoc->m_ucBitmapBlurred = ImageUtils::getFilteredImage(kernel, 5, 5, pDoc->m_ucBitmap, pDoc->m_nWidth, pDoc->m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
+			delete[] kernel;
 			if (pDoc->getDisplayMode() == DOC_DISPLAY_BLURRED)
 			{
 				pUI->m_origView->refresh();
@@ -555,6 +547,11 @@ void PaintView::draw()
 
 		if (shallUpdatePreservedDrawing)
 		{
+			glReadBuffer(GL_FRONT);
+
+			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+			glPixelStorei(GL_PACK_ROW_LENGTH, m_pDoc->m_nPaintWidth);
+
 			glReadPixels(0,
 						m_nWindowHeight - m_nDrawHeight,
 						m_nDrawWidth,
@@ -566,6 +563,11 @@ void PaintView::draw()
 
 		if (shallUpdateContentView)
 		{
+			glReadBuffer(GL_FRONT);
+
+			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+			glPixelStorei(GL_PACK_ROW_LENGTH, m_pDoc->m_nPaintWidth);
+
 			glReadPixels(0,
 				m_nWindowHeight - m_nDrawHeight,
 				m_nDrawWidth,

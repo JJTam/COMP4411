@@ -15,7 +15,15 @@ enum DocDisplayMode {
 	DOC_DISPLAY_ORIGINAL,
 	DOC_DISPLAY_EDGE,
 	DOC_DISPLAY_ANOTHER,
-	DOC_DISPLAY_BLURRED
+	DOC_DISPLAY_BLURRED,
+	DOC_DISPLAY_FILTERED
+};
+
+enum DocSaveImageType {
+	DOC_SAVE_DRAWING,
+	DOC_SAVE_DRAWING_WITH_BG,
+	DOC_SAVE_EDGE,
+	DOC_SAVE_FILTERED
 };
 
 class ImpressionistUI;
@@ -30,7 +38,7 @@ public:
 	int		loadImage(char *iname, bool isMural);			// called by the UI to load image
 	int		loadAnotherImage(char *iname);
 	int		loadEdgeImage(char *iname);
-	int		saveImage(char *iname);			// called by the UI to save image
+	int		saveImage(char *iname, int type);			// called by the UI to save image
 
 
 	int     clearCanvas();                  // called by the UI to clear the drawing canvas
@@ -56,7 +64,10 @@ public:
 
 	void updateEdge();
 
-	
+	void updateFiltered();
+	void setFilterType(int type);
+	void normalizeKernel();
+
 // Attributes
 public:
 	// Dimensions of original window.
@@ -71,6 +82,7 @@ public:
 	unsigned char*  m_ucPreservedPainting;
 	unsigned char*  m_ucEdgeBitmap;
 	unsigned char*	m_ucBitmapBlurred;
+	unsigned char*  m_ucBitmapFiltered;
 
 	int* m_iGradient;
 	int* m_iGradientMagnitude;
@@ -101,13 +113,16 @@ public:
 	bool m_bIsPaintlyBegin;
 	int m_nPaintlySize;
 
+	// Filter
+	int m_nFilterType;
+
 // Operations
 public:
 	// Get the color of the original picture at the specified coord
 	GLubyte* GetOriginalPixel( int x, int y );   
 	// Get the color of the original picture at the specified point	
 	GLubyte* GetOriginalPixel( const Point p );  
-
+	GLubyte* GetFilteredPixel(int x, int y);
 
 private:
 	char			m_imageName[256];

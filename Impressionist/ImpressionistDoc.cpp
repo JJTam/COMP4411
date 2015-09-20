@@ -20,11 +20,15 @@
 #include "ScatteredPointBrush.h"
 #include "ScatteredCircleBrush.h"
 #include "CurvedBrush.h"
+#include "FilterBrush.h"
 
 #include "ImageUtils.h"
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
+#include <string>
+#include <sstream>
 
 #define DESTROY(p)	{  if ((p)!=NULL) {delete [] p; p=NULL; } }
 #define ABS(x) (x >= 0 ? x : -x)
@@ -47,6 +51,8 @@ ImpressionistDoc::ImpressionistDoc()
 	m_iGradientMagnitude = NULL;
 	m_ucEdgeBitmap = NULL;
 	m_ucBitmapBlurred = NULL;
+	m_ucBitmapFiltered = NULL;
+	m_nFilterType = FB_GAUSSIAN_FILTER;
 
 	// create one instance of each brush
 	ImpBrush::c_nBrushCount	= NUM_BRUSH_TYPE;
@@ -66,7 +72,9 @@ ImpressionistDoc::ImpressionistDoc()
 	ImpBrush::c_pBrushes[BRUSH_SCATTERED_CIRCLES]	
 		= new ScatteredCircleBrush(this, "Scattered Circles");
 	ImpBrush::c_pBrushes[BRUSH_CURVED]
-		= new CurvedBrush(this, "Scattered Circles");
+		= new CurvedBrush(this, "Curved Brush");
+	ImpBrush::c_pBrushes[BRUSH_FILTERED]
+		= new FilterBrush(this, "Filter Brush");
 
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
@@ -117,6 +125,7 @@ void ImpressionistDoc::setBrushType(int type)
 	case BRUSH_SCATTERED_POINTS:
 	case BRUSH_SCATTERED_CIRCLES:
 	case BRUSH_CURVED:
+	case BRUSH_FILTERED:
 		m_pUI->m_BrushSizeSlider->activate();
 		m_pUI->m_AlphaSlider->activate();
 		break;
@@ -193,10 +202,13 @@ int ImpressionistDoc::loadImage(char *iname, bool isMural)
 	if (m_iGradientMagnitude) delete[] m_iGradientMagnitude;
 	if (m_ucEdgeBitmap) delete[] m_ucEdgeBitmap;
 	if (m_ucBitmapBlurred) delete[] m_ucBitmapBlurred;
+	if (m_ucBitmapFiltered) delete[] m_ucBitmapFiltered;
 	m_ucBitmapBlurred = NULL;
 
 	// setup new original image
 	m_ucBitmap		= data;
+	m_ucBitmapFiltered = new unsigned char[width * height * 3];
+	memcpy(m_ucBitmapFiltered, m_ucBitmap, width * height * 3);
 
 	////// compute gradient
 
@@ -348,19 +360,51 @@ int ImpressionistDoc::loadEdgeImage(char *iname)
 // This is called by the UI when the save image menu button is 
 // pressed.
 //----------------------------------------------------------------
-int ImpressionistDoc::saveImage(char *iname) 
+int ImpressionistDoc::saveImage(char *iname, int type) 
 {
 
 	// writeBMP(iname, m_nPaintWidth, m_nPaintHeight, m_ucPainting);
-	unsigned char* rgb = new unsigned char[m_nPaintWidth*m_nPaintHeight * 3];
-	for (int i = 0; i < m_nPaintWidth*m_nPaintHeight; ++i)
+	
+	int sourceDim = 4;
+	unsigned char* source = m_ucPreservedPainting;
+
+	switch (type)
 	{
-		rgb[i * 3] = m_ucPainting[i * 4];
-		rgb[i * 3 + 1] = m_ucPainting[i * 4 + 1];
-		rgb[i * 3 + 2] = m_ucPainting[i * 4 + 2];
+	case DOC_SAVE_DRAWING:
+		break;
+	case DOC_SAVE_DRAWING_WITH_BG:
+		source = m_ucPainting;
+		break;
+	case DOC_SAVE_EDGE:
+		source = m_ucEdgeBitmap;
+		sourceDim = 3;
+		break;
+	case DOC_SAVE_FILTERED:
+		source = m_ucBitmapFiltered;
+		sourceDim = 3;
+		break;
+	default:
+		break;
 	}
-	writeBMP(iname, m_nPaintWidth, m_nPaintHeight, rgb);
-	delete[] rgb;
+
+	// copy data
+	if (sourceDim != 3)
+	{
+		unsigned char* rgb = new unsigned char[m_nPaintWidth * m_nPaintHeight * 3];
+		for (int i = 0; i < m_nWidth*m_nHeight; ++i)
+		{
+			rgb[i * 3] = source[i * sourceDim];
+			rgb[i * 3 + 1] = source[i * sourceDim + 1];
+			rgb[i * 3 + 2] = source[i * sourceDim + 2];
+		}
+		writeBMP(iname, m_nWidth, m_nHeight, rgb);
+		delete[] rgb;
+	}
+	else
+	{
+		writeBMP(iname, m_nWidth, m_nHeight, source);
+	}
+
 	return 1;
 }
 
@@ -442,6 +486,21 @@ GLubyte* ImpressionistDoc::GetOriginalPixel( int x, int y )
 	return (GLubyte*)(m_ucBitmap + 3 * (y*m_nWidth + x));
 }
 
+GLubyte* ImpressionistDoc::GetFilteredPixel(int x, int y)
+{
+	if (x < 0)
+		x = 0;
+	else if (x >= m_nWidth)
+		x = m_nWidth - 1;
+
+	if (y < 0)
+		y = 0;
+	else if (y >= m_nHeight)
+		y = m_nHeight - 1;
+
+	return (GLubyte*)(m_ucBitmapFiltered + 3 * (y*m_nWidth + x));
+}
+
 //----------------------------------------------------------------
 // Get the color of the pixel in the original image at point p
 //----------------------------------------------------------------
@@ -519,20 +578,178 @@ void ImpressionistDoc::setDisplayMode(int mode)
 		if (!m_ucAnotherBitmap)
 		{
 			fl_alert("Please load another bitmap first.");
-			mode = DOC_DISPLAY_ORIGINAL;
+			mode = m_nDisplayMode;
 		}
+		break;
 	case DOC_DISPLAY_BLURRED:
 		if (!m_ucBitmapBlurred)
 		{
 			fl_alert("The bitmap has not been blurred yet.");
-			mode = DOC_DISPLAY_ORIGINAL;
+			mode = m_nDisplayMode;
 		}
+		break;
 	case DOC_DISPLAY_EDGE:
 	case DOC_DISPLAY_ORIGINAL:
-		m_nDisplayMode = mode;
+	case DOC_DISPLAY_FILTERED:
+		break;
+	default:
+		mode = DOC_DISPLAY_ORIGINAL;
+		break;
+	}
+
+	m_nDisplayMode = mode;
+	m_pUI->m_origView->refresh();
+}
+
+void ImpressionistDoc::setFilterType(int type)
+{
+	switch (type)
+	{
+	case FB_GAUSSIAN_FILTER:
+	case FB_MEAN_FILTER:
+	case FB_MEDIAN_FILTER:
+	case FB_CUSTOM_FILTER:
+		break;
+	default:
+		type = FB_GAUSSIAN_FILTER;
+		break;
+	}
+	m_nFilterType = type;
+}
+
+bool parseKernel(ImpressionistDoc* pDoc, double*& kernel, int& width, int& height)
+{
+	using namespace std;
+	string s = pDoc->m_pUI->m_FilterKernelInput->value();
+	stringstream ss(s);
+	ss >> width; ss >> height;
+	if (!ss.good() || width <= 0 || height <= 0 || width % 2 == 0 || height % 2 == 0)
+	{
+		return false;
+	}
+
+	double* result = new double[width * height];
+	for (int i = 0; i < width * height; ++i)
+	{
+		ss >> result[i];
+		if (!ss.good() && !(i == width * height - 1 && ss.eof()))
+		{
+			delete[] result;
+			return false;
+		}
+	}
+
+	kernel = result;
+	return true;
+}
+
+void ImpressionistDoc::updateFiltered()
+{
+	unsigned char* preservedBitmap = m_ucBitmapFiltered;
+	unsigned char* filterTarget = m_ucBitmap;
+	if (m_pUI->getFilterOnCurrent())
+	{
+		filterTarget = m_ucBitmapFiltered;
+	}
+
+	double* kernel = NULL;
+	int kernelSize = m_pUI->getFilterRadius() * 2 + 1;
+	// for custom kernel
+	int cKW = 0;
+	int cKH = 0;
+	switch (m_nFilterType)
+	{
+	case FB_GAUSSIAN_FILTER:
+		kernel = ImageUtils::getGaussianKernel(m_pUI->getFilterSigma(), m_pUI->getFilterRadius());
+		m_ucBitmapFiltered = ImageUtils::getFilteredImage(kernel, kernelSize, kernelSize, filterTarget, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
+		break;
+	case FB_MEAN_FILTER:
+		kernel = new double[kernelSize * kernelSize];
+		for (int i = 0; i < kernelSize * kernelSize; ++i)
+			kernel[i] = 1;
+		m_ucBitmapFiltered = ImageUtils::getFilteredImage(kernel, kernelSize, kernelSize, filterTarget, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
+		break;
+	case FB_MEDIAN_FILTER:
+		if (kernelSize > 1)
+			m_ucBitmapFiltered = ImageUtils::getFilteredImageCB([](unsigned char* p, int kW, int kH, int, int)->unsigned char {
+			
+			qsort(p, kW * kH, sizeof(unsigned char), [](const void* a, const void* b)->int { return *(unsigned char*)a - *(unsigned char*)b; });
+			return p[kW * kH / 2];
+
+		}
+		, kernelSize, kernelSize, filterTarget, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
+		break;
+	case FB_CUSTOM_FILTER:
+		if (parseKernel(this, kernel, cKW, cKH))
+		{
+			m_ucBitmapFiltered = ImageUtils::getFilteredImage(kernel, cKW, cKH, filterTarget, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
+		}
+		else
+		{
+			fl_alert("Error parsing your kernel.");
+		}
 		break;
 	default:
 		break;
 	}
-	m_pUI->m_origView->refresh();
+
+	if (kernel)
+		delete[] kernel;
+
+	if (m_ucBitmapFiltered == NULL)
+	{
+		m_ucBitmapFiltered = preservedBitmap;
+		fl_alert("Some error occurred while processing.");
+	}
+	else
+	{
+		if (m_ucBitmapFiltered != preservedBitmap)
+		{
+			delete[] preservedBitmap;
+		}
+
+		m_nDisplayMode = DOC_DISPLAY_FILTERED;
+		m_pUI->m_origView->refresh();
+	}
+}
+
+void ImpressionistDoc::normalizeKernel()
+{
+	double* kernel = NULL;
+	int kw = 0;
+	int kh = 0;
+	double ksum = 0;
+	if (parseKernel(this, kernel, kw, kh))
+	{
+		using namespace std;
+		stringstream ss;
+		ss << kw << ' ' << kh << endl;
+		for (int i = 0; i < kh * kw; ++i)
+			ksum += kernel[i];
+
+		if (ksum == 0.0)
+		{
+			fl_alert("Sum of your kernel is zero. Stopping normalization.");
+		}
+		else
+		{
+			for (int i = 0; i < kh; ++i)
+				for (int j = 0; j < kw; ++j)
+				{
+					ss << kernel[i * kw + j] / ksum;
+					if (j == kw - 1)
+						ss << endl;
+					else
+						ss << ' ';
+				}
+			string s = ss.str();
+			m_pUI->m_FilterKernelInput->value(s.c_str());
+		}
+
+		delete[] kernel;
+	}
+	else
+	{
+		fl_alert("Error parsing your kernel.");
+	}
 }
