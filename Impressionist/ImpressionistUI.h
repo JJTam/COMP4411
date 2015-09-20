@@ -67,6 +67,7 @@ public:
 	Fl_Multiline_Input* m_FilterKernelInput;
 	Fl_Button*			m_FilterUpdateButton;
 	Fl_Button*			m_FilterNormalizeKernelButton;
+	Fl_Button*			m_FilterOnCurrentButton;
 
 	// for background dialog
 	Fl_Window*			m_backgroundDialog;
@@ -133,6 +134,7 @@ public:
 
 	int					getFilterRadius();
 	double				getFilterSigma();
+	bool				getFilterOnCurrent();
 private:
 	ImpressionistDoc*	m_pDoc;		// pointer to document to communicate with the document
 
@@ -165,6 +167,7 @@ private:
 
 	int m_nFilterRadius;
 	double m_dFilterSigma;
+	bool m_bFilterOnCurrent;
 
 	// Static class members
 	static Fl_Menu_Item		menuitems[];
@@ -227,6 +230,7 @@ private:
 	static void cb_FilterSigmaSlides(Fl_Widget* o, void* v);
 	static void cb_FilterUpdateButton(Fl_Widget* o, void* v);
 	static void cb_FilterNormalizeKernelButton(Fl_Widget* o, void* v);
+	static void cb_FilterOnCurrentButton(Fl_Widget* o, void* v);
 };
 
 #endif

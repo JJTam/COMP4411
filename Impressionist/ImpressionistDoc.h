@@ -19,6 +19,13 @@ enum DocDisplayMode {
 	DOC_DISPLAY_FILTERED
 };
 
+enum DocSaveImageType {
+	DOC_SAVE_DRAWING,
+	DOC_SAVE_DRAWING_WITH_BG,
+	DOC_SAVE_EDGE,
+	DOC_SAVE_FILTERED
+};
+
 class ImpressionistUI;
 
 class ImpressionistDoc 
@@ -31,7 +38,7 @@ public:
 	int		loadImage(char *iname, bool isMural);			// called by the UI to load image
 	int		loadAnotherImage(char *iname);
 	int		loadEdgeImage(char *iname);
-	int		saveImage(char *iname);			// called by the UI to save image
+	int		saveImage(char *iname, int type);			// called by the UI to save image
 
 
 	int     clearCanvas();                  // called by the UI to clear the drawing canvas

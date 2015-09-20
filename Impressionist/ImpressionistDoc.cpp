@@ -360,19 +360,51 @@ int ImpressionistDoc::loadEdgeImage(char *iname)
 // This is called by the UI when the save image menu button is 
 // pressed.
 //----------------------------------------------------------------
-int ImpressionistDoc::saveImage(char *iname) 
+int ImpressionistDoc::saveImage(char *iname, int type) 
 {
 
 	// writeBMP(iname, m_nPaintWidth, m_nPaintHeight, m_ucPainting);
-	unsigned char* rgb = new unsigned char[m_nPaintWidth*m_nPaintHeight * 3];
-	for (int i = 0; i < m_nPaintWidth*m_nPaintHeight; ++i)
+	
+	int sourceDim = 4;
+	unsigned char* source = m_ucPreservedPainting;
+
+	switch (type)
 	{
-		rgb[i * 3] = m_ucPainting[i * 4];
-		rgb[i * 3 + 1] = m_ucPainting[i * 4 + 1];
-		rgb[i * 3 + 2] = m_ucPainting[i * 4 + 2];
+	case DOC_SAVE_DRAWING:
+		break;
+	case DOC_SAVE_DRAWING_WITH_BG:
+		source = m_ucPainting;
+		break;
+	case DOC_SAVE_EDGE:
+		source = m_ucEdgeBitmap;
+		sourceDim = 3;
+		break;
+	case DOC_SAVE_FILTERED:
+		source = m_ucBitmapFiltered;
+		sourceDim = 3;
+		break;
+	default:
+		break;
 	}
-	writeBMP(iname, m_nPaintWidth, m_nPaintHeight, rgb);
-	delete[] rgb;
+
+	// copy data
+	if (sourceDim != 3)
+	{
+		unsigned char* rgb = new unsigned char[m_nPaintWidth * m_nPaintHeight * 3];
+		for (int i = 0; i < m_nWidth*m_nHeight; ++i)
+		{
+			rgb[i * 3] = source[i * sourceDim];
+			rgb[i * 3 + 1] = source[i * sourceDim + 1];
+			rgb[i * 3 + 2] = source[i * sourceDim + 2];
+		}
+		writeBMP(iname, m_nWidth, m_nHeight, rgb);
+		delete[] rgb;
+	}
+	else
+	{
+		writeBMP(iname, m_nWidth, m_nHeight, source);
+	}
+
 	return 1;
 }
 
@@ -614,6 +646,12 @@ bool parseKernel(ImpressionistDoc* pDoc, double*& kernel, int& width, int& heigh
 void ImpressionistDoc::updateFiltered()
 {
 	unsigned char* preservedBitmap = m_ucBitmapFiltered;
+	unsigned char* filterTarget = m_ucBitmap;
+	if (m_pUI->getFilterOnCurrent())
+	{
+		filterTarget = m_ucBitmapFiltered;
+	}
+
 	double* kernel = NULL;
 	int kernelSize = m_pUI->getFilterRadius() * 2 + 1;
 	// for custom kernel
@@ -623,13 +661,13 @@ void ImpressionistDoc::updateFiltered()
 	{
 	case FB_GAUSSIAN_FILTER:
 		kernel = ImageUtils::getGaussianKernel(m_pUI->getFilterSigma(), m_pUI->getFilterRadius());
-		m_ucBitmapFiltered = ImageUtils::getFilteredImage(kernel, kernelSize, kernelSize, m_ucBitmap, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
+		m_ucBitmapFiltered = ImageUtils::getFilteredImage(kernel, kernelSize, kernelSize, filterTarget, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
 		break;
 	case FB_MEAN_FILTER:
 		kernel = new double[kernelSize * kernelSize];
 		for (int i = 0; i < kernelSize * kernelSize; ++i)
 			kernel[i] = 1;
-		m_ucBitmapFiltered = ImageUtils::getFilteredImage(kernel, kernelSize, kernelSize, m_ucBitmap, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
+		m_ucBitmapFiltered = ImageUtils::getFilteredImage(kernel, kernelSize, kernelSize, filterTarget, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
 		break;
 	case FB_MEDIAN_FILTER:
 		if (kernelSize > 1)
@@ -639,12 +677,12 @@ void ImpressionistDoc::updateFiltered()
 			return p[kW * kH / 2];
 
 		}
-		, kernelSize, kernelSize, m_ucBitmap, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
+		, kernelSize, kernelSize, filterTarget, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
 		break;
 	case FB_CUSTOM_FILTER:
 		if (parseKernel(this, kernel, cKW, cKH))
 		{
-			m_ucBitmapFiltered = ImageUtils::getFilteredImage(kernel, cKW, cKH, m_ucBitmap, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
+			m_ucBitmapFiltered = ImageUtils::getFilteredImage(kernel, cKW, cKH, filterTarget, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
 		}
 		else
 		{

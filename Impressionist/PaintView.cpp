@@ -50,7 +50,7 @@ PaintView::PaintView(int			x,
 
 int getAngle(int dx, int dy)
 {
-	int angle = (dy == 0) ? 90 : (int)(atan((double)dx / dy) / M_PI * 180);
+	int angle = (dx == 0) ? 90 : (int)(atan((double)dy / dx) / M_PI * 180);
 	while (angle < 0)
 		angle += 180;
 	return angle;
@@ -547,6 +547,11 @@ void PaintView::draw()
 
 		if (shallUpdatePreservedDrawing)
 		{
+			glReadBuffer(GL_FRONT);
+
+			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+			glPixelStorei(GL_PACK_ROW_LENGTH, m_pDoc->m_nPaintWidth);
+
 			glReadPixels(0,
 						m_nWindowHeight - m_nDrawHeight,
 						m_nDrawWidth,
@@ -558,6 +563,11 @@ void PaintView::draw()
 
 		if (shallUpdateContentView)
 		{
+			glReadBuffer(GL_FRONT);
+
+			glPixelStorei(GL_PACK_ALIGNMENT, 1);
+			glPixelStorei(GL_PACK_ROW_LENGTH, m_pDoc->m_nPaintWidth);
+
 			glReadPixels(0,
 				m_nWindowHeight - m_nDrawHeight,
 				m_nDrawWidth,

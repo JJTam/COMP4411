@@ -236,7 +236,7 @@ void ImpressionistUI::cb_save_image(Fl_Menu_* o, void* v)
 
 	char* newfile = fl_file_chooser("Save File?", "*.bmp", "save.bmp" );
 	if (newfile != NULL) {
-		pDoc->saveImage(newfile);
+		pDoc->saveImage(newfile, (int)v);
 	}
 }
 
@@ -492,6 +492,10 @@ void ImpressionistUI::cb_FilterNormalizeKernelButton(Fl_Widget* o, void* v)
 	if (pUI->m_pDoc)
 		pUI->m_pDoc->normalizeKernel();
 }
+void ImpressionistUI::cb_FilterOnCurrentButton(Fl_Widget* o, void* v)
+{
+	((ImpressionistUI*)(o->user_data()))->m_bFilterOnCurrent = bool(((Fl_Button *)o)->value());
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -627,6 +631,10 @@ double ImpressionistUI::getFilterSigma()
 {
 	return m_dFilterSigma;
 }
+bool ImpressionistUI::getFilterOnCurrent()
+{
+	return m_bFilterOnCurrent;
+}
 //-------------------------------------------------
 // Set the brush size
 //-------------------------------------------------
@@ -694,19 +702,22 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
 		{ "&Load Image",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image, (void*)0 },
 		{ "Load &Mural Image", FL_ALT + 'm', (Fl_Callback *)ImpressionistUI::cb_load_image, (void*)1 },
-		{ "&Save Image",	FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image },
-		{ "&Brushes",	FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes }, 
-		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
 		{ "Load &Another Image", FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_another_image },
 		{ "Load &Edge Image", FL_ALT + 'e', (Fl_Callback *)ImpressionistUI::cb_load_edge_image,0, FL_MENU_DIVIDER },
-		{"Colors", FL_ALT+'k',(Fl_Callback *)ImpressionistUI::cb_colorSelector},
-		{ "&Paintly", FL_ALT + 'p', (Fl_Callback *)ImpressionistUI::cb_paintly, 0, FL_MENU_DIVIDER },
+		{ "&Save Image", FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image, (void*)DOC_SAVE_DRAWING },
+		{ "Save with Background", FL_ALT + 's', (Fl_Callback *)ImpressionistUI::cb_save_image, (void*)DOC_SAVE_DRAWING_WITH_BG },
+		{ "Save Edge Image", 0, (Fl_Callback *)ImpressionistUI::cb_save_image, (void*)DOC_SAVE_EDGE },
+		{ "Save Filtered Image", 0, (Fl_Callback *)ImpressionistUI::cb_save_image, (void*)DOC_SAVE_FILTERED, FL_MENU_DIVIDER },
 		{ "&Quit",			FL_ALT + 'q', (Fl_Callback *)ImpressionistUI::cb_exit },
 		{ 0 },
 
 	{ "&Edit", 0, 0, 0, FL_SUBMENU },
 		{ "&Undo", FL_CTRL + 'z', (Fl_Callback *)ImpressionistUI::cb_undo },
-		{ "PaintView &Background", 0, (Fl_Callback *)ImpressionistUI::cb_background },
+		{ "&Clear Canvas", FL_ALT + 'c', (Fl_Callback *)ImpressionistUI::cb_clear_canvas, 0, FL_MENU_DIVIDER },
+		{ "&Brushes", FL_ALT + 'b', (Fl_Callback *)ImpressionistUI::cb_brushes },
+		{ "Colors", FL_ALT + 'k', (Fl_Callback *)ImpressionistUI::cb_colorSelector },
+		{ "&Paintly", FL_ALT + 'p', (Fl_Callback *)ImpressionistUI::cb_paintly, 0, FL_MENU_DIVIDER },
+		{ "&Background", 0, (Fl_Callback *)ImpressionistUI::cb_background },
 		{ 0 },
 
 	{ "&Display", 0, 0, 0, FL_SUBMENU },
@@ -808,6 +819,8 @@ ImpressionistUI::ImpressionistUI() {
 
 	m_nFilterRadius = 2;
 	m_dFilterSigma = 1.0;
+	m_bFilterOnCurrent = false;
+	static const char* filterDefaultKernel = "5 5\n1 2 3 2 1\n0.5 1 2 1 0.5\n0 0 0 0 0\n-0.5 -1 -2 -1 -0.5\n-1 -2 -3 -2 -1";
 
 	// brush dialog definition
 	m_brushDialog = new Fl_Window(410, 325, "Brush Dialog");
@@ -972,10 +985,16 @@ ImpressionistUI::ImpressionistUI() {
 		m_FilterKernelInput->labelfont(FL_COURIER);
 		m_FilterKernelInput->labelsize(12);
 		m_FilterKernelInput->align(FL_ALIGN_RIGHT);
+		m_FilterKernelInput->value(filterDefaultKernel);
 
 		m_FilterNormalizeKernelButton = new Fl_Button(10, 225, 120, 25, "Normalize");
 		m_FilterNormalizeKernelButton->user_data((void*)(this));
 		m_FilterNormalizeKernelButton->callback(cb_FilterNormalizeKernelButton);
+
+		m_FilterOnCurrentButton = new Fl_Light_Button(140, 225, 120, 25, "On Current");
+		m_FilterOnCurrentButton->user_data((void*)(this));
+		m_FilterOnCurrentButton->value(m_bFilterOnCurrent);
+		m_FilterOnCurrentButton->callback(cb_FilterOnCurrentButton);
 
 	m_FilterDialog->end();
 
