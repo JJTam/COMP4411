@@ -68,6 +68,8 @@ public:
 	void setFilterType(int type);
 	void normalizeKernel();
 
+	int loadAlphaBrush(char* iname);
+
 // Attributes
 public:
 	// Dimensions of original window.
@@ -83,6 +85,10 @@ public:
 	unsigned char*  m_ucEdgeBitmap;
 	unsigned char*	m_ucBitmapBlurred;
 	unsigned char*  m_ucBitmapFiltered;
+
+	int  m_nAlphaBrushWidth;
+	int  m_nAlphaBrushHeight;
+	unsigned char*  m_ucAlphaBrush;
 
 	int* m_iGradient;
 	int* m_iGradientMagnitude;

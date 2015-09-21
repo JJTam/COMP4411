@@ -21,6 +21,7 @@
 #include "ScatteredCircleBrush.h"
 #include "CurvedBrush.h"
 #include "FilterBrush.h"
+#include "AlphaMappedBrush.h"
 
 #include "ImageUtils.h"
 #include <vector>
@@ -52,6 +53,7 @@ ImpressionistDoc::ImpressionistDoc()
 	m_ucEdgeBitmap = NULL;
 	m_ucBitmapBlurred = NULL;
 	m_ucBitmapFiltered = NULL;
+	m_ucAlphaBrush = NULL;
 	m_nFilterType = FB_GAUSSIAN_FILTER;
 
 	// create one instance of each brush
@@ -75,7 +77,8 @@ ImpressionistDoc::ImpressionistDoc()
 		= new CurvedBrush(this, "Curved Brush");
 	ImpBrush::c_pBrushes[BRUSH_FILTERED]
 		= new FilterBrush(this, "Filter Brush");
-
+	ImpBrush::c_pBrushes[BRUSH_ALPHAMAPPED]
+		= new AlphaMappedBrush(this, "Alpha Mapped Brush");
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
 	m_nBrushDirection = SLIDER_AND_RIGHT_MOUSE;
@@ -136,7 +139,9 @@ void ImpressionistDoc::setBrushType(int type)
 		m_pUI->m_AngleSlider->activate();
 		m_pUI->m_AlphaSlider->activate();
 		break;
-		
+	case BRUSH_ALPHAMAPPED:
+		m_pUI->m_AlphaSlider->activate();
+		break;
 	default:
 		break;
 	}
@@ -756,4 +761,30 @@ void ImpressionistDoc::normalizeKernel()
 	{
 		fl_alert("Error parsing your kernel.");
 	}
+}
+
+int ImpressionistDoc::loadAlphaBrush(char* iname)
+{
+	// try to open the image to read
+	unsigned char*	data;
+	int				width, height;
+
+	if ((data = readBMP(iname, width, height)) == NULL)
+	{
+		fl_alert("Can't load bitmap file");
+		return 0;
+	}
+
+	if (m_ucAlphaBrush)
+		delete[] m_ucAlphaBrush;
+	m_ucAlphaBrush = new unsigned char[width * height];
+	m_nAlphaBrushHeight = height;
+	m_nAlphaBrushWidth = width;
+
+	for (int i = 0; i < width * height; ++i)
+	{
+		m_ucAlphaBrush[i] = ((int)data[i * 3] + (int)data[i * 3 + 1] + (int)data[i * 3 + 2]) / 3;
+	}
+
+	return 1;
 }

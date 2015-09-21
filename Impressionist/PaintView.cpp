@@ -128,7 +128,7 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 
 			if (dx != 0 || dy != 0)
 			{
-				currentAngle = getAngle(dx, dy);
+				currentAngle = getAngle(-dy, dx);
 				pDoc->m_pUI->setAngle(currentAngle);
 			}
 		}

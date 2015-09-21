@@ -231,6 +231,8 @@ private:
 	static void cb_FilterUpdateButton(Fl_Widget* o, void* v);
 	static void cb_FilterNormalizeKernelButton(Fl_Widget* o, void* v);
 	static void cb_FilterOnCurrentButton(Fl_Widget* o, void* v);
+
+	static void cb_LoadAlphaBrush(Fl_Menu_* o, void* v);
 };
 
 #endif

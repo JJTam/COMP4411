@@ -496,6 +496,16 @@ void ImpressionistUI::cb_FilterOnCurrentButton(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data()))->m_bFilterOnCurrent = bool(((Fl_Button *)o)->value());
 }
+// Alpha brush
+void ImpressionistUI::cb_LoadAlphaBrush(Fl_Menu_* o, void* v)
+{
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
+
+	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
+	if (newfile != NULL) {
+		pDoc->loadAlphaBrush(newfile);
+	}
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -703,7 +713,8 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ "&Load Image",	FL_ALT + 'l', (Fl_Callback *)ImpressionistUI::cb_load_image, (void*)0 },
 		{ "Load &Mural Image", FL_ALT + 'm', (Fl_Callback *)ImpressionistUI::cb_load_image, (void*)1 },
 		{ "Load &Another Image", FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_load_another_image },
-		{ "Load &Edge Image", FL_ALT + 'e', (Fl_Callback *)ImpressionistUI::cb_load_edge_image,0, FL_MENU_DIVIDER },
+		{ "Load &Edge Image", FL_ALT + 'e', (Fl_Callback *)ImpressionistUI::cb_load_edge_image },
+		{ "Load Alpha-Mapped Brush", 0, (Fl_Callback *)ImpressionistUI::cb_LoadAlphaBrush, 0, FL_MENU_DIVIDER },
 		{ "&Save Image", FL_CTRL + 's', (Fl_Callback *)ImpressionistUI::cb_save_image, (void*)DOC_SAVE_DRAWING },
 		{ "Save with Background", 0, (Fl_Callback *)ImpressionistUI::cb_save_image, (void*)DOC_SAVE_DRAWING_WITH_BG },
 		{ "Save Edge Image", 0, (Fl_Callback *)ImpressionistUI::cb_save_image, (void*)DOC_SAVE_EDGE },
@@ -745,6 +756,7 @@ Fl_Menu_Item ImpressionistUI::brushTypeMenu[NUM_BRUSH_TYPE+1] = {
   {"Scattered Circles",	FL_ALT+'d', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SCATTERED_CIRCLES},
   {"Curved Brush", FL_ALT + 't', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_CURVED},
   {"Filter Brush", FL_ALT + 'f', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_FILTERED },
+  { "Alpha Mapped Brush", FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_ALPHAMAPPED },
   {0}
 };
 
