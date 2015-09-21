@@ -39,7 +39,7 @@ void FilterBrush::BrushMove(const Point source, const Point target)
 		{
 			int tx = target.x + dx;
 			int sx = source.x + dx;
-			if (tx < 0 || tx > pDoc->m_nPaintHeight)
+			if (tx < 0 || tx > pDoc->m_nPaintWidth)
 				continue;
 
 			memcpy(color, pDoc->GetFilteredPixel(sx, sy), 3);

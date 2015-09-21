@@ -47,7 +47,7 @@ void AlphaMappedBrush::BrushMove(const Point source, const Point target)
 		for (int dx = -xSizeHalf; dx <= xSizeHalf; ++dx)
 		{
 			int tx = target.x + dx;
-			if (tx < 0 || tx > pDoc->m_nPaintHeight || dx + xSizeHalf >= alphaBrushWidth)
+			if (tx < 0 || tx > pDoc->m_nPaintWidth || dx + xSizeHalf >= alphaBrushWidth)
 				continue;
 
 			color[3] = pDoc->m_ucAlphaBrush[dx + xSizeHalf + (dy + ySizeHalf) * alphaBrushWidth] * pDoc->getAlpha();
