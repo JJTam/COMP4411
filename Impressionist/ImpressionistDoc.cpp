@@ -798,7 +798,11 @@ void ImpressionistDoc::makeThumbnailImage()
 	}
 
 	// load the database
-	FILE* f = fopen("Debug\\cifar-10-batches-bin\\test_batch.bin", "rb");
+	char* newfile = fl_file_chooser("Choose a batch", "*.bin", "");
+	if (newfile == NULL)
+		return;
+
+	FILE* f = fopen(newfile, "rb");
 	if (f == NULL)
 	{
 		fl_alert("Can not find the CIFAR-10 database file.");
