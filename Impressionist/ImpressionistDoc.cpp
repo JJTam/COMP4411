@@ -670,7 +670,7 @@ void ImpressionistDoc::updateFiltered()
 		m_ucBitmapFiltered = ImageUtils::getFilteredImage(kernel, kernelSize, kernelSize, filterTarget, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
 		break;
 	case FB_MEDIAN_FILTER:
-		if (kernelSize > 1)
+		if (kernelSize >= 1)
 			m_ucBitmapFiltered = ImageUtils::getFilteredImageCB([](unsigned char* p, int kW, int kH, int, int)->unsigned char {
 			
 			qsort(p, kW * kH, sizeof(unsigned char), [](const void* a, const void* b)->int { return *(unsigned char*)a - *(unsigned char*)b; });
