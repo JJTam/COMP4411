@@ -390,7 +390,7 @@ int ImpressionistDoc::saveImage(char *iname, int type)
 	// copy data
 	if (sourceDim != 3)
 	{
-		unsigned char* rgb = new unsigned char[m_nPaintWidth * m_nPaintHeight * 3];
+		unsigned char* rgb = new unsigned char[m_nWidth*m_nHeight * 3];
 		for (int i = 0; i < m_nWidth*m_nHeight; ++i)
 		{
 			rgb[i * 3] = source[i * sourceDim];
@@ -418,18 +418,22 @@ int ImpressionistDoc::clearCanvas()
 	// Release old storage
 	if (m_ucPreservedPainting)
 	{
-		delete[] m_ucPreservedPainting;
-		m_ucPreservedPainting = new unsigned char[m_nPaintWidth*m_nPaintHeight * 4];
-		memset(m_ucPreservedPainting, 0, m_nPaintWidth*m_nPaintHeight * 4);
+		//delete[] m_ucPreservedPainting;
+		//m_ucPreservedPainting = new unsigned char[m_nWidth*m_nHeight * 4];
+
+		// push it to undo
+		unsigned char* t = new unsigned char[m_nWidth * m_nHeight * 4];
+		memcpy(t, m_ucPreservedPainting, m_nWidth * m_nHeight * 4);
+		m_lUndoList.push_back(t);
+
+		memset(m_ucPreservedPainting, 0, m_nWidth*m_nHeight * 4);
 	}
 
 	if ( m_ucPainting ) 
 	{
-		delete [] m_ucPainting;
-
-		// allocate space for draw view
-		m_ucPainting	= new unsigned char [m_nPaintWidth*m_nPaintHeight*4];
-		memset(m_ucPainting, 0, m_nPaintWidth*m_nPaintHeight*4);
+		//delete [] m_ucPainting;
+		//m_ucPainting = new unsigned char[m_nWidth*m_nHeight * 4];
+		memset(m_ucPainting, 0, m_nWidth*m_nHeight * 4);
 
 		// refresh paint view as well	
 		// mark bg update
@@ -514,7 +518,7 @@ void ImpressionistDoc::undo()
 	if (m_lUndoList.size() >= 1)
 	{
 		//printf("Poping from undo list...\n");
-		delete m_ucPreservedPainting;
+		delete[] m_ucPreservedPainting;
 		m_ucPreservedPainting = m_lUndoList.back();
 		m_lUndoList.pop_back();
 		m_bHasPendingUndo = true;
@@ -670,7 +674,7 @@ void ImpressionistDoc::updateFiltered()
 		m_ucBitmapFiltered = ImageUtils::getFilteredImage(kernel, kernelSize, kernelSize, filterTarget, m_nWidth, m_nHeight, 0, 0, 0, 0, 3, IMAGE_UTIL_WRAP_BOUNDARY);
 		break;
 	case FB_MEDIAN_FILTER:
-		if (kernelSize > 1)
+		if (kernelSize >= 1)
 			m_ucBitmapFiltered = ImageUtils::getFilteredImageCB([](unsigned char* p, int kW, int kH, int, int)->unsigned char {
 			
 			qsort(p, kW * kH, sizeof(unsigned char), [](const void* a, const void* b)->int { return *(unsigned char*)a - *(unsigned char*)b; });

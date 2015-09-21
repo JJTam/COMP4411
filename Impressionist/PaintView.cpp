@@ -148,7 +148,7 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 	pUI->setAngle(oAngle);
 }
 
-void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
+void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height, int drawWidth, int drawHeight, int startRow, int windowHeight)
 {
 	static double prevSigma = -1;
 
@@ -159,10 +159,10 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	{
 		glBegin(GL_POLYGON);
 		glColor3ub(255, 255, 255);
-		glVertex2i(0, 0);
-		glVertex2i(width, 0);
-		glVertex2i(width, height);
-		glVertex2i(0, height);
+		glVertex2i(0, windowHeight - height);
+		glVertex2i(width, windowHeight - height);
+		glVertex2i(width, windowHeight);
+		glVertex2i(0, windowHeight);
 		glEnd();
 	}
 
@@ -337,7 +337,7 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 			{
 				double theta = i * 10 * 3.14159 / 180;
 				int X = point.first - radius * cos(theta);
-				int Y = point.second - radius * sin(theta);
+				int Y = point.second - radius * sin(theta) + (windowHeight - height);
 				glVertex2d(X, Y);
 			}
 			glEnd();
@@ -367,6 +367,11 @@ void PaintView::draw()
 	scrollpos.x = 0;
 	scrollpos.y	= 0;
 
+	if ((m_nWindowHeight != h() || m_nWindowWidth != w()) && !isAnEvent)
+	{
+		m_pDoc->m_bHasPendingBgUpdate = true;
+	}
+
 	m_nWindowWidth	= w();
 	m_nWindowHeight	= h();
 
@@ -377,11 +382,12 @@ void PaintView::draw()
 	int startrow = m_pDoc->m_nPaintHeight - (scrollpos.y + drawHeight);
 	if ( startrow < 0 ) startrow = 0;
 
+	int paintBitOffset = 4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
+	int paintBitOffset3 = 3 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
+
 	// Setup class members
-	m_pPaintBitstart = m_pDoc->m_ucPainting + 
-		4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
-	m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting + 
-		4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
+	m_pPaintBitstart = m_pDoc->m_ucPainting + paintBitOffset;
+	m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting + paintBitOffset;
 
 	m_nDrawWidth   	= drawWidth;
 	m_nDrawHeight	= drawHeight;
@@ -441,8 +447,7 @@ void PaintView::draw()
 		if (shallPushUndo)
 		{
 			m_pDoc->pushToUndo();
-			m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting +
-				4 * ((m_pDoc->m_nPaintWidth * startrow) + scrollpos.x);
+			m_pPreservedPaintBitstart = m_pDoc->m_ucPreservedPainting + paintBitOffset;
 		}
 
 		if (shallUpdatePointerDir)
@@ -498,7 +503,7 @@ void PaintView::draw()
 				doAuto(m_pDoc, drawWidth, drawHeight, startrow, m_nWindowHeight, isUsingPointerDir);
 				break;
 			case PV_PAINTLY_AUTO:
-				doPaintlyAuto(m_pDoc, drawWidth, drawHeight);
+				doPaintlyAuto(m_pDoc, m_pDoc->m_nWidth, m_pDoc->m_nHeight, drawWidth, drawHeight, startrow, m_nWindowHeight);
 				break;
 			case PV_RIGHT_MOUSE_DOWN:
 				rightClickBegin.x = target.x;
@@ -586,7 +591,7 @@ void PaintView::draw()
 			if (shallDrawBackground)
 			{
 				int bgAlpha = (int)(255 * (1 - m_pDoc->m_pUI->getBackgroundAlpha()));
-				for (int i = 0; i < drawWidth * drawHeight; ++i)
+				for (int i = 0; i < m_pDoc->m_nWidth * m_pDoc->m_nHeight; ++i)
 				{
 					if (bits[i * 4 + 3] == 0)
 						bits[i * 4 + 3] = bgAlpha;
@@ -596,7 +601,7 @@ void PaintView::draw()
 				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 				glPixelStorei(GL_UNPACK_ROW_LENGTH, m_pDoc->m_nWidth);
 			
-				glDrawPixels(drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, m_pDoc->m_ucBitmap);
+				glDrawPixels(drawWidth, drawHeight, GL_RGB, GL_UNSIGNED_BYTE, m_pDoc->m_ucBitmap + paintBitOffset3);
 				glEnable(GL_BLEND);
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 				glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPaintBitstart);
@@ -717,6 +722,9 @@ void PaintView::SaveCurrentContent()
 {
 	// Tell openGL to read from the front buffer when capturing
 	// out paint strokes
+	if (m_pPaintBitstart == NULL)
+		return;
+
 	glReadBuffer(GL_FRONT);
 
 	glPixelStorei( GL_PACK_ALIGNMENT, 1 );
@@ -730,7 +738,8 @@ void PaintView::SaveCurrentContent()
 				  GL_UNSIGNED_BYTE, 
 				  m_pPaintBitstart );
 
-	for (int i = 0; i < m_nDrawHeight * m_nDrawWidth; ++i)
+	if (m_pDoc->m_nWidth > 0 && m_pDoc->m_nHeight > 0)
+	for (int i = 0; i < m_pDoc->m_nWidth * m_pDoc->m_nHeight; ++i)
 	{
 		((GLubyte*)m_pPaintBitstart)[i * 4 + 3] = 255;
 	}
