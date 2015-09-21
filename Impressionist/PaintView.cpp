@@ -148,7 +148,7 @@ void doAuto(ImpressionistDoc* pDoc, int width, int height, int startRow, int win
 	pUI->setAngle(oAngle);
 }
 
-void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
+void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height, int drawWidth, int drawHeight, int startRow, int windowHeight)
 {
 	static double prevSigma = -1;
 
@@ -159,10 +159,10 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 	{
 		glBegin(GL_POLYGON);
 		glColor3ub(255, 255, 255);
-		glVertex2i(0, 0);
-		glVertex2i(width, 0);
-		glVertex2i(width, height);
-		glVertex2i(0, height);
+		glVertex2i(0, windowHeight - height);
+		glVertex2i(width, windowHeight - height);
+		glVertex2i(width, windowHeight);
+		glVertex2i(0, windowHeight);
 		glEnd();
 	}
 
@@ -337,7 +337,7 @@ void doPaintlyAuto(ImpressionistDoc* pDoc,const int width,const int height)
 			{
 				double theta = i * 10 * 3.14159 / 180;
 				int X = point.first - radius * cos(theta);
-				int Y = point.second - radius * sin(theta);
+				int Y = point.second - radius * sin(theta) + (windowHeight - height);
 				glVertex2d(X, Y);
 			}
 			glEnd();
@@ -503,7 +503,7 @@ void PaintView::draw()
 				doAuto(m_pDoc, drawWidth, drawHeight, startrow, m_nWindowHeight, isUsingPointerDir);
 				break;
 			case PV_PAINTLY_AUTO:
-				doPaintlyAuto(m_pDoc, drawWidth, drawHeight);
+				doPaintlyAuto(m_pDoc, m_pDoc->m_nWidth, m_pDoc->m_nHeight, drawWidth, drawHeight, startrow, m_nWindowHeight);
 				break;
 			case PV_RIGHT_MOUSE_DOWN:
 				rightClickBegin.x = target.x;
