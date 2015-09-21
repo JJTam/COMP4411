@@ -788,3 +788,94 @@ int ImpressionistDoc::loadAlphaBrush(char* iname)
 
 	return 1;
 }
+
+void ImpressionistDoc::makeThumbnailImage()
+{
+	if (!m_ucBitmap)
+	{
+		fl_alert("You must load an image first.");
+		return;
+	}
+
+	// load the database
+	FILE* f = fopen("Debug\\cifar-10-batches-bin\\test_batch.bin", "rb");
+	if (f == NULL)
+	{
+		fl_alert("Can not find the CIFAR-10 database file.");
+		return;
+	}
+
+	unsigned char* db = new unsigned char[30730000];
+	for (int i = 0; i < 30730000; ++i)
+	{
+		fscanf(f, "%c", &db[i]);
+	}
+	fclose(f);
+
+	// prepare the blocks
+	int* matches = new int[(m_nWidth / 32) * (m_nHeight / 32)];
+	memset(matches, 0, sizeof(int) * (m_nWidth / 32) * (m_nHeight / 32));
+	// compute scores
+	// image block is [i, j]
+	// compare to each thumbnail k
+	for (int j = 0; j < m_nHeight / 32; ++j)
+	{
+		for (int i = 0; i < m_nWidth / 32; ++i)
+		{
+			printf("processing %d, %d\n", i, j);
+			int bestMatch = 0;
+			int bestScore = -INT_MAX;
+			for (int k = 0; k < 10000; ++k)
+			{
+				int score = 0;
+				int dbroot = 3073 * k + 1; // +1 to skip label
+				for (int ki = 0; ki < 1024; ++ki)
+				{
+					int outerX = ki % 32 + 32 * i;
+					int outerY = ki / 32 + 32 * j;
+					score -= sqrt(
+						pow(db[dbroot + ki] - (int)m_ucBitmap[(outerX + outerY * m_nWidth) * 3], 2) +
+						pow(db[dbroot + ki + 1024] - (int)m_ucBitmap[(outerX + outerY * m_nWidth) * 3 + 1], 2) +
+						pow(db[dbroot + ki + 2048] - (int)m_ucBitmap[(outerX + outerY * m_nWidth) * 3 + 2], 2)
+						);
+				}
+
+				if (score > bestScore)
+				{
+					bestScore = score;
+					bestMatch = k;
+				}
+			}
+
+			matches[i + j * (m_nWidth / 32)] = bestMatch;
+			// printf("Best match of (%d, %d) is %d, whose score is %d\n", i, j, bestMatch, bestScore);
+		}
+	}
+
+	// now copy the thumbnails
+	for (int j = 0; j < m_nHeight / 32; ++j)
+	{
+		for (int i = 0; i < m_nWidth / 32; ++i)
+		{
+			int match = matches[i + j * (m_nWidth / 32)];
+			int dbroot = 3073 * match + 1;
+			for (int ki = 0; ki < 1024; ++ki)
+			{
+				int outerX = ki % 32 + 32 * i;
+				int outerY = ki / 32 + 32 * j;
+				m_ucPreservedPainting[(outerX + outerY * m_nWidth) * 4] = db[dbroot + ki];
+				m_ucPreservedPainting[(outerX + outerY * m_nWidth) * 4 + 1] = db[dbroot + ki + 1024];
+				m_ucPreservedPainting[(outerX + outerY * m_nWidth) * 4 + 2] = db[dbroot + ki + 2048];
+				m_ucPreservedPainting[(outerX + outerY * m_nWidth) * 4 + 3] = 255;
+			}
+		}
+	}
+
+	// release memory
+	delete[] db;
+	delete[] matches;
+
+	// refresh views
+	m_bHasPendingBgUpdate = true;
+	m_pUI->m_paintView->refresh();
+}
