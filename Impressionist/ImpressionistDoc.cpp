@@ -139,7 +139,9 @@ void ImpressionistDoc::setBrushType(int type)
 		m_pUI->m_AngleSlider->activate();
 		m_pUI->m_AlphaSlider->activate();
 		break;
-		
+	case BRUSH_ALPHAMAPPED:
+		m_pUI->m_AlphaSlider->activate();
+		break;
 	default:
 		break;
 	}
@@ -776,11 +778,13 @@ int ImpressionistDoc::loadAlphaBrush(char* iname)
 	if (m_ucAlphaBrush)
 		delete[] m_ucAlphaBrush;
 	m_ucAlphaBrush = new unsigned char[width * height];
+	m_nAlphaBrushHeight = height;
+	m_nAlphaBrushWidth = width;
 
 	for (int i = 0; i < width * height; ++i)
 	{
-		m_ucAlphaBrush[i] = ((int)data[i * 3] + (int)data[i * 3 + 1] + (int)data[i * 3 + 2]) / 3.0;
+		m_ucAlphaBrush[i] = ((int)data[i * 3] + (int)data[i * 3 + 1] + (int)data[i * 3 + 2]) / 3;
 	}
-	
+
 	return 1;
 }
