@@ -496,6 +496,16 @@ void ImpressionistUI::cb_FilterOnCurrentButton(Fl_Widget* o, void* v)
 {
 	((ImpressionistUI*)(o->user_data()))->m_bFilterOnCurrent = bool(((Fl_Button *)o)->value());
 }
+// Alpha brush
+void ImpressionistUI::cb_LoadAlphaBrush(Fl_Menu_* o, void* v)
+{
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
+
+	char* newfile = fl_file_chooser("Open File?", "*.bmp", pDoc->getImageName());
+	if (newfile != NULL) {
+		pDoc->loadAlphaBrush(newfile);
+	}
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -745,6 +755,7 @@ Fl_Menu_Item ImpressionistUI::brushTypeMenu[NUM_BRUSH_TYPE+1] = {
   {"Scattered Circles",	FL_ALT+'d', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_SCATTERED_CIRCLES},
   {"Curved Brush", FL_ALT + 't', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_CURVED},
   {"Filter Brush", FL_ALT + 'f', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_FILTERED },
+  { "Alpha Mapped Brush", FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_ALPHAMAPPED },
   {0}
 };
 
