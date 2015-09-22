@@ -506,6 +506,12 @@ void ImpressionistUI::cb_LoadAlphaBrush(Fl_Menu_* o, void* v)
 		pDoc->loadAlphaBrush(newfile);
 	}
 }
+// Thumbnail
+void ImpressionistUI::cb_ThumbnailImage(Fl_Menu_* o, void* v)
+{
+	ImpressionistDoc *pDoc = whoami(o)->getDocument();
+	pDoc->makeThumbnailImage();
+}
 //---------------------------------- per instance functions --------------------------------------
 
 //------------------------------------------------
@@ -729,6 +735,7 @@ Fl_Menu_Item ImpressionistUI::menuitems[] = {
 		{ "Colors", FL_ALT + 'k', (Fl_Callback *)ImpressionistUI::cb_colorSelector },
 		{ "&Paintly", FL_ALT + 'p', (Fl_Callback *)ImpressionistUI::cb_paintly, 0, FL_MENU_DIVIDER },
 		{ "&Background", 0, (Fl_Callback *)ImpressionistUI::cb_background },
+		{ "Make Thumbnail", 0, (Fl_Callback *)ImpressionistUI::cb_ThumbnailImage },
 		{ 0 },
 
 	{ "&Display", 0, 0, 0, FL_SUBMENU },

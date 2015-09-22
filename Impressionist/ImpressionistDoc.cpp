@@ -788,3 +788,182 @@ int ImpressionistDoc::loadAlphaBrush(char* iname)
 
 	return 1;
 }
+
+void ImpressionistDoc::makeThumbnailImage()
+{
+	if (!m_ucBitmap)
+	{
+		fl_alert("You must load an image first.");
+		return;
+	}
+
+	// load the database
+	char* newfile = fl_file_chooser("Choose a batch", "*.bin", "");
+	if (newfile == NULL)
+		return;
+
+	FILE* f = fopen(newfile, "rb");
+	if (f == NULL)
+	{
+		fl_alert("Can not find the CIFAR-10 database file.");
+		return;
+	}
+
+	unsigned char* db = new unsigned char[30730000 * 6];
+	int totalImages = 0;
+	for (int i = 0; i < 30730000 * 6; ++i)
+	{
+		fscanf(f, "%c", &db[i]);
+		if ((i + 1) % 3073 == 0)
+			++totalImages;
+		if (feof(f))
+			break;
+	}
+
+	fclose(f);
+
+	printf("Read total images: %d\n", totalImages);
+
+	// prepare the blocks
+	int iMax = (m_nWidth % 32 == 0) ? m_nWidth / 32 : (m_nWidth / 32 + 1);
+	int jMax = (m_nHeight % 32 == 0) ? m_nHeight / 32 : (m_nHeight / 32 + 1);
+	int* matches = new int[iMax * jMax];
+	memset(matches, 0, sizeof(int) * iMax * jMax);
+
+	/*
+	// compute scores
+	// image block is [i, j]
+	// compare to each thumbnail k
+	for (int j = 0; j < jMax; ++j)
+	{
+		for (int i = 0; i < iMax; ++i)
+		{
+			printf("processing %d, %d\n", i, j);
+			int bestMatch = 0;
+			int bestScore = -INT_MAX;
+			for (int k = 0; k < 10000; ++k)
+			{
+				int score = 0;
+				int dbroot = 3073 * k + 1; // +1 to skip label
+				for (int ki = 0; ki < 1024; ++ki)
+				{
+					int outerX = ki % 32 + 32 * i;
+					int outerY = ki / 32 + 32 * j;
+					if (outerX >= m_nWidth || outerY >= m_nHeight)
+					{
+						continue;
+					}
+
+					score -= sqrt(
+						pow(db[dbroot + ki] - (int)m_ucBitmap[(outerX + outerY * m_nWidth) * 3], 2) +
+						pow(db[dbroot + ki + 1024] - (int)m_ucBitmap[(outerX + outerY * m_nWidth) * 3 + 1], 2) +
+						pow(db[dbroot + ki + 2048] - (int)m_ucBitmap[(outerX + outerY * m_nWidth) * 3 + 2], 2)
+						);
+
+					if (score < bestScore)
+						break;
+				}
+
+				if (score > bestScore)
+				{
+					bestScore = score;
+					bestMatch = k;
+				}
+			}
+
+			matches[i + j * iMax] = bestMatch;
+			// printf("Best match of (%d, %d) is %d, whose score is %d\n", i, j, bestMatch, bestScore);
+		}
+	}
+	*/
+	
+	int* scores = new int[iMax * jMax];
+	memset(scores, 0, sizeof(int) * iMax * jMax);
+	int* bestScores = new int[iMax * jMax];
+	for (int i = 0; i < iMax * jMax; ++i)
+	{
+		bestScores[i] = -INT_MAX;
+	}
+
+	unsigned char* currentImage = new unsigned char[32 * 32 * 3];
+	memset(currentImage, 0, 32 * 32);
+
+	for (int dbi = 0; dbi < totalImages; ++dbi)
+	{
+		for (int i = 0; i < 32 * 32; ++i)
+		{
+			currentImage[i * 3] = db[dbi * 3073 + 1 + i];
+			currentImage[i * 3 + 1] = db[dbi * 3073 + 1025 + i];
+			currentImage[i * 3 + 2] = db[dbi * 3073 + 2049 + i];
+		}
+
+		for (int y = 0; y < m_nHeight; ++y)
+		{
+			int yBlock = y / 32 * iMax;
+			int yInBlock = y % 32 * 32;
+			int imgBase = y * m_nWidth * 3;
+			for (int x = 0; x < m_nWidth; ++x, imgBase += 3)
+			{
+				int temp = (m_ucBitmap[imgBase] - currentImage[(x % 32 + yInBlock) * 3]);
+				int sum = temp * temp;
+				temp = (m_ucBitmap[imgBase + 1] - currentImage[(x % 32 + yInBlock) * 3 + 1]);
+				sum += temp * temp;
+				temp = (m_ucBitmap[imgBase + 2] - currentImage[(x % 32 + yInBlock) * 3 + 2]);
+				sum += temp * temp;
+				scores[x / 32 + yBlock] -= sqrt(sum);
+			}
+		}
+
+		for (int i = 0; i < iMax * jMax; ++i)
+		{
+			if (scores[i] > bestScores[i])
+			{
+				bestScores[i] = scores[i];
+				matches[i] = dbi;
+				//printf("Best match of (%d, %d) is %d, whose score is %d\n", i % 32, i / 32, dbi, scores[i]);
+			}
+		}
+
+		memset(scores, 0, sizeof(int) * iMax * jMax);
+
+		if (dbi % 1000 == 0)
+			printf("Processed db image %d\n", dbi);
+	}
+
+	delete[] scores;
+	delete[] bestScores;
+	delete[] currentImage;
+	
+	// now copy the thumbnails
+	for (int j = 0; j < jMax; ++j)
+	{
+		for (int i = 0; i < iMax; ++i)
+		{
+			int match = matches[i + j * iMax];
+			int dbroot = 3073 * match + 1;
+			//printf("Best match for (%d, %d) is %d\n", i, j, match);
+			for (int ki = 0; ki < 1024; ++ki)
+			{
+				int outerX = ki % 32 + 32 * i;
+				int outerY = ki / 32 + 32 * j;
+				if (outerX >= m_nWidth || outerY >= m_nHeight)
+				{
+					continue;
+				}
+
+				m_ucPreservedPainting[(outerX + outerY * m_nWidth) * 4] = db[dbroot + ki];
+				m_ucPreservedPainting[(outerX + outerY * m_nWidth) * 4 + 1] = db[dbroot + ki + 1024];
+				m_ucPreservedPainting[(outerX + outerY * m_nWidth) * 4 + 2] = db[dbroot + ki + 2048];
+				m_ucPreservedPainting[(outerX + outerY * m_nWidth) * 4 + 3] = 255;
+			}
+		}
+	}
+
+	// release memory
+	delete[] db;
+	delete[] matches;
+
+	// refresh views
+	m_bHasPendingBgUpdate = true;
+	m_pUI->m_paintView->refresh();
+}

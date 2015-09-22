@@ -69,6 +69,7 @@ public:
 	void normalizeKernel();
 
 	int loadAlphaBrush(char* iname);
+	void makeThumbnailImage();
 
 // Attributes
 public:

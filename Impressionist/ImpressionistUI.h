@@ -233,6 +233,7 @@ private:
 	static void cb_FilterOnCurrentButton(Fl_Widget* o, void* v);
 
 	static void cb_LoadAlphaBrush(Fl_Menu_* o, void* v);
+	static void cb_ThumbnailImage(Fl_Menu_* o, void* v);
 };
 
 #endif
