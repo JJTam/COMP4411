@@ -147,6 +147,7 @@ void ImpressionistDoc::setBrushType(int type)
 		break;
 	case BRUSH_LIQUIFY:
 		m_pUI->m_BrushSizeSlider->activate();
+		m_pUI->m_LineWidthSlider->activate();
 		break;
 	default:
 		break;

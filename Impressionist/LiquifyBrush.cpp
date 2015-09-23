@@ -24,8 +24,8 @@ void LiquifyBrush::BrushMove(const Point source, const Point target)
 		return;
 	}
 
-	int size = pDoc->getSize();
-	int c = 6;
+	int size = pDoc->getSize() * 2;
+	double c = pDoc->m_pUI->getLineWidth() / 7.0;
 
 	int height = pDoc->m_nHeight;
 	int width = pDoc->m_nWidth;
