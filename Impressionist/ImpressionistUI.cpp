@@ -764,6 +764,7 @@ Fl_Menu_Item ImpressionistUI::brushTypeMenu[NUM_BRUSH_TYPE+1] = {
   {"Curved Brush", FL_ALT + 't', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_CURVED},
   {"Filter Brush", FL_ALT + 'f', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_FILTERED },
   { "Alpha Mapped Brush", FL_ALT + 'a', (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_ALPHAMAPPED },
+  { "Liquify Brush", 0, (Fl_Callback *)ImpressionistUI::cb_brushChoice, (void *)BRUSH_LIQUIFY },
   {0}
 };
 

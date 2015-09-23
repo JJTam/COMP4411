@@ -21,6 +21,7 @@ enum
 	BRUSH_CURVED,
 	BRUSH_FILTERED,
 	BRUSH_ALPHAMAPPED,
+	BRUSH_LIQUIFY,
 	NUM_BRUSH_TYPE // Make sure this stays at the end!
 };
 

@@ -1,4 +1,4 @@
-// 
+// "L
 // impressionistDoc.cpp
 //
 // It basically maintain the bitmap for answering the color query from the brush.
@@ -22,6 +22,7 @@
 #include "CurvedBrush.h"
 #include "FilterBrush.h"
 #include "AlphaMappedBrush.h"
+#include "LiquifyBrush.h"
 
 #include "ImageUtils.h"
 #include <vector>
@@ -79,6 +80,8 @@ ImpressionistDoc::ImpressionistDoc()
 		= new FilterBrush(this, "Filter Brush");
 	ImpBrush::c_pBrushes[BRUSH_ALPHAMAPPED]
 		= new AlphaMappedBrush(this, "Alpha Mapped Brush");
+	ImpBrush::c_pBrushes[BRUSH_LIQUIFY]
+		= new LiquifyBrush(this, "Liquify Brush");
 	// make one of the brushes current
 	m_pCurrentBrush	= ImpBrush::c_pBrushes[0];
 	m_nBrushDirection = SLIDER_AND_RIGHT_MOUSE;
@@ -141,6 +144,9 @@ void ImpressionistDoc::setBrushType(int type)
 		break;
 	case BRUSH_ALPHAMAPPED:
 		m_pUI->m_AlphaSlider->activate();
+		break;
+	case BRUSH_LIQUIFY:
+		m_pUI->m_BrushSizeSlider->activate();
 		break;
 	default:
 		break;
