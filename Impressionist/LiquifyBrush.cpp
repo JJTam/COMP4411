@@ -24,14 +24,16 @@ void LiquifyBrush::BrushMove(const Point source, const Point target)
 		return;
 	}
 
-	int size = pDoc->getSize();
-	int c = 6;
+	int size = pDoc->getSize() * 2;
+	double c = pDoc->m_pUI->getLineWidth() / 7.0;
 
 	int height = pDoc->m_nHeight;
 	int width = pDoc->m_nWidth;
-	unsigned char* originPainting = new unsigned char[height * width * 4];
-	memcpy(originPainting, pDoc->m_ucPainting, height * width * 4);
+	unsigned char* originPainting = pDoc->m_ucPreservedPainting;
 
+	GLubyte color[4];
+	glPointSize(1);
+	glBegin(GL_POINTS);
 	for (int y = - size; y <= + size; ++y)
 	{
 		for (int x = - size; x <= + size; ++x)
@@ -45,8 +47,6 @@ void LiquifyBrush::BrushMove(const Point source, const Point target)
 				{
 					continue;
 				}
-				int destPosition = (y + target.y)*width + x + target.x;
-				destPosition *= 4;
 
 				// Transform the pixel Cartesian coordinates (x, y) to polar coordinates (r, alpha)
 				double r = sqrt(x*x + y*y);
@@ -67,29 +67,14 @@ void LiquifyBrush::BrushMove(const Point source, const Point target)
 				}
 				int sourcePosition = (newY + target.y) * width + newX + target.x;
 				sourcePosition *= 4;
-				pDoc->m_ucPainting[destPosition + 0] = originPainting[sourcePosition + 0];
-				pDoc->m_ucPainting[destPosition + 1] = originPainting[sourcePosition + 1];
-				pDoc->m_ucPainting[destPosition + 2] = originPainting[sourcePosition + 2];
-				pDoc->m_ucPainting[destPosition + 3] = originPainting[sourcePosition + 3];
+				
+				memcpy(color, originPainting + sourcePosition, 4);
+				glColor4ubv(color);
+				glVertex2d(target.x + x, target.y + y);
 			}
 		}
 	}
-
-	glDisable(GL_BLEND);
-	glClearColor(0.7f, 0.7f, 0.7f, 0);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	int drawHeight = min(pDoc->m_pUI->m_paintView->h(), pDoc->m_nPaintHeight);
-	int drawWidth = min(pDoc->m_pUI->m_paintView->w(), pDoc->m_nPaintWidth);
-	int startrow = pDoc->m_nPaintHeight - drawHeight;
-	if (startrow < 0) startrow = 0;
-	int paintBitOffset = 4 * (pDoc->m_nPaintWidth * startrow);
-	GLvoid* m_pPreservedPaintBitstart = pDoc->m_ucPainting + paintBitOffset;
-
-	glRasterPos2i(0, pDoc->m_pUI->m_paintView->h() - drawHeight);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, pDoc->m_nWidth);
-	glDrawPixels(drawWidth, drawHeight, GL_RGBA, GL_UNSIGNED_BYTE, m_pPreservedPaintBitstart);
+	glEnd();
 }
 
 void LiquifyBrush::BrushEnd(const Point source, const Point target)

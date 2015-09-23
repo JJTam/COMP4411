@@ -741,7 +741,7 @@ void PaintView::SaveCurrentContent()
 	if (m_pDoc->m_nWidth > 0 && m_pDoc->m_nHeight > 0)
 	for (int i = 0; i < m_pDoc->m_nWidth * m_pDoc->m_nHeight; ++i)
 	{
-		((GLubyte*)m_pPaintBitstart)[i * 4 + 3] = 255;
+		((GLubyte*)m_pDoc->m_ucPainting)[i * 4 + 3] = 255;
 	}
 }
 
