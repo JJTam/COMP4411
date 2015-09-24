@@ -294,7 +294,7 @@ void ImpressionistUI::cb_ChooseDisplay(Fl_Menu_* o, void* v)
 //-----------------------------------------------------------
 void ImpressionistUI::cb_about(Fl_Menu_* o, void* v) 
 {
-	fl_message("Impressionist FLTK version for CS341, Spring 2002");
+	fl_message("Authored by glinaa and schenan, Fall 2015. Based on impressionist FLTK version for CS341, Spring 2002");
 }
 
 void ImpressionistUI::cb_undo(Fl_Menu_* o, void* v) {
