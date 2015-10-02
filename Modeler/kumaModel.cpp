@@ -276,9 +276,11 @@ void KumaModel::draw()
 			glPushMatrix();
 			{
 				glTranslated(0, -(waistHeight + waistTorsoOffset), 0);
-				glRotated(waistRotationX, 1, 0, 0);
+				glTranslated(torsoWidth / 2, waistHeight, torsoDepth / 2);
 				glRotated(waistRotationY, 0, 1, 0);
+				glRotated(waistRotationX, 1, 0, 0);
 				glRotated(waistRotationZ, 0, 0, 1);
+				glTranslated(-torsoWidth / 2, -waistHeight, -torsoDepth / 2);
 
 				setDiffuseColor(KUMA_BODY_COLOR);
 				drawBox(torsoWidth, waistHeight, torsoDepth);
@@ -287,16 +289,21 @@ void KumaModel::draw()
 				glPushMatrix();
 				{
 					glTranslated(upperLegOffsetX, -upperLegWaistOffset, (torsoDepth - upperLegDepth) / 2);
-					glRotated(leftUpperLegRotationX, 1, 0, 0);
+					glTranslated(upperLegWidth / 2, 0, upperLegDepth / 2);
 					glRotated(leftUpperLegRotationY, 0, 1, 0);
+					glRotated(leftUpperLegRotationX, 1, 0, 0);
 					glRotated(leftUpperLegRotationZ, 0, 0, 1);
+					glTranslated(-upperLegWidth / 2, 0, -upperLegDepth / 2);
+
 					drawBox(upperLegWidth, -upperLegHeight, upperLegDepth);
 
 					// left lower leg
 					glPushMatrix();
 					{
 						glTranslated((upperLegWidth - lowerLegWidth) / 2, -upperLegHeight, (upperLegDepth - lowerLegDepth) / 2);
+						glTranslated(0, 0, lowerLegDepth);
 						glRotated(leftLowerLegRotationX, 1, 0, 0);
+						glTranslated(0, 0, -lowerLegDepth);
 						drawBox(lowerLegWidth, -lowerLegHeight, lowerLegDepth);
 
 						// left foot
@@ -323,9 +330,12 @@ void KumaModel::draw()
 				glPushMatrix();
 				{
 					glTranslated(torsoWidth - upperLegWidth - upperLegOffsetX, -upperLegWaistOffset, (torsoDepth - upperLegDepth) / 2);
-					glRotated(rightUpperLegRotationX, 1, 0, 0);
+					glTranslated(upperLegWidth / 2, 0, upperLegDepth / 2);
 					glRotated(rightUpperLegRotationY, 0, 1, 0);
+					glRotated(rightUpperLegRotationX, 1, 0, 0);
 					glRotated(rightUpperLegRotationZ, 0, 0, 1);
+					glTranslated(-upperLegWidth / 2, 0, -upperLegDepth / 2);
+
 					setDiffuseColor(KUMA_BODY_COLOR);
 					drawBox(upperLegWidth, -upperLegHeight, upperLegDepth);
 
@@ -333,7 +343,9 @@ void KumaModel::draw()
 					glPushMatrix();
 					{
 						glTranslated((upperLegWidth - lowerLegWidth) / 2, -upperLegHeight, (upperLegDepth - lowerLegDepth) / 2);
+						glTranslated(0, 0, lowerLegDepth);
 						glRotated(rightLowerLegRotationX, 1, 0, 0);
+						glTranslated(0, 0, -lowerLegDepth);
 						drawBox(lowerLegWidth, -lowerLegHeight, lowerLegDepth);
 
 						// right foot
@@ -368,10 +380,12 @@ void KumaModel::draw()
 			// left arm
 			glPushMatrix();
 			{
-				glTranslated(-(upperArmWidth + upperArmBodyOffsetX), (torsoHeight - upperArmBodyOffsetY), (torsoDepth - upperArmWidth) / 2);
-				glRotated(leftUpperArmRotationX, 1, 0, 0);
+				glTranslated(-(upperArmWidth + upperArmBodyOffsetX), (torsoHeight - upperArmBodyOffsetY), (torsoDepth - upperArmDepth) / 2);
+				glTranslated(upperArmWidth / 2, 0, upperArmDepth / 2);
 				glRotated(leftUpperArmRotationY, 0, 1, 0);
+				glRotated(leftUpperArmRotationX, 1, 0, 0);
 				glRotated(leftUpperArmRotationZ, 0, 0, 1);
+				glTranslated(-upperArmWidth / 2, 0, -upperArmDepth / 2);
 
 				setDiffuseColor(KUMA_BODY_COLOR);
 				drawBox(upperArmWidth, -upperArmHeight, upperArmDepth);
@@ -405,10 +419,12 @@ void KumaModel::draw()
 			// right arm
 			glPushMatrix();
 			{
-				glTranslated((torsoWidth + upperArmBodyOffsetX), (torsoHeight - upperArmBodyOffsetY), (torsoDepth - upperArmWidth) / 2);
-				glRotated(rightUpperArmRotationX, 1, 0, 0);
+				glTranslated((torsoWidth + upperArmBodyOffsetX), (torsoHeight - upperArmBodyOffsetY), (torsoDepth - upperArmDepth) / 2);
+				glTranslated(upperArmWidth / 2, 0, upperArmDepth / 2);
 				glRotated(rightUpperArmRotationY, 0, 1, 0);
+				glRotated(rightUpperArmRotationX, 1, 0, 0);
 				glRotated(rightUpperArmRotationZ, 0, 0, 1);
+				glTranslated(-upperArmWidth / 2, 0, -upperArmDepth / 2);
 
 				setDiffuseColor(KUMA_BODY_COLOR);
 				drawBox(upperArmWidth, -upperArmHeight, upperArmDepth);
@@ -507,12 +523,12 @@ int main()
 	controls[WAIST_HEIGHT] = ModelerControl("Waist height", 0.0, 2.0, 0.01f, 0.2);
 	controls[WAIST_TORSO_OFFSET] = ModelerControl("Waist torso offset", 0.0, 2.0, 0.01f, 0.02);
 	controls[UPPER_LEG_WIDTH] = ModelerControl("Upper leg width", 0.0, 2.0, 0.01f, 0.4);
-	controls[UPPER_LEG_HEIGHT] = ModelerControl("Upper leg height", 0.0, 2.0, 0.01f, 0.6);
+	controls[UPPER_LEG_HEIGHT] = ModelerControl("Upper leg height", 0.0, 2.0, 0.01f, 0.75);
 	controls[UPPER_LEG_DEPTH] = ModelerControl("Upper leg depth", 0.0, 2.0, 0.01f, 0.4);
 	controls[UPPER_LEG_OFFSET_X] = ModelerControl("Upper leg offset X", 0.0, 2.0, 0.01f, 0.05);
 	controls[UPPER_LEG_OFFSET_WAIST] = ModelerControl("Upper leg offset waist", 0.0, 2.0, 0.01f, 0.0);
 	controls[LOWER_LEG_WIDTH] = ModelerControl("Lower leg width", 0.0, 2.0, 0.01f, 0.3);
-	controls[LOWER_LEG_HEIGHT] = ModelerControl("Lower leg height", 0.0, 2.0, 0.01f, 0.6);
+	controls[LOWER_LEG_HEIGHT] = ModelerControl("Lower leg height", 0.0, 2.0, 0.01f, 0.7);
 	controls[LOWER_LEG_DEPTH] = ModelerControl("Lower leg depth", 0.0, 2.0, 0.01f, 0.3);
 	controls[FOOT_WIDTH] = ModelerControl("Foot width", 0.0, 2.0, 0.01f, 0.3);
 	controls[FOOT_HEIGHT] = ModelerControl("Foot height", 0.0, 2.0, 0.01f, 0.1);
