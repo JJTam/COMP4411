@@ -82,57 +82,57 @@ void KumaModel::draw()
 		glTranslated(VAL(XPOS), VAL(YPOS), VAL(ZPOS));
 
 		// parameters
-		double torsoWidth = 1.0;
-		double torsoHeight = 1.20;
-		double torsoDepth = 0.5;
+		double torsoWidth = VAL(TORSO_WIDTH);
+		double torsoHeight = VAL(TORSO_HEIGHT);
+		double torsoDepth = VAL(TORSO_DEPTH);
 
-		double headWidth = 1.0;
-		double headHeight = 1.0;
-		double headDepth = 1.0;
+		double headWidth = VAL(HEAD_WIDTH);
+		double headHeight = VAL(HEAD_HEIGHT);
+		double headDepth = VAL(HEAD_DEPTH);
 
-		double eyeOffsetX = 0.167;
-		double eyeOffsetY = 0.5714;
-		double eyeWidth = 0.20;
-		double eyeHeight = 0.25;
+		double eyeOffsetX = VAL(EYE_OFFSET_X);
+		double eyeOffsetY = VAL(EYE_OFFSET_Y);
+		double eyeWidth = VAL(EYE_WIDTH);
+		double eyeHeight = VAL(EYE_HEIGHT);
 
-		double mouthWidth = 0.15;
-		double mouthHeight = 0.10;
-		double mouthOffsetY = 0.20;
+		double mouthWidth = VAL(MOUTH_WIDTH);
+		double mouthHeight = VAL(MOUTH_HEIGHT);
+		double mouthOffsetY = VAL(MOUTH_OFFSET_Y);
 
-		double hairHeadOffset = 0.04;
-		double hairThickness = 0.02;
-		double sideHairDepth = 1.05;
-		double sideHairHeight = 1.2;
-		double backHairHeight = 1.8;
-		double frontHairHeight = 0.1;
+		double hairHeadOffset = VAL(HAIR_HEAD_OFFSET);
+		double hairThickness = VAL(HAIR_THICKNESS);
+		double sideHairDepth = VAL(SIDEHAIR_DEPTH);
+		double sideHairHeight = VAL(SIDEHAIR_HEIGHT);
+		double backHairHeight = VAL(BACKHAIR_HEIGHT);
+		double frontHairHeight = VAL(FRONTHAIR_HEIGHT);
 		double ahoHairScale = VAL(AHO_HAIR_SIZE);
 
-		double upperArmWidth = 0.22;
-		double upperArmHeight = 0.7;
-		double upperArmDepth = 0.22;
-		double upperArmBodyOffsetX = 0.03;
-		double upperArmBodyOffsetY = 0.40;
+		double upperArmWidth = VAL(UPPER_ARM_WIDTH);
+		double upperArmHeight = VAL(UPPER_ARM_HEIGHT);
+		double upperArmDepth = VAL(UPPER_ARM_DEPTH);
+		double upperArmBodyOffsetX = VAL(UPPER_ARM_BODY_OFFSET_X);
+		double upperArmBodyOffsetY = VAL(UPPER_ARM_BODY_OFFSET_Y);
 
-		double lowerArmWidth = 0.20;
-		double lowerArmHeight = 0.7;
-		double lowerArmDepth = 0.20;
+		double lowerArmWidth = VAL(LOWER_ARM_WIDTH);
+		double lowerArmHeight = VAL(LOWER_ARM_HEIGHT);
+		double lowerArmDepth = VAL(LOWER_ARM_DEPTH);
 
-		double waistHeight = 0.20;
-		double waistTorsoOffset = 0.02;
+		double waistHeight = VAL(WAIST_HEIGHT);
+		double waistTorsoOffset = VAL(WAIST_TORSO_OFFSET);
 
-		double upperLegWidth = 0.40;
-		double upperLegHeight = 0.60;
-		double upperLegDepth = 0.40;
-		double upperLegOffsetX = 0.05;
-		double upperLegWaistOffset = 0.0;
+		double upperLegWidth = VAL(UPPER_LEG_WIDTH);
+		double upperLegHeight = VAL(UPPER_LEG_HEIGHT);
+		double upperLegDepth = VAL(UPPER_LEG_DEPTH);
+		double upperLegOffsetX = VAL(UPPER_LEG_OFFSET_X);
+		double upperLegWaistOffset = VAL(UPPER_LEG_OFFSET_WAIST);
 
-		double lowerLegWidth = 0.30;
-		double lowerLegHeight = 0.60;
-		double lowerLegDepth = 0.30;
+		double lowerLegWidth = VAL(LOWER_LEG_WIDTH);
+		double lowerLegHeight = VAL(LOWER_LEG_HEIGHT);
+		double lowerLegDepth = VAL(LOWER_LEG_DEPTH);
 
-		double footWidth = 0.30;
-		double footHeight = 0.10;
-		double footDepth = 0.50;
+		double footWidth = VAL(FOOT_WIDTH);
+		double footHeight = VAL(FOOT_HEIGHT);
+		double footDepth = VAL(FOOT_DEPTH);
 
 		double clothThickness = 0.02;
 		double clothBodyOffset = 0.03;
@@ -144,20 +144,29 @@ void KumaModel::draw()
 		double upperArmClothHeight = upperArmHeight - clothPart2Height2 - 0.2;
 		double upperLegClothHeight = upperLegHeight - clothPart2Height2 - 0.2;
 
-		double leftUpperLegRotation = 10;
-		double leftLowerLegRotation = -4;
-		double rightUpperLegRotation = -10;
-		double rightLowerLegRotation = 0;
+		double waistRotationX = VAL(WAIST_ROTATION_X);
+		double waistRotationY = VAL(WAIST_ROTATION_Y);
+		double waistRotationZ = VAL(WAIST_ROTATION_Z);
 
-		double leftUpperArmRotationX = -40;
-		double leftUpperArmRotationY = 0;
-		double leftUpperArmRotationZ = 0;
-		double leftLowerArmRotationX = -20;
+		double leftUpperLegRotationX = VAL(LEFT_UPPER_LEG_ROTATION_X);
+		double leftUpperLegRotationY = VAL(LEFT_UPPER_LEG_ROTATION_Y);
+		double leftUpperLegRotationZ = VAL(LEFT_UPPER_LEG_ROTATION_Z);
+		double leftLowerLegRotationX = VAL(LEFT_LOWER_LEG_ROTATION_X);
 
-		double rightUpperArmRotationX = 30;
-		double rightUpperArmRotationY = 0;
-		double rightUpperArmRotationZ = 0;
-		double rightLowerArmRotationX = 0;
+		double rightUpperLegRotationX = VAL(RIGHT_UPPER_LEG_ROTATION_X);
+		double rightUpperLegRotationY = VAL(RIGHT_UPPER_LEG_ROTATION_Y);
+		double rightUpperLegRotationZ = VAL(RIGHT_UPPER_LEG_ROTATION_Z);
+		double rightLowerLegRotationX = VAL(RIGHT_LOWER_LEG_ROTATION_X);
+
+		double leftUpperArmRotationX = VAL(LEFT_UPPER_ARM_ROTATION_X);
+		double leftUpperArmRotationY = VAL(LEFT_UPPER_ARM_ROTATION_Y);
+		double leftUpperArmRotationZ = VAL(LEFT_UPPER_ARM_ROTATION_Z);
+		double leftLowerArmRotationX = VAL(LEFT_LOWER_ARM_ROTATION_X);
+
+		double rightUpperArmRotationX = VAL(RIGHT_UPPER_ARM_ROTATION_X);
+		double rightUpperArmRotationY = VAL(RIGHT_UPPER_ARM_ROTATION_Y);
+		double rightUpperArmRotationZ = VAL(RIGHT_UPPER_ARM_ROTATION_Z);
+		double rightLowerArmRotationX = VAL(RIGHT_LOWER_ARM_ROTATION_X);
 
 		// torso
 		glPushMatrix();
@@ -267,6 +276,10 @@ void KumaModel::draw()
 			glPushMatrix();
 			{
 				glTranslated(0, -(waistHeight + waistTorsoOffset), 0);
+				glRotated(waistRotationX, 1, 0, 0);
+				glRotated(waistRotationY, 0, 1, 0);
+				glRotated(waistRotationZ, 0, 0, 1);
+
 				setDiffuseColor(KUMA_BODY_COLOR);
 				drawBox(torsoWidth, waistHeight, torsoDepth);
 
@@ -274,14 +287,16 @@ void KumaModel::draw()
 				glPushMatrix();
 				{
 					glTranslated(upperLegOffsetX, -upperLegWaistOffset, (torsoDepth - upperLegDepth) / 2);
-					glRotated(leftUpperLegRotation, 1, 0, 0);
+					glRotated(leftUpperLegRotationX, 1, 0, 0);
+					glRotated(leftUpperLegRotationY, 0, 1, 0);
+					glRotated(leftUpperLegRotationZ, 0, 0, 1);
 					drawBox(upperLegWidth, -upperLegHeight, upperLegDepth);
 
 					// left lower leg
 					glPushMatrix();
 					{
 						glTranslated((upperLegWidth - lowerLegWidth) / 2, -upperLegHeight, (upperLegDepth - lowerLegDepth) / 2);
-						glRotated(leftLowerLegRotation, 1, 0, 0);
+						glRotated(leftLowerLegRotationX, 1, 0, 0);
 						drawBox(lowerLegWidth, -lowerLegHeight, lowerLegDepth);
 
 						// left foot
@@ -308,7 +323,9 @@ void KumaModel::draw()
 				glPushMatrix();
 				{
 					glTranslated(torsoWidth - upperLegWidth - upperLegOffsetX, -upperLegWaistOffset, (torsoDepth - upperLegDepth) / 2);
-					glRotated(rightUpperLegRotation, 1, 0, 0);
+					glRotated(rightUpperLegRotationX, 1, 0, 0);
+					glRotated(rightUpperLegRotationY, 0, 1, 0);
+					glRotated(rightUpperLegRotationZ, 0, 0, 1);
 					setDiffuseColor(KUMA_BODY_COLOR);
 					drawBox(upperLegWidth, -upperLegHeight, upperLegDepth);
 
@@ -316,7 +333,7 @@ void KumaModel::draw()
 					glPushMatrix();
 					{
 						glTranslated((upperLegWidth - lowerLegWidth) / 2, -upperLegHeight, (upperLegDepth - lowerLegDepth) / 2);
-						glRotated(rightLowerLegRotation, 1, 0, 0);
+						glRotated(rightLowerLegRotationX, 1, 0, 0);
 						drawBox(lowerLegWidth, -lowerLegHeight, lowerLegDepth);
 
 						// right foot
@@ -436,7 +453,71 @@ int main()
 	controls[XPOS] = ModelerControl("X Position", -5, 5, 0.1f, 0);
 	controls[YPOS] = ModelerControl("Y Position", 0, 5, 0.1f, 0);
 	controls[ZPOS] = ModelerControl("Z Position", -5, 5, 0.1f, 0);
-	controls[AHO_HAIR_SIZE] = ModelerControl("Aho Hair Size", 0.1, 1.5, 0.1f, 0.7);
+
+	controls[LEFT_UPPER_ARM_ROTATION_X] = ModelerControl("Right arm rotation X", -180, 50, 1.0f, 0);
+	controls[LEFT_UPPER_ARM_ROTATION_Y] = ModelerControl("Right arm rotation Y", -90, 90, 1.0f, 0);
+	controls[LEFT_UPPER_ARM_ROTATION_Z] = ModelerControl("Right arm rotation Z", -180, 30, 1.0f, 0);
+	controls[LEFT_LOWER_ARM_ROTATION_X] = ModelerControl("Right lower arm rotation X", -180, 0, 1.0f, 0);
+	controls[RIGHT_UPPER_ARM_ROTATION_X] = ModelerControl("Left arm rotation X", -180, 50, 1.0f, 0);
+	controls[RIGHT_UPPER_ARM_ROTATION_Y] = ModelerControl("Left arm rotation Y", -90, 90, 1.0f, 0);
+	controls[RIGHT_UPPER_ARM_ROTATION_Z] = ModelerControl("Left arm rotation Z", -30, 180, 1.0f, 0);
+	controls[RIGHT_LOWER_ARM_ROTATION_X] = ModelerControl("Left lower arm rotation X", -180, 0, 1.0f, 0);
+
+	controls[LEFT_UPPER_LEG_ROTATION_X] = ModelerControl("Right leg rotation X", -120, 50, 1.0f, 0);
+	controls[LEFT_UPPER_LEG_ROTATION_Y] = ModelerControl("Right leg rotation Y", -90, 90, 1.0f, 0);
+	controls[LEFT_UPPER_LEG_ROTATION_Z] = ModelerControl("Right leg rotation Z", -180, 30, 1.0f, 0);
+	controls[LEFT_LOWER_LEG_ROTATION_X] = ModelerControl("Right lower leg rotation X", 0, 120, 1.0f, 0);
+	controls[RIGHT_UPPER_LEG_ROTATION_X] = ModelerControl("Left leg rotation X", -120, 50, 1.0f, 0);
+	controls[RIGHT_UPPER_LEG_ROTATION_Y] = ModelerControl("Left leg rotation Y", -90, 90, 1.0f, 0);
+	controls[RIGHT_UPPER_LEG_ROTATION_Z] = ModelerControl("Left leg rotation Z", -30, 180, 1.0f, 0);
+	controls[RIGHT_LOWER_LEG_ROTATION_X] = ModelerControl("Left lower leg rotation X", 0, 120, 1.0f, 0);
+
+	controls[WAIST_ROTATION_X] = ModelerControl("Waist rotation X", -90, 90, 1.0f, 0);
+	controls[WAIST_ROTATION_Y] = ModelerControl("Waist rotation Y", -90, 90, 1.0f, 0);
+	controls[WAIST_ROTATION_Z] = ModelerControl("Waist rotation Z", -30, 30, 1.0f, 0);
+
+	controls[TORSO_WIDTH] = ModelerControl("Torso width", 0.0, 2.0, 0.01f, 1.0);
+	controls[TORSO_HEIGHT] = ModelerControl("Torso height", 0.0, 2.0, 0.01f, 1.2);
+	controls[TORSO_DEPTH] = ModelerControl("Torso depth", 0.0, 2.0, 0.01f, 0.5);
+	controls[HEAD_WIDTH] = ModelerControl("Head width", 0.0, 2.0, 0.01f, 1.0);
+	controls[HEAD_HEIGHT] = ModelerControl("Head height", 0.0, 2.0, 0.01f, 1.0);
+	controls[HEAD_DEPTH] = ModelerControl("Head depth", 0.0, 2.0, 0.01f, 1.0);
+	controls[EYE_OFFSET_X] = ModelerControl("Eye offset X", 0.0, 2.0, 0.01f, 0.17);
+	controls[EYE_OFFSET_Y] = ModelerControl("Eye offset Y", 0.0, 2.0, 0.01f, 0.57);
+	controls[EYE_WIDTH] = ModelerControl("Eye width", 0.0, 2.0, 0.01f, 0.20);
+	controls[EYE_HEIGHT] = ModelerControl("Eye height", 0.0, 2.0, 0.01f, 0.25);
+	controls[MOUTH_WIDTH] = ModelerControl("Mouth width", 0.0, 2.0, 0.01f, 0.15);
+	controls[MOUTH_HEIGHT] = ModelerControl("Mouth height", 0.0, 2.0, 0.01f, 0.10);
+	controls[MOUTH_OFFSET_Y] = ModelerControl("Mouth offset Y", 0.0, 2.0, 0.01f, 0.20);
+	controls[HAIR_HEAD_OFFSET] = ModelerControl("Hair head offset", 0.0, 0.1, 0.01f, 0.04);
+	controls[HAIR_THICKNESS] = ModelerControl("Hair thickness", 0.0, 0.5, 0.01f, 0.1);
+	controls[SIDEHAIR_DEPTH] = ModelerControl("Sidehair depth", 0.0, 2.0, 0.01f, 1.05);
+	controls[SIDEHAIR_HEIGHT] = ModelerControl("Sidehair height", 0.0, 3.0, 0.01f, 1.2);
+	controls[BACKHAIR_HEIGHT] = ModelerControl("Backhair height", 0.0, 2.0, 0.01f, 1.8);
+	controls[FRONTHAIR_HEIGHT] = ModelerControl("Fronthair height", 0.0, 2.0, 0.01f, 0.1);
+	controls[AHO_HAIR_SIZE] = ModelerControl("Aho hair size", 0.1, 2.0, 0.1f, 0.7);
+	controls[UPPER_ARM_WIDTH] = ModelerControl("Upper arm width", 0.0, 2.0, 0.01f, 0.22);
+	controls[UPPER_ARM_HEIGHT] = ModelerControl("Upper arm height", 0.0, 2.0, 0.01f, 0.7);
+	controls[UPPER_ARM_DEPTH] = ModelerControl("Upper arm depth", 0.0, 2.0, 0.01f, 0.22);
+	controls[UPPER_ARM_BODY_OFFSET_X] = ModelerControl("Upper arm body offset X", 0.0, 2.0, 0.01f, 0.03);
+	controls[UPPER_ARM_BODY_OFFSET_Y] = ModelerControl("Upper arm body offset Y", 0.0, 2.0, 0.01f, 0.40);
+	controls[LOWER_ARM_WIDTH] = ModelerControl("Lower arm width", 0.0, 2.0, 0.01f, 0.2);
+	controls[LOWER_ARM_HEIGHT] = ModelerControl("Lower arm height", 0.0, 2.0, 0.01f, 0.7);
+	controls[LOWER_ARM_DEPTH] = ModelerControl("Lower arm depth", 0.0, 2.0, 0.01f, 0.2);
+	controls[WAIST_HEIGHT] = ModelerControl("Waist height", 0.0, 2.0, 0.01f, 0.2);
+	controls[WAIST_TORSO_OFFSET] = ModelerControl("Waist torso offset", 0.0, 2.0, 0.01f, 0.02);
+	controls[UPPER_LEG_WIDTH] = ModelerControl("Upper leg width", 0.0, 2.0, 0.01f, 0.4);
+	controls[UPPER_LEG_HEIGHT] = ModelerControl("Upper leg height", 0.0, 2.0, 0.01f, 0.6);
+	controls[UPPER_LEG_DEPTH] = ModelerControl("Upper leg depth", 0.0, 2.0, 0.01f, 0.4);
+	controls[UPPER_LEG_OFFSET_X] = ModelerControl("Upper leg offset X", 0.0, 2.0, 0.01f, 0.05);
+	controls[UPPER_LEG_OFFSET_WAIST] = ModelerControl("Upper leg offset waist", 0.0, 2.0, 0.01f, 0.0);
+	controls[LOWER_LEG_WIDTH] = ModelerControl("Lower leg width", 0.0, 2.0, 0.01f, 0.3);
+	controls[LOWER_LEG_HEIGHT] = ModelerControl("Lower leg height", 0.0, 2.0, 0.01f, 0.6);
+	controls[LOWER_LEG_DEPTH] = ModelerControl("Lower leg depth", 0.0, 2.0, 0.01f, 0.3);
+	controls[FOOT_WIDTH] = ModelerControl("Foot width", 0.0, 2.0, 0.01f, 0.3);
+	controls[FOOT_HEIGHT] = ModelerControl("Foot height", 0.0, 2.0, 0.01f, 0.1);
+	controls[FOOT_DEPTH] = ModelerControl("Foot depth", 0.0, 2.0, 0.01f, 0.5);
+
 	ModelerApplication::Instance()->Init(&createKumaModel, controls, NUMCONTROLS);
 	return ModelerApplication::Instance()->Run();
 }
