@@ -130,10 +130,6 @@ void KumaModel::draw()
 		double lowerLegHeight = VAL(LOWER_LEG_HEIGHT);
 		double lowerLegDepth = VAL(LOWER_LEG_DEPTH);
 
-		double footWidth = VAL(FOOT_WIDTH);
-		double footHeight = VAL(FOOT_HEIGHT);
-		double footDepth = VAL(FOOT_DEPTH);
-
 		double clothThickness = 0.02;
 		double clothBodyOffset = 0.03;
 		double clothTorsoHeightOffset = 0.05;
@@ -171,7 +167,7 @@ void KumaModel::draw()
 		// torso
 		glPushMatrix();
 		{
-			glTranslated(-torsoDepth / 2, footHeight + lowerLegHeight + upperLegHeight + waistHeight + waistTorsoOffset + upperLegWaistOffset, -0.5 / 2);
+			glTranslated(-torsoDepth / 2, lowerLegHeight + upperLegHeight + waistHeight + waistTorsoOffset + upperLegWaistOffset, -0.5 / 2);
 			drawBox(torsoWidth, torsoHeight, torsoDepth);
 
 			// head
@@ -305,13 +301,6 @@ void KumaModel::draw()
 						glRotated(leftLowerLegRotationX, 1, 0, 0);
 						glTranslated(0, 0, -lowerLegDepth);
 						drawBox(lowerLegWidth, -lowerLegHeight, lowerLegDepth);
-
-						// left foot
-						glPushMatrix();
-						{
-
-						}
-						glPopMatrix();
 					}
 					glPopMatrix();
 
@@ -347,13 +336,6 @@ void KumaModel::draw()
 						glRotated(rightLowerLegRotationX, 1, 0, 0);
 						glTranslated(0, 0, -lowerLegDepth);
 						drawBox(lowerLegWidth, -lowerLegHeight, lowerLegDepth);
-
-						// right foot
-						glPushMatrix();
-						{
-
-						}
-						glPopMatrix();
 					}
 					glPopMatrix();
 
@@ -481,11 +463,11 @@ int main()
 
 	controls[LEFT_UPPER_LEG_ROTATION_X] = ModelerControl("Right leg rotation X", -120, 50, 1.0f, 0);
 	controls[LEFT_UPPER_LEG_ROTATION_Y] = ModelerControl("Right leg rotation Y", -90, 90, 1.0f, 0);
-	controls[LEFT_UPPER_LEG_ROTATION_Z] = ModelerControl("Right leg rotation Z", -180, 30, 1.0f, 0);
+	controls[LEFT_UPPER_LEG_ROTATION_Z] = ModelerControl("Right leg rotation Z", -180, 180, 1.0f, 0);
 	controls[LEFT_LOWER_LEG_ROTATION_X] = ModelerControl("Right lower leg rotation X", 0, 120, 1.0f, 0);
 	controls[RIGHT_UPPER_LEG_ROTATION_X] = ModelerControl("Left leg rotation X", -120, 50, 1.0f, 0);
 	controls[RIGHT_UPPER_LEG_ROTATION_Y] = ModelerControl("Left leg rotation Y", -90, 90, 1.0f, 0);
-	controls[RIGHT_UPPER_LEG_ROTATION_Z] = ModelerControl("Left leg rotation Z", -30, 180, 1.0f, 0);
+	controls[RIGHT_UPPER_LEG_ROTATION_Z] = ModelerControl("Left leg rotation Z", -180, 180, 1.0f, 0);
 	controls[RIGHT_LOWER_LEG_ROTATION_X] = ModelerControl("Left lower leg rotation X", 0, 120, 1.0f, 0);
 
 	controls[WAIST_ROTATION_X] = ModelerControl("Waist rotation X", -90, 90, 1.0f, 0);
@@ -530,9 +512,6 @@ int main()
 	controls[LOWER_LEG_WIDTH] = ModelerControl("Lower leg width", 0.0, 2.0, 0.01f, 0.3);
 	controls[LOWER_LEG_HEIGHT] = ModelerControl("Lower leg height", 0.0, 2.0, 0.01f, 0.7);
 	controls[LOWER_LEG_DEPTH] = ModelerControl("Lower leg depth", 0.0, 2.0, 0.01f, 0.3);
-	controls[FOOT_WIDTH] = ModelerControl("Foot width", 0.0, 2.0, 0.01f, 0.3);
-	controls[FOOT_HEIGHT] = ModelerControl("Foot height", 0.0, 2.0, 0.01f, 0.1);
-	controls[FOOT_DEPTH] = ModelerControl("Foot depth", 0.0, 2.0, 0.01f, 0.5);
 
 	ModelerApplication::Instance()->Init(&createKumaModel, controls, NUMCONTROLS);
 	return ModelerApplication::Instance()->Run();
