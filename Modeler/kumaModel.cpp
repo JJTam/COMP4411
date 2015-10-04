@@ -2,7 +2,7 @@
 #include "modelerapp.h"
 #include "modelerdraw.h"
 #include <FL/gl.h>
-
+#include <cmath>
 #include "modelerglobals.h"
 
 #define KUMA_BODY_COLOR 1.0f, 0.945f, 0.9098f
@@ -12,6 +12,8 @@
 #define KUMA_CLOTH_COLOR 1.0f, 1.0f, 1.0f
 #define KUMA_CLOTH_PART2_COLOR 0.310f, 0.596f, 0.624f
 #define KUMA_TIE_COLOR 1.0f, 0.0f, 0.0f
+
+#define ANGLE2RAIDUS_FACTOR 3.141592654 / 180
 
 // Inherit off of ModelerView
 class KumaModel : public ModelerView
@@ -140,6 +142,10 @@ void KumaModel::draw()
 		double upperArmClothHeight = upperArmHeight - clothPart2Height2 - 0.2;
 		double upperLegClothHeight = upperLegHeight - clothPart2Height2 - 0.2;
 
+		double headRotationX = VAL(HEAD_ROTATION_X);
+		double headRotationY = VAL(HEAD_ROTATION_Y);
+		double headRotationZ = VAL(HEAD_ROTATION_Z);
+
 		double waistRotationX = VAL(WAIST_ROTATION_X);
 		double waistRotationY = VAL(WAIST_ROTATION_Y);
 		double waistRotationZ = VAL(WAIST_ROTATION_Z);
@@ -174,6 +180,11 @@ void KumaModel::draw()
 			glPushMatrix();
 			{
 				glTranslated(0, torsoHeight, -(headDepth - torsoDepth) / 2.0);
+				glTranslated(headWidth / 2, 0, headDepth / 2);
+				glRotated(headRotationY, 0, 1, 0);
+				glRotated(headRotationX, cos(headRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(headRotationY * ANGLE2RAIDUS_FACTOR));
+				glRotated(headRotationZ, -sin(headRotationY * ANGLE2RAIDUS_FACTOR), sin(headRotationX * ANGLE2RAIDUS_FACTOR), cos(headRotationY * ANGLE2RAIDUS_FACTOR));
+				glTranslated(-headWidth / 2, 0, -headDepth / 2);
 				drawBox(headWidth, headHeight, headDepth);
 
 				// eyes
@@ -274,8 +285,8 @@ void KumaModel::draw()
 				glTranslated(0, -(waistHeight + waistTorsoOffset), 0);
 				glTranslated(torsoWidth / 2, waistHeight, torsoDepth / 2);
 				glRotated(waistRotationY, 0, 1, 0);
-				glRotated(waistRotationX, 1, 0, 0);
-				glRotated(waistRotationZ, 0, 0, 1);
+				glRotated(waistRotationX, cos(waistRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(waistRotationY * ANGLE2RAIDUS_FACTOR));
+				glRotated(waistRotationZ, -sin(waistRotationY * ANGLE2RAIDUS_FACTOR), sin(waistRotationX * ANGLE2RAIDUS_FACTOR), cos(waistRotationY * ANGLE2RAIDUS_FACTOR));
 				glTranslated(-torsoWidth / 2, -waistHeight, -torsoDepth / 2);
 
 				setDiffuseColor(KUMA_BODY_COLOR);
@@ -287,8 +298,8 @@ void KumaModel::draw()
 					glTranslated(upperLegOffsetX, -upperLegWaistOffset, (torsoDepth - upperLegDepth) / 2);
 					glTranslated(upperLegWidth / 2, 0, upperLegDepth / 2);
 					glRotated(leftUpperLegRotationY, 0, 1, 0);
-					glRotated(leftUpperLegRotationX, 1, 0, 0);
-					glRotated(leftUpperLegRotationZ, 0, 0, 1);
+					glRotated(leftUpperLegRotationX, cos(leftUpperLegRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(leftUpperLegRotationY * ANGLE2RAIDUS_FACTOR));
+					glRotated(leftUpperLegRotationZ, -sin(leftUpperLegRotationY * ANGLE2RAIDUS_FACTOR), sin(leftUpperLegRotationX * ANGLE2RAIDUS_FACTOR), cos(leftUpperLegRotationY * ANGLE2RAIDUS_FACTOR));
 					glTranslated(-upperLegWidth / 2, 0, -upperLegDepth / 2);
 
 					drawBox(upperLegWidth, -upperLegHeight, upperLegDepth);
@@ -321,8 +332,8 @@ void KumaModel::draw()
 					glTranslated(torsoWidth - upperLegWidth - upperLegOffsetX, -upperLegWaistOffset, (torsoDepth - upperLegDepth) / 2);
 					glTranslated(upperLegWidth / 2, 0, upperLegDepth / 2);
 					glRotated(rightUpperLegRotationY, 0, 1, 0);
-					glRotated(rightUpperLegRotationX, 1, 0, 0);
-					glRotated(rightUpperLegRotationZ, 0, 0, 1);
+					glRotated(rightUpperLegRotationX, cos(rightUpperLegRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(rightUpperLegRotationY * ANGLE2RAIDUS_FACTOR));
+					glRotated(rightUpperLegRotationZ, -sin(rightUpperLegRotationY * ANGLE2RAIDUS_FACTOR), sin(rightUpperLegRotationX * ANGLE2RAIDUS_FACTOR), cos(rightUpperLegRotationY * ANGLE2RAIDUS_FACTOR));
 					glTranslated(-upperLegWidth / 2, 0, -upperLegDepth / 2);
 
 					setDiffuseColor(KUMA_BODY_COLOR);
@@ -365,8 +376,8 @@ void KumaModel::draw()
 				glTranslated(-(upperArmWidth + upperArmBodyOffsetX), (torsoHeight - upperArmBodyOffsetY), (torsoDepth - upperArmDepth) / 2);
 				glTranslated(upperArmWidth / 2, 0, upperArmDepth / 2);
 				glRotated(leftUpperArmRotationY, 0, 1, 0);
-				glRotated(leftUpperArmRotationX, 1, 0, 0);
-				glRotated(leftUpperArmRotationZ, 0, 0, 1);
+				glRotated(leftUpperArmRotationX, cos(leftUpperArmRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(leftUpperArmRotationY * ANGLE2RAIDUS_FACTOR));
+				glRotated(leftUpperArmRotationZ, -sin(leftUpperArmRotationY * ANGLE2RAIDUS_FACTOR), sin(leftUpperArmRotationX * ANGLE2RAIDUS_FACTOR), cos(leftUpperArmRotationY * ANGLE2RAIDUS_FACTOR));
 				glTranslated(-upperArmWidth / 2, 0, -upperArmDepth / 2);
 
 				setDiffuseColor(KUMA_BODY_COLOR);
@@ -404,8 +415,8 @@ void KumaModel::draw()
 				glTranslated((torsoWidth + upperArmBodyOffsetX), (torsoHeight - upperArmBodyOffsetY), (torsoDepth - upperArmDepth) / 2);
 				glTranslated(upperArmWidth / 2, 0, upperArmDepth / 2);
 				glRotated(rightUpperArmRotationY, 0, 1, 0);
-				glRotated(rightUpperArmRotationX, 1, 0, 0);
-				glRotated(rightUpperArmRotationZ, 0, 0, 1);
+				glRotated(rightUpperArmRotationX, cos(rightUpperArmRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(rightUpperArmRotationY * ANGLE2RAIDUS_FACTOR));
+				glRotated(rightUpperArmRotationZ, -sin(rightUpperArmRotationY * ANGLE2RAIDUS_FACTOR), sin(rightUpperArmRotationX * ANGLE2RAIDUS_FACTOR), cos(rightUpperArmRotationY * ANGLE2RAIDUS_FACTOR));
 				glTranslated(-upperArmWidth / 2, 0, -upperArmDepth / 2);
 
 				setDiffuseColor(KUMA_BODY_COLOR);
@@ -451,6 +462,10 @@ int main()
 	controls[XPOS] = ModelerControl("X Position", -5, 5, 0.1f, 0);
 	controls[YPOS] = ModelerControl("Y Position", 0, 5, 0.1f, 0);
 	controls[ZPOS] = ModelerControl("Z Position", -5, 5, 0.1f, 0);
+
+	controls[HEAD_ROTATION_X] = ModelerControl("Head rotation X", -30, 30, 1.0f, 0);
+	controls[HEAD_ROTATION_Y] = ModelerControl("Head rotation Y", -60, 60, 1.0f, 0);
+	controls[HEAD_ROTATION_Z] = ModelerControl("Head rotation Z", -30, 30, 1.0f, 0);
 
 	controls[LEFT_UPPER_ARM_ROTATION_X] = ModelerControl("Right arm rotation X", -180, 50, 1.0f, 0);
 	controls[LEFT_UPPER_ARM_ROTATION_Y] = ModelerControl("Right arm rotation Y", -90, 90, 1.0f, 0);
