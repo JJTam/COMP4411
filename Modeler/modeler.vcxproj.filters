@@ -36,6 +36,9 @@
     <ClCompile Include="kumaModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="debugUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bitmap.h">
