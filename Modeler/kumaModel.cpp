@@ -4,6 +4,13 @@
 #include <FL/gl.h>
 #include <cmath>
 #include "modelerglobals.h"
+#include "animation.h"
+#include <vector>
+
+using namespace std;
+
+extern vector<AnimationDef*>* kumaAnimes;
+extern void kumaAnimationsSetup();
 
 #define KUMA_BODY_COLOR 1.0f, 0.945f, 0.9098f
 #define KUMA_HAIR_COLOR 0.588f, 0.337f, 0.302f
@@ -65,6 +72,20 @@ void KumaModel::draw()
 	// matrix stuff.  Unless you want to fudge directly with the 
 	// projection matrix, don't bother with this ...
 	ModelerView::draw();
+
+	// Animation support
+	static int currFrame = 0;
+	int animationSelection = VAL(ANIMATION_SELECTION) - 1;
+	if (animationSelection >= 0)
+	{
+		AnimationDef* anime = (*kumaAnimes)[animationSelection];
+		currFrame = currFrame % anime->size();
+		for (const auto& frameVar : (*(*anime)[currFrame]))
+		{
+			SETVAL(frameVar.first, frameVar.second);
+		}
+		++currFrame;
+	}
 
 	// change the light
 	static GLfloat light0pos[4];
@@ -511,6 +532,9 @@ void KumaModel::draw()
 
 int main()
 {
+	// Setup the animations
+	kumaAnimationsSetup();
+
 	// Initialize the controls
 	// Constructor is ModelerControl(name, minimumvalue, maximumvalue, 
 	// stepsize, defaultvalue)
@@ -559,6 +583,8 @@ int main()
 
 	controls[DRAW_LEVEL] = ModelerControl("Level of detail", 0, 5, 1, 5);
 	controls[DRAW_CLOTHES] = ModelerControl("Draw clothes", 0, 1, 1, 1);
+
+	controls[ANIMATION_SELECTION] = ModelerControl("Animation Selection", 0, kumaAnimes->size(), 1, 0);
 
 	controls[TORSO_WIDTH] = ModelerControl("Torso width", 0.0, 2.0, 0.01f, 1.0);
 	controls[TORSO_HEIGHT] = ModelerControl("Torso height", 0.0, 2.0, 0.01f, 1.2);
