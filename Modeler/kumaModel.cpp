@@ -11,7 +11,7 @@
 #define KUMA_MOUTH_COLOR 0.988f, 0.710f, 0.702f
 #define KUMA_CLOTH_COLOR 1.0f, 1.0f, 1.0f
 #define KUMA_CLOTH_PART2_COLOR 0.310f, 0.596f, 0.624f
-#define KUMA_TIE_COLOR 1.0f, 0.0f, 0.0f
+#define KUMA_TIE_COLOR 1.0f, 0.01f, 0.01f
 
 #define ANGLE2RAIDUS_FACTOR 3.141592654 / 180
 
@@ -65,6 +65,38 @@ void KumaModel::draw()
 	// matrix stuff.  Unless you want to fudge directly with the 
 	// projection matrix, don't bother with this ...
 	ModelerView::draw();
+
+	// change the light
+	static GLfloat light0pos[4];
+	static GLfloat light0diff[4];
+	static GLfloat light1pos[4];
+	static GLfloat light1diff[4];
+	light0pos[0] = VAL(LIGHT0_X); light0pos[1] = VAL(LIGHT0_Y); light0pos[2] = VAL(LIGHT0_Z); light0pos[3] = 0;
+	light1pos[0] = VAL(LIGHT1_X); light1pos[1] = VAL(LIGHT1_Y); light1pos[2] = VAL(LIGHT1_Z); light1pos[3] = 0;
+	light0diff[0] = light0diff[1] = light0diff[2] = light0diff[3] = VAL(LIGHT0_DIFFUSE);
+	light1diff[0] = light1diff[1] = light1diff[2] = light1diff[3] = VAL(LIGHT1_DIFFUSE);
+	glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0diff);
+	glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, light1diff);
+
+	// draw the light sources
+	if (VAL(DRAW_LIGHT) > 0)
+	{
+		setDiffuseColor(1.0, 1.0, 1.0);
+		glPushMatrix();
+		{
+			glTranslated(VAL(LIGHT0_X) - 0.1, VAL(LIGHT0_Y) - 0.1, VAL(LIGHT0_Z) - 0.1);
+			drawBox(0.2, 0.2, 0.2);
+		}
+		glPopMatrix();
+		glPushMatrix();
+		{
+			glTranslated(VAL(LIGHT1_X) - 0.1, VAL(LIGHT1_Y) - 0.1, VAL(LIGHT1_Z) - 0.1);
+			drawBox(0.2, 0.2, 0.2);
+		}
+		glPopMatrix();
+	}
 
 	// draw the floor
 	setAmbientColor(.1f, .1f, .1f);
@@ -486,6 +518,18 @@ int main()
 	controls[XPOS] = ModelerControl("X Position", -5, 5, 0.1f, 0);
 	controls[YPOS] = ModelerControl("Y Position", 0, 5, 0.1f, 0);
 	controls[ZPOS] = ModelerControl("Z Position", -5, 5, 0.1f, 0);
+
+	controls[DRAW_LIGHT] = ModelerControl("Draw lights", 0, 1, 1.0f, 0);
+
+	controls[LIGHT0_X] = ModelerControl("Light 0 X", -10, 10, 0.1f, 4);
+	controls[LIGHT0_Y] = ModelerControl("Light 0 Y", -10, 10, 0.1f, 2);
+	controls[LIGHT0_Z] = ModelerControl("Light 0 Z", -10, 10, 0.1f, -4);
+	controls[LIGHT0_DIFFUSE] = ModelerControl("Light 0 Diffuse", 0, 5, 0.01f, 1);
+
+	controls[LIGHT1_X] = ModelerControl("Light 1 X", -10, 10, 0.1f, -2);
+	controls[LIGHT1_Y] = ModelerControl("Light 1 Y", -10, 10, 0.1f, 1);
+	controls[LIGHT1_Z] = ModelerControl("Light 1 Z", -10, 10, 0.1f, 5);
+	controls[LIGHT1_DIFFUSE] = ModelerControl("Light 1 Diffuse", 0, 5, 0.01f, 1);
 
 	controls[HEAD_ROTATION_X] = ModelerControl("Head rotation X", -30, 30, 1.0f, 0);
 	controls[HEAD_ROTATION_Y] = ModelerControl("Head rotation Y", -60, 60, 1.0f, 0);
