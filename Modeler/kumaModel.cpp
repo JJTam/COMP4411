@@ -4,6 +4,13 @@
 #include <FL/gl.h>
 #include <cmath>
 #include "modelerglobals.h"
+#include "animation.h"
+#include <vector>
+
+using namespace std;
+
+extern vector<AnimationDef*>* kumaAnimes;
+extern void kumaAnimationsSetup();
 
 #define KUMA_BODY_COLOR 1.0f, 0.945f, 0.9098f
 #define KUMA_HAIR_COLOR 0.588f, 0.337f, 0.302f
@@ -65,6 +72,20 @@ void KumaModel::draw()
 	// matrix stuff.  Unless you want to fudge directly with the 
 	// projection matrix, don't bother with this ...
 	ModelerView::draw();
+
+	// Animation support
+	static int currFrame = 0;
+	int animationSelection = VAL(ANIMATION_SELECTION) - 1;
+	if (animationSelection >= 0)
+	{
+		AnimationDef* anime = (*kumaAnimes)[animationSelection];
+		currFrame = currFrame % anime->size();
+		for (const auto& frameVar : (*(*anime)[currFrame]))
+		{
+			SETVAL(frameVar.first, frameVar.second);
+		}
+		++currFrame;
+	}
 
 	// change the light
 	static GLfloat light0pos[4];
@@ -511,6 +532,9 @@ void KumaModel::draw()
 
 int main()
 {
+	// Setup the animations
+	kumaAnimationsSetup();
+
 	// Initialize the controls
 	// Constructor is ModelerControl(name, minimumvalue, maximumvalue, 
 	// stepsize, defaultvalue)
@@ -519,7 +543,7 @@ int main()
 	controls[YPOS] = ModelerControl("Y Position", 0, 5, 0.1f, 0);
 	controls[ZPOS] = ModelerControl("Z Position", -5, 5, 0.1f, 0);
 
-	controls[DRAW_LIGHT] = ModelerControl("Draw lights", 0, 1, 1.0f, 0);
+	controls[DRAW_LIGHT] = ModelerControl("Draw lights", 0, 1, 1, 0);
 
 	controls[LIGHT0_X] = ModelerControl("Light 0 X", -10, 10, 0.1f, 4);
 	controls[LIGHT0_Y] = ModelerControl("Light 0 Y", -10, 10, 0.1f, 2);
@@ -531,34 +555,36 @@ int main()
 	controls[LIGHT1_Z] = ModelerControl("Light 1 Z", -10, 10, 0.1f, 5);
 	controls[LIGHT1_DIFFUSE] = ModelerControl("Light 1 Diffuse", 0, 5, 0.01f, 1);
 
-	controls[HEAD_ROTATION_X] = ModelerControl("Head rotation X", -30, 30, 1.0f, 0);
-	controls[HEAD_ROTATION_Y] = ModelerControl("Head rotation Y", -60, 60, 1.0f, 0);
-	controls[HEAD_ROTATION_Z] = ModelerControl("Head rotation Z", -30, 30, 1.0f, 0);
+	controls[HEAD_ROTATION_X] = ModelerControl("Head rotation X", -30, 30, 1, 0);
+	controls[HEAD_ROTATION_Y] = ModelerControl("Head rotation Y", -60, 60, 1, 0);
+	controls[HEAD_ROTATION_Z] = ModelerControl("Head rotation Z", -30, 30, 1, 0);
 
-	controls[LEFT_UPPER_ARM_ROTATION_X] = ModelerControl("Right arm rotation X", -180, 50, 1.0f, 0);
-	controls[LEFT_UPPER_ARM_ROTATION_Y] = ModelerControl("Right arm rotation Y", -90, 90, 1.0f, 0);
-	controls[LEFT_UPPER_ARM_ROTATION_Z] = ModelerControl("Right arm rotation Z", -180, 30, 1.0f, 0);
-	controls[LEFT_LOWER_ARM_ROTATION_X] = ModelerControl("Right lower arm rotation X", -180, 0, 1.0f, 0);
-	controls[RIGHT_UPPER_ARM_ROTATION_X] = ModelerControl("Left arm rotation X", -180, 50, 1.0f, 0);
-	controls[RIGHT_UPPER_ARM_ROTATION_Y] = ModelerControl("Left arm rotation Y", -90, 90, 1.0f, 0);
-	controls[RIGHT_UPPER_ARM_ROTATION_Z] = ModelerControl("Left arm rotation Z", -30, 180, 1.0f, 0);
-	controls[RIGHT_LOWER_ARM_ROTATION_X] = ModelerControl("Left lower arm rotation X", -180, 0, 1.0f, 0);
+	controls[LEFT_UPPER_ARM_ROTATION_X] = ModelerControl("Right arm rotation X", -180, 50, 1, 0);
+	controls[LEFT_UPPER_ARM_ROTATION_Y] = ModelerControl("Right arm rotation Y", -90, 90, 1, 0);
+	controls[LEFT_UPPER_ARM_ROTATION_Z] = ModelerControl("Right arm rotation Z", -180, 30, 1, 0);
+	controls[LEFT_LOWER_ARM_ROTATION_X] = ModelerControl("Right lower arm rotation X", -180, 0, 1, 0);
+	controls[RIGHT_UPPER_ARM_ROTATION_X] = ModelerControl("Left arm rotation X", -180, 50, 1, 0);
+	controls[RIGHT_UPPER_ARM_ROTATION_Y] = ModelerControl("Left arm rotation Y", -90, 90, 1, 0);
+	controls[RIGHT_UPPER_ARM_ROTATION_Z] = ModelerControl("Left arm rotation Z", -30, 180, 1, 0);
+	controls[RIGHT_LOWER_ARM_ROTATION_X] = ModelerControl("Left lower arm rotation X", -180, 0, 1, 0);
 
-	controls[LEFT_UPPER_LEG_ROTATION_X] = ModelerControl("Right leg rotation X", -120, 50, 1.0f, 0);
-	controls[LEFT_UPPER_LEG_ROTATION_Y] = ModelerControl("Right leg rotation Y", -90, 90, 1.0f, 0);
-	controls[LEFT_UPPER_LEG_ROTATION_Z] = ModelerControl("Right leg rotation Z", -180, 180, 1.0f, 0);
-	controls[LEFT_LOWER_LEG_ROTATION_X] = ModelerControl("Right lower leg rotation X", 0, 120, 1.0f, 0);
-	controls[RIGHT_UPPER_LEG_ROTATION_X] = ModelerControl("Left leg rotation X", -120, 50, 1.0f, 0);
-	controls[RIGHT_UPPER_LEG_ROTATION_Y] = ModelerControl("Left leg rotation Y", -90, 90, 1.0f, 0);
-	controls[RIGHT_UPPER_LEG_ROTATION_Z] = ModelerControl("Left leg rotation Z", -180, 180, 1.0f, 0);
-	controls[RIGHT_LOWER_LEG_ROTATION_X] = ModelerControl("Left lower leg rotation X", 0, 120, 1.0f, 0);
+	controls[LEFT_UPPER_LEG_ROTATION_X] = ModelerControl("Right leg rotation X", -120, 50, 1, 0);
+	controls[LEFT_UPPER_LEG_ROTATION_Y] = ModelerControl("Right leg rotation Y", -90, 90, 1, 0);
+	controls[LEFT_UPPER_LEG_ROTATION_Z] = ModelerControl("Right leg rotation Z", -180, 180, 1, 0);
+	controls[LEFT_LOWER_LEG_ROTATION_X] = ModelerControl("Right lower leg rotation X", 0, 120, 1, 0);
+	controls[RIGHT_UPPER_LEG_ROTATION_X] = ModelerControl("Left leg rotation X", -120, 50, 1, 0);
+	controls[RIGHT_UPPER_LEG_ROTATION_Y] = ModelerControl("Left leg rotation Y", -90, 90, 1, 0);
+	controls[RIGHT_UPPER_LEG_ROTATION_Z] = ModelerControl("Left leg rotation Z", -180, 180, 1, 0);
+	controls[RIGHT_LOWER_LEG_ROTATION_X] = ModelerControl("Left lower leg rotation X", 0, 120, 1, 0);
 
-	controls[WAIST_ROTATION_X] = ModelerControl("Waist rotation X", -90, 90, 1.0f, 0);
-	controls[WAIST_ROTATION_Y] = ModelerControl("Waist rotation Y", -90, 90, 1.0f, 0);
-	controls[WAIST_ROTATION_Z] = ModelerControl("Waist rotation Z", -30, 30, 1.0f, 0);
+	controls[WAIST_ROTATION_X] = ModelerControl("Waist rotation X", -90, 90, 1, 0);
+	controls[WAIST_ROTATION_Y] = ModelerControl("Waist rotation Y", -90, 90, 1, 0);
+	controls[WAIST_ROTATION_Z] = ModelerControl("Waist rotation Z", -30, 30, 1, 0);
 
 	controls[DRAW_LEVEL] = ModelerControl("Level of detail", 0, 5, 1, 5);
 	controls[DRAW_CLOTHES] = ModelerControl("Draw clothes", 0, 1, 1, 1);
+
+	controls[ANIMATION_SELECTION] = ModelerControl("Animation Selection", 0, kumaAnimes->size(), 1, 0);
 
 	controls[TORSO_WIDTH] = ModelerControl("Torso width", 0.0, 2.0, 0.01f, 1.0);
 	controls[TORSO_HEIGHT] = ModelerControl("Torso height", 0.0, 2.0, 0.01f, 1.2);

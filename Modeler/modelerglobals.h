@@ -10,7 +10,9 @@
 // of the controls from the user interface.
 enum SampleModelControls
 { 
-	XPOS, YPOS, ZPOS, 
+	// WARNING: DO NOT TOUCH THIS REGION, OR YOU WILL BREAK THE ANIMATIONS!
+	// FIXED REGION BEGINS [--
+	XPOS = 0, YPOS, ZPOS, 
 	
 	DRAW_LIGHT,
 	LIGHT0_X, LIGHT0_Y, LIGHT0_Z, LIGHT0_DIFFUSE,
@@ -29,8 +31,12 @@ enum SampleModelControls
 	RIGHT_LOWER_LEG_ROTATION_X,
 
 	WAIST_ROTATION_X, WAIST_ROTATION_Y, WAIST_ROTATION_Z,
+	// --] FIXED REGION ENDS
+	// MAKE ANY CHANGES BELOW
 
 	DRAW_LEVEL, DRAW_CLOTHES,
+
+	ANIMATION_SELECTION,
 
 	TORSO_WIDTH, TORSO_HEIGHT, TORSO_DEPTH,
 	HEAD_WIDTH, HEAD_HEIGHT, HEAD_DEPTH,
@@ -53,5 +59,5 @@ enum SampleModelControls
 // We'll be getting the instance of the application a lot; 
 // might as well have it as a macro.
 #define VAL(x) (ModelerApplication::Instance()->GetControlValue(x))
-
+#define SETVAL(x, v) (ModelerApplication::Instance()->SetControlValue(x, v))
 #endif
