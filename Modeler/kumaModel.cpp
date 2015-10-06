@@ -6,11 +6,15 @@
 #include "modelerglobals.h"
 #include "animation.h"
 #include <vector>
+#include "LSystem.h"
+#include "kumaLSystemOP.h"
 
 using namespace std;
 
 extern vector<AnimationDef*>* kumaAnimes;
 extern void kumaAnimationsSetup();
+extern vector<LSystem*>* kumaLSystems;
+extern void kumaLSystemSetup();
 
 #define KUMA_BODY_COLOR 1.0f, 0.945f, 0.9098f
 #define KUMA_HAIR_COLOR 0.588f, 0.337f, 0.302f
@@ -19,6 +23,8 @@ extern void kumaAnimationsSetup();
 #define KUMA_CLOTH_COLOR 1.0f, 1.0f, 1.0f
 #define KUMA_CLOTH_PART2_COLOR 0.310f, 0.596f, 0.624f
 #define KUMA_TIE_COLOR 1.0f, 0.01f, 0.01f
+
+#define LSYSTEM_COLOR 0.13f, 0.694f, 0.298f
 
 #define ANGLE2RAIDUS_FACTOR 3.141592654 / 180
 
@@ -76,7 +82,7 @@ void KumaModel::draw()
 	// Animation support
 	static int currFrame = 0;
 	int animationSelection = VAL(ANIMATION_SELECTION) - 1;
-	if (animationSelection >= 0)
+	if (animationSelection >= 0 && animationSelection < kumaAnimes->size())
 	{
 		AnimationDef* anime = (*kumaAnimes)[animationSelection];
 		currFrame = currFrame % anime->size();
@@ -128,6 +134,53 @@ void KumaModel::draw()
 		drawBox(10, 0.01f, 10);
 	}
 	glPopMatrix();
+
+	// draw the LSystem
+	setDiffuseColor(LSYSTEM_COLOR);
+	int lsysSel = VAL(LSYSTEM_SELECTION) - 1;
+	if (lsysSel >= 0 && lsysSel < kumaLSystems->size())
+	{
+		glPushMatrix();
+		{
+			glTranslated(-3, 0, -3);
+			glRotated(90, -1, 0, 0);
+			LSystem* sys = (*kumaLSystems)[lsysSel];
+			sys->runIteration(VAL(LSYSTEM_ITER));
+			for (int opi : *(sys->ops))
+			{
+				if (sys->opMap.find(opi) != sys->opMap.end())
+				{
+					auto op = sys->opMap[opi];
+					switch (op.first)
+					{
+					case KLS_FORWARD:
+						if (op.second <= 0)
+							break;
+						drawBox(0.05 * op.second, 0.02, 0.02);
+						glTranslated(0.05 * op.second, 0, 0);
+						break;
+					case KLS_ROTATE_LEFT:
+						glRotated(-op.second, 0, 1, 0);
+						break;
+					case KLS_ROTATE_RIGHT:
+						glRotated(op.second, 0, 1, 0);
+						break;
+					case KLS_ROTATE_LEFT_AND_PUSH:
+						glRotated(-op.second, 0, 1, 0);
+						glPushMatrix();
+						break;
+					case KLS_POP_AND_ROTATE_RIGHT:
+						glPopMatrix();
+						glRotated(op.second, 0, 1, 0);
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+		glPopMatrix();
+	}
 
 	// draw the model
 	setAmbientColor(.1f, .1f, .1f);
@@ -534,6 +587,7 @@ int main()
 {
 	// Setup the animations
 	kumaAnimationsSetup();
+	kumaLSystemSetup();
 
 	// Initialize the controls
 	// Constructor is ModelerControl(name, minimumvalue, maximumvalue, 
@@ -585,6 +639,8 @@ int main()
 	controls[DRAW_CLOTHES] = ModelerControl("Draw clothes", 0, 1, 1, 1);
 
 	controls[ANIMATION_SELECTION] = ModelerControl("Animation Selection", 0, kumaAnimes->size(), 1, 0);
+	controls[LSYSTEM_SELECTION] = ModelerControl("LSystem Selection", 0, kumaLSystems->size(), 1, 0);
+	controls[LSYSTEM_ITER] = ModelerControl("LSystem Iterations", 0, 10, 1, 1);
 
 	controls[TORSO_WIDTH] = ModelerControl("Torso width", 0.0, 2.0, 0.01f, 1.0);
 	controls[TORSO_HEIGHT] = ModelerControl("Torso height", 0.0, 2.0, 0.01f, 1.2);

@@ -150,6 +150,8 @@
     </ClCompile>
     <ClCompile Include="debugUtils.cpp" />
     <ClCompile Include="kumaAnimation.cpp" />
+    <ClCompile Include="kumaLSystem.cpp" />
+    <ClCompile Include="LSystem.cpp" />
     <ClCompile Include="modelerapp.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -181,6 +183,8 @@
     <ClInclude Include="animation.h" />
     <ClInclude Include="bitmap.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="kumaLSystemOP.h" />
+    <ClInclude Include="LSystem.h" />
     <ClInclude Include="mat.h" />
     <ClInclude Include="modelerapp.h" />
     <ClInclude Include="modelerdraw.h" />
