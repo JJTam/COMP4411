@@ -77,17 +77,23 @@ void drawClothes(double clothBodyOffset, double clothThickness, double clothHeig
 
 void KumaModel::drawTexture()
 {
-	
-	if (image == NULL)
+	auto pui = ModelerApplication::Instance()->GetPUI();
+	static int width = 0;
+	static int height = 0;
+
+	if (image == NULL || pui->hasNewTexture)
 	{
+		pui->hasNewTexture = false;
+
 		// try to open the image to read
 		unsigned char*	imagedata;
-		int				width, height;
-
-		if ((imagedata = readBMP("plane.bmp", width, height)) == NULL)
+		
+		if (pui->textureFileName == nullptr || 
+			(imagedata = readBMP(pui->textureFileName, width, height)) == NULL)
 		{
 			fl_alert("Can't load bitmap file");
 			SETVAL(DRAW_TEXTURE, 0);
+			return;
 		}
 
 		image = imagedata;
@@ -108,17 +114,22 @@ void KumaModel::drawTexture()
 	}
 
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_TEXTURE_2D);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-	glBindTexture(GL_TEXTURE_2D, texName);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, 0.0); glVertex3f(-2.0, 0.0, 0.0);
-	glTexCoord2f(0.0, 1.0); glVertex3f(-2.0, 2.0, 0.0);
-	glTexCoord2f(1.0, 1.0); glVertex3f(0.0, 2.0, 0.0);
-	glTexCoord2f(1.0, 0.0); glVertex3f(0.0, 0.0, 0.0);
-	glEnd();
-	glFlush();
-	glDisable(GL_TEXTURE_2D);
+
+	if (width > 0 && height > 0)
+	{
+		double hwfactor = height / (double)width;
+		glEnable(GL_TEXTURE_2D);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+		glBindTexture(GL_TEXTURE_2D, texName);
+		glBegin(GL_QUADS);
+		glTexCoord2f(0.0, 0.0); glVertex3f(-2.0, 0.0, 0.0);
+		glTexCoord2f(0.0, 1.0); glVertex3f(-2.0, 2.0 * hwfactor, 0.0);
+		glTexCoord2f(1.0, 1.0); glVertex3f(0.0, 2.0 * hwfactor, 0.0);
+		glTexCoord2f(1.0, 0.0); glVertex3f(0.0, 0.0, 0.0);
+		glEnd();
+		glFlush();
+		glDisable(GL_TEXTURE_2D);
+	}
 }
 
 // Override draw() to draw out Kuma
@@ -231,8 +242,20 @@ void KumaModel::draw()
 		}
 		glPopMatrix();
 	}
+
 	// draw the texture
-	if(VAL(DRAW_TEXTURE)>0)drawTexture();
+	if (VAL(DRAW_TEXTURE) > 0) {
+		glPushMatrix();
+		{
+			double textureScale = VAL(TEXTURE_SIZE);
+			double textureX = VAL(TEXTURE_X);
+			double textureZ = VAL(TEXTURE_Z);
+			glTranslated(textureX, 0, textureZ);
+			glScaled(textureScale, textureScale, textureScale);
+			drawTexture();
+		}
+		glPopMatrix();
+	}
 
 	// draw the model
 	setAmbientColor(.1f, .1f, .1f);
@@ -689,6 +712,10 @@ int main()
 
 	controls[DRAW_LEVEL] = ModelerControl("Level of detail", 0, 5, 1, 5);
 	controls[DRAW_CLOTHES] = ModelerControl("Draw clothes", 0, 1, 1, 1);
+	controls[DRAW_TEXTURE] = ModelerControl("Draw Texture", 0, 1, 1, 0);
+	controls[TEXTURE_SIZE] = ModelerControl("Texture Size", 1, 10, 1, 3);
+	controls[TEXTURE_X] = ModelerControl("Texture X", -10, 10, 0.01f, 0);
+	controls[TEXTURE_Z] = ModelerControl("Texture Z", -10, 10, 0.01f, -3.0);
 
 	controls[ANIMATION_SELECTION] = ModelerControl("Animation Selection", 0, kumaAnimes->size(), 1, 0);
 	controls[LSYSTEM_SELECTION] = ModelerControl("LSystem Selection", 0, kumaLSystems->size(), 1, 0);
@@ -732,7 +759,7 @@ int main()
 	controls[LOWER_LEG_WIDTH] = ModelerControl("Lower leg width", 0.0, 2.0, 0.01f, 0.3);
 	controls[LOWER_LEG_HEIGHT] = ModelerControl("Lower leg height", 0.0, 2.0, 0.01f, 0.7);
 	controls[LOWER_LEG_DEPTH] = ModelerControl("Lower leg depth", 0.0, 2.0, 0.01f, 0.3);
-	controls[DRAW_TEXTURE] = ModelerControl("Draw Texture", 0, 1, 1, 0);
+	
 	ModelerApplication::Instance()->Init(&createKumaModel, controls, NUMCONTROLS);
 	return ModelerApplication::Instance()->Run();
 }
