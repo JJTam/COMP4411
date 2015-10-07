@@ -252,6 +252,7 @@ Fl_Menu_Item ModelerUserInterface::menu_m_controlsMenuBar[] = {
  {"Save Bitmap File", 0,  (Fl_Callback*)ModelerUserInterface::cb_Save1, 0, 128, 0, 0, 14, 0},
  {"Open Position File", 0, (Fl_Callback*)ModelerUserInterface::cb_OpenPos, 0, 0, 0, 0, 14, 0},
  {"Save Position File", 0, (Fl_Callback*)ModelerUserInterface::cb_SavePos, 0, 128, 0, 0, 14, 0},
+ { "Open Texture File", 0, (Fl_Callback*)ModelerUserInterface::cb_LoadBitmap, 0, 128, 0, 0, 14, 0 },
  {"Exit", 0,  (Fl_Callback*)ModelerUserInterface::cb_Exit, 0, 0, 0, 0, 14, 0},
  {0},
  {"View", 0,  0, 0, 64, 0, 0, 14, 0},
@@ -292,6 +293,8 @@ void ModelerUserInterface::cb_m_modelerWindow(Fl_Window* o, void* v) {
 }
 
 ModelerUserInterface::ModelerUserInterface() {
+	this->hasNewTexture = false;
+	this->textureFileName = nullptr;
   Fl_Window* w;
   { Fl_Window* o = m_controlsWindow = new Fl_Window(395, 326, "CS 341 Modeler (SP02)");
     w = o;
@@ -331,4 +334,16 @@ void ModelerUserInterface::show() {
   m_controlsWindow->show();
 m_modelerWindow->show();
 m_modelerView->show();
+}
+
+void ModelerUserInterface::cb_LoadBitmap(Fl_Menu_* o, void* v) {
+	char* newfile = fl_file_chooser("Open File?", "*.bmp", NULL);
+	if (newfile != NULL) {
+		auto pui = (ModelerUserInterface*)(o->parent()->user_data());
+		pui->hasNewTexture = true;
+		if (pui->textureFileName != nullptr)
+			delete[] pui->textureFileName;
+
+		pui->textureFileName = newfile;
+	}
 }
