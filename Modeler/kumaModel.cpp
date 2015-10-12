@@ -45,7 +45,7 @@ ModelerView* createKumaModel(int x, int y, int w, int h, char *label)
 static void torus(double innerR, double outerR, int numc, int numt)
 {
 	glPushMatrix();
-	glTranslated(0, 2, 5);
+	glTranslated(0, 2, -3);
 	int i, j, k;
 	double s, t, x, y, z, twopi;
 
@@ -60,13 +60,15 @@ static void torus(double innerR, double outerR, int numc, int numt)
 				x = (outerR + innerR*cos(s*twopi / numc))*cos(t*twopi / numt);
 				y = (outerR + innerR*cos(s*twopi / numc))*sin(t*twopi / numt);
 				z = innerR * sin(s * twopi / numc);
+				glNormal3d((innerR*cos(s*twopi / numc))*cos(t*twopi / numt), (innerR*cos(s*twopi / numc))*sin(t*twopi / numt), innerR * sin(s * twopi / numc));
 				glVertex3f(x, y, z);
 			}
 		}
 		glEnd();
 	}
 	glPopMatrix();
-}
+
+
 void drawClothes(double clothBodyOffset, double clothThickness, double clothHeight, double clothPart2Height, double innerWidth, double innerHeight, double innerDepth)
 {
 	// left and back
@@ -245,6 +247,7 @@ void KumaModel::draw()
 		double rightUpperArmRotationZ = VAL(RIGHT_UPPER_ARM_ROTATION_Z);
 		double rightLowerArmRotationX = VAL(RIGHT_LOWER_ARM_ROTATION_X);
 
+		
 		// torso
 		glPushMatrix();
 		if (detailLevel > 0)
@@ -354,6 +357,7 @@ void KumaModel::draw()
 
 				// tie
 				setDiffuseColor(KUMA_TIE_COLOR);
+				torus(0.3, 1, 20, 20);
 				glTranslated(-(torsoWidth / 2 + clothBodyOffset + clothThickness), 0, 0);
 				drawTriangle(0.15, 0, 0,
 					-0.15, 0, 0,
