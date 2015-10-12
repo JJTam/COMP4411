@@ -150,7 +150,11 @@
     </ClCompile>
     <ClCompile Include="debugUtils.cpp" />
     <ClCompile Include="kumaAnimation.cpp" />
+    <ClCompile Include="kumaInitControls.cpp" />
+    <ClCompile Include="kumaInverseKinematics.cpp" />
     <ClCompile Include="kumaLSystem.cpp" />
+    <ClCompile Include="kumaModelHelpers.cpp" />
+    <ClCompile Include="kumaModelTexture.cpp" />
     <ClCompile Include="LSystem.cpp" />
     <ClCompile Include="modelerapp.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -184,6 +188,7 @@
     <ClInclude Include="bitmap.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="kumaLSystemOP.h" />
+    <ClInclude Include="kumaModel.h" />
     <ClInclude Include="LSystem.h" />
     <ClInclude Include="mat.h" />
     <ClInclude Include="modelerapp.h" />

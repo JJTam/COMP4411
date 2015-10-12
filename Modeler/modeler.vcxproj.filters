@@ -51,6 +51,18 @@
     <ClCompile Include="kumaLSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="kumaInverseKinematics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="kumaInitControls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="kumaModelTexture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="kumaModelHelpers.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bitmap.h">
@@ -90,6 +102,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="kumaLSystemOP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kumaModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
