@@ -67,7 +67,7 @@ static void torus(double innerR, double outerR, int numc, int numt)
 		glEnd();
 	}
 	glPopMatrix();
-
+}
 
 void drawClothes(double clothBodyOffset, double clothThickness, double clothHeight, double clothPart2Height, double innerWidth, double innerHeight, double innerDepth)
 {
