@@ -11,12 +11,20 @@
 #include "bitmap.h"
 #include <FL/fl_ask.h>
 #include "modelerui.h"
+#include "kumaModel.h"
 using namespace std;
 
 extern vector<AnimationDef*>* kumaAnimes;
 extern void kumaAnimationsSetup();
 extern vector<LSystem*>* kumaLSystems;
 extern void kumaLSystemSetup();
+extern void kumaIK();
+extern void kumaInitControls(ModelerControl* controls);
+
+// functions that are in helpers
+extern void kumaSetupLights();
+extern void kumaDrawLSystems();
+extern void kumaHandleAnime();
 
 #define KUMA_BODY_COLOR 1.0f, 0.945f, 0.9098f
 #define KUMA_HAIR_COLOR 0.588f, 0.337f, 0.302f
@@ -26,21 +34,7 @@ extern void kumaLSystemSetup();
 #define KUMA_CLOTH_PART2_COLOR 0.310f, 0.596f, 0.624f
 #define KUMA_TIE_COLOR 1.0f, 0.01f, 0.01f
 
-#define LSYSTEM_COLOR 0.13f, 0.694f, 0.298f
-
 #define ANGLE2RAIDUS_FACTOR 3.141592654 / 180
-
-// Inherit off of ModelerView
-class KumaModel : public ModelerView
-{
-public:
-	KumaModel(int x, int y, int w, int h, char *label)
-		: ModelerView(x, y, w, h, label) { }
-	GLuint texName;
-	unsigned char * image = NULL;
-	virtual void draw();
-	void drawTexture();
-};
 
 // We need to make a creator function, mostly because of
 // nasty API stuff that we'd rather stay away from.
@@ -75,63 +69,6 @@ void drawClothes(double clothBodyOffset, double clothThickness, double clothHeig
 	drawBox(-clothThickness, -clothHeight, -(innerDepth + clothThickness * 2 + clothBodyOffset));
 }
 
-void KumaModel::drawTexture()
-{
-	auto pui = ModelerApplication::Instance()->GetPUI();
-	static int width = 0;
-	static int height = 0;
-
-	if (image == NULL || pui->hasNewTexture)
-	{
-		pui->hasNewTexture = false;
-
-		// try to open the image to read
-		unsigned char*	imagedata;
-		
-		if (pui->textureFileName == nullptr || 
-			(imagedata = readBMP(pui->textureFileName, width, height)) == NULL)
-		{
-			fl_alert("Can't load bitmap file");
-			SETVAL(DRAW_TEXTURE, 0);
-			return;
-		}
-
-		image = imagedata;
-		glClearColor(0.0, 0.0, 0.0, 0.0);
-		glShadeModel(GL_FLAT);
-		glEnable(GL_DEPTH_TEST);
-
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-		glGenTextures(1, &texName);
-		glBindTexture(GL_TEXTURE_2D, texName);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	}
-
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	if (width > 0 && height > 0)
-	{
-		double hwfactor = height / (double)width;
-		glEnable(GL_TEXTURE_2D);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-		glBindTexture(GL_TEXTURE_2D, texName);
-		glBegin(GL_QUADS);
-		glTexCoord2f(0.0, 0.0); glVertex3f(-2.0, 0.0, 0.0);
-		glTexCoord2f(0.0, 1.0); glVertex3f(-2.0, 2.0 * hwfactor, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f(0.0, 2.0 * hwfactor, 0.0);
-		glTexCoord2f(1.0, 0.0); glVertex3f(0.0, 0.0, 0.0);
-		glEnd();
-		glFlush();
-		glDisable(GL_TEXTURE_2D);
-	}
-}
-
 // Override draw() to draw out Kuma
 void KumaModel::draw()
 {
@@ -141,50 +78,10 @@ void KumaModel::draw()
 	ModelerView::draw();
 
 	// Animation support
-	static int currFrame = 0;
-	int animationSelection = VAL(ANIMATION_SELECTION) - 1;
-	if (animationSelection >= 0 && animationSelection < kumaAnimes->size())
-	{
-		AnimationDef* anime = (*kumaAnimes)[animationSelection];
-		currFrame = currFrame % anime->size();
-		for (const auto& frameVar : (*(*anime)[currFrame]))
-		{
-			SETVAL(frameVar.first, frameVar.second);
-		}
-		++currFrame;
-	}
+	kumaHandleAnime();
 
-	// change the light
-	static GLfloat light0pos[4];
-	static GLfloat light0diff[4];
-	static GLfloat light1pos[4];
-	static GLfloat light1diff[4];
-	light0pos[0] = VAL(LIGHT0_X); light0pos[1] = VAL(LIGHT0_Y); light0pos[2] = VAL(LIGHT0_Z); light0pos[3] = 0;
-	light1pos[0] = VAL(LIGHT1_X); light1pos[1] = VAL(LIGHT1_Y); light1pos[2] = VAL(LIGHT1_Z); light1pos[3] = 0;
-	light0diff[0] = light0diff[1] = light0diff[2] = light0diff[3] = VAL(LIGHT0_DIFFUSE);
-	light1diff[0] = light1diff[1] = light1diff[2] = light1diff[3] = VAL(LIGHT1_DIFFUSE);
-	glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0diff);
-	glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, light1diff);
-
-	// draw the light sources
-	if (VAL(DRAW_LIGHT) > 0)
-	{
-		setDiffuseColor(1.0, 1.0, 1.0);
-		glPushMatrix();
-		{
-			glTranslated(VAL(LIGHT0_X) - 0.1, VAL(LIGHT0_Y) - 0.1, VAL(LIGHT0_Z) - 0.1);
-			drawBox(0.2, 0.2, 0.2);
-		}
-		glPopMatrix();
-		glPushMatrix();
-		{
-			glTranslated(VAL(LIGHT1_X) - 0.1, VAL(LIGHT1_Y) - 0.1, VAL(LIGHT1_Z) - 0.1);
-			drawBox(0.2, 0.2, 0.2);
-		}
-		glPopMatrix();
-	}
+	// Change the lights
+	kumaSetupLights();
 
 	// draw the floor
 	setAmbientColor(.1f, .1f, .1f);
@@ -197,51 +94,7 @@ void KumaModel::draw()
 	glPopMatrix();
 
 	// draw the LSystem
-	setDiffuseColor(LSYSTEM_COLOR);
-	int lsysSel = VAL(LSYSTEM_SELECTION) - 1;
-	if (lsysSel >= 0 && lsysSel < kumaLSystems->size())
-	{
-		glPushMatrix();
-		{
-			glTranslated(-3, 0, -3);
-			glRotated(90, -1, 0, 0);
-			LSystem* sys = (*kumaLSystems)[lsysSel];
-			sys->runIteration(VAL(LSYSTEM_ITER));
-			for (int opi : *(sys->ops))
-			{
-				if (sys->opMap.find(opi) != sys->opMap.end())
-				{
-					auto op = sys->opMap[opi];
-					switch (op.first)
-					{
-					case KLS_FORWARD:
-						if (op.second <= 0)
-							break;
-						drawBox(0.05 * op.second, 0.02, 0.02);
-						glTranslated(0.05 * op.second, 0, 0);
-						break;
-					case KLS_ROTATE_LEFT:
-						glRotated(-op.second, 0, 1, 0);
-						break;
-					case KLS_ROTATE_RIGHT:
-						glRotated(op.second, 0, 1, 0);
-						break;
-					case KLS_ROTATE_LEFT_AND_PUSH:
-						glRotated(-op.second, 0, 1, 0);
-						glPushMatrix();
-						break;
-					case KLS_POP_AND_ROTATE_RIGHT:
-						glPopMatrix();
-						glRotated(op.second, 0, 1, 0);
-						break;
-					default:
-						break;
-					}
-				}
-			}
-		}
-		glPopMatrix();
-	}
+	kumaDrawLSystems();
 
 	// draw the texture
 	if (VAL(DRAW_TEXTURE) > 0) {
@@ -255,6 +108,20 @@ void KumaModel::draw()
 			drawTexture();
 		}
 		glPopMatrix();
+	}
+
+	// IK
+	if (VAL(IK_ON) > 0) {
+		// draw IK box
+		glPushMatrix();
+		{
+			setDiffuseColor(1.0, 1.0, 1.0);
+			glTranslated(VAL(IK_X) - 0.1, VAL(IK_Y) - 0.1, VAL(IK_Z) - 0.1);
+			drawBox(0.2, 0.2, 0.2);
+		}
+		glPopMatrix();
+		// run IK
+		kumaIK();
 	}
 
 	// draw the model
@@ -668,97 +535,7 @@ int main()
 	// Constructor is ModelerControl(name, minimumvalue, maximumvalue, 
 	// stepsize, defaultvalue)
 	ModelerControl controls[NUMCONTROLS];
-	controls[XPOS] = ModelerControl("X Position", -5, 5, 0.1f, 0);
-	controls[YPOS] = ModelerControl("Y Position", 0, 5, 0.1f, 0);
-	controls[ZPOS] = ModelerControl("Z Position", -5, 5, 0.1f, 0);
-
-	controls[DRAW_LIGHT] = ModelerControl("Draw lights", 0, 1, 1, 0);
-
-	controls[LIGHT0_X] = ModelerControl("Light 0 X", -10, 10, 0.1f, 4);
-	controls[LIGHT0_Y] = ModelerControl("Light 0 Y", -10, 10, 0.1f, 2);
-	controls[LIGHT0_Z] = ModelerControl("Light 0 Z", -10, 10, 0.1f, -4);
-	controls[LIGHT0_DIFFUSE] = ModelerControl("Light 0 Diffuse", 0, 5, 0.01f, 1);
-
-	controls[LIGHT1_X] = ModelerControl("Light 1 X", -10, 10, 0.1f, -2);
-	controls[LIGHT1_Y] = ModelerControl("Light 1 Y", -10, 10, 0.1f, 1);
-	controls[LIGHT1_Z] = ModelerControl("Light 1 Z", -10, 10, 0.1f, 5);
-	controls[LIGHT1_DIFFUSE] = ModelerControl("Light 1 Diffuse", 0, 5, 0.01f, 1);
-
-	controls[HEAD_ROTATION_X] = ModelerControl("Head rotation X", -30, 30, 1, 0);
-	controls[HEAD_ROTATION_Y] = ModelerControl("Head rotation Y", -60, 60, 1, 0);
-	controls[HEAD_ROTATION_Z] = ModelerControl("Head rotation Z", -30, 30, 1, 0);
-
-	controls[LEFT_UPPER_ARM_ROTATION_X] = ModelerControl("Right arm rotation X", -180, 50, 1, 0);
-	controls[LEFT_UPPER_ARM_ROTATION_Y] = ModelerControl("Right arm rotation Y", -90, 90, 1, 0);
-	controls[LEFT_UPPER_ARM_ROTATION_Z] = ModelerControl("Right arm rotation Z", -180, 30, 1, 0);
-	controls[LEFT_LOWER_ARM_ROTATION_X] = ModelerControl("Right lower arm rotation X", -180, 0, 1, 0);
-	controls[RIGHT_UPPER_ARM_ROTATION_X] = ModelerControl("Left arm rotation X", -180, 50, 1, 0);
-	controls[RIGHT_UPPER_ARM_ROTATION_Y] = ModelerControl("Left arm rotation Y", -90, 90, 1, 0);
-	controls[RIGHT_UPPER_ARM_ROTATION_Z] = ModelerControl("Left arm rotation Z", -30, 180, 1, 0);
-	controls[RIGHT_LOWER_ARM_ROTATION_X] = ModelerControl("Left lower arm rotation X", -180, 0, 1, 0);
-
-	controls[LEFT_UPPER_LEG_ROTATION_X] = ModelerControl("Right leg rotation X", -120, 50, 1, 0);
-	controls[LEFT_UPPER_LEG_ROTATION_Y] = ModelerControl("Right leg rotation Y", -90, 90, 1, 0);
-	controls[LEFT_UPPER_LEG_ROTATION_Z] = ModelerControl("Right leg rotation Z", -180, 180, 1, 0);
-	controls[LEFT_LOWER_LEG_ROTATION_X] = ModelerControl("Right lower leg rotation X", 0, 120, 1, 0);
-	controls[RIGHT_UPPER_LEG_ROTATION_X] = ModelerControl("Left leg rotation X", -120, 50, 1, 0);
-	controls[RIGHT_UPPER_LEG_ROTATION_Y] = ModelerControl("Left leg rotation Y", -90, 90, 1, 0);
-	controls[RIGHT_UPPER_LEG_ROTATION_Z] = ModelerControl("Left leg rotation Z", -180, 180, 1, 0);
-	controls[RIGHT_LOWER_LEG_ROTATION_X] = ModelerControl("Left lower leg rotation X", 0, 120, 1, 0);
-
-	controls[WAIST_ROTATION_X] = ModelerControl("Waist rotation X", -90, 90, 1, 0);
-	controls[WAIST_ROTATION_Y] = ModelerControl("Waist rotation Y", -90, 90, 1, 0);
-	controls[WAIST_ROTATION_Z] = ModelerControl("Waist rotation Z", -30, 30, 1, 0);
-
-	controls[DRAW_LEVEL] = ModelerControl("Level of detail", 0, 5, 1, 5);
-	controls[DRAW_CLOTHES] = ModelerControl("Draw clothes", 0, 1, 1, 1);
-	controls[DRAW_TEXTURE] = ModelerControl("Draw Texture", 0, 1, 1, 0);
-	controls[TEXTURE_SIZE] = ModelerControl("Texture Size", 1, 10, 1, 3);
-	controls[TEXTURE_X] = ModelerControl("Texture X", -10, 10, 0.01f, 0);
-	controls[TEXTURE_Z] = ModelerControl("Texture Z", -10, 10, 0.01f, -3.0);
-
-	controls[ANIMATION_SELECTION] = ModelerControl("Animation Selection", 0, kumaAnimes->size(), 1, 0);
-	controls[LSYSTEM_SELECTION] = ModelerControl("LSystem Selection", 0, kumaLSystems->size(), 1, 0);
-	controls[LSYSTEM_ITER] = ModelerControl("LSystem Iterations", 0, 10, 1, 1);
-
-	controls[TORSO_WIDTH] = ModelerControl("Torso width", 0.0, 2.0, 0.01f, 1.0);
-	controls[TORSO_HEIGHT] = ModelerControl("Torso height", 0.0, 2.0, 0.01f, 1.2);
-	controls[TORSO_DEPTH] = ModelerControl("Torso depth", 0.0, 2.0, 0.01f, 0.5);
-	controls[HEAD_WIDTH] = ModelerControl("Head width", 0.0, 2.0, 0.01f, 1.0);
-	controls[HEAD_HEIGHT] = ModelerControl("Head height", 0.0, 2.0, 0.01f, 1.0);
-	controls[HEAD_DEPTH] = ModelerControl("Head depth", 0.0, 2.0, 0.01f, 1.0);
-	controls[EYE_OFFSET_X] = ModelerControl("Eye offset X", 0.0, 2.0, 0.01f, 0.17);
-	controls[EYE_OFFSET_Y] = ModelerControl("Eye offset Y", 0.0, 2.0, 0.01f, 0.57);
-	controls[EYE_WIDTH] = ModelerControl("Eye width", 0.0, 2.0, 0.01f, 0.20);
-	controls[EYE_HEIGHT] = ModelerControl("Eye height", 0.0, 2.0, 0.01f, 0.25);
-	controls[MOUTH_WIDTH] = ModelerControl("Mouth width", 0.0, 2.0, 0.01f, 0.15);
-	controls[MOUTH_HEIGHT] = ModelerControl("Mouth height", 0.0, 2.0, 0.01f, 0.10);
-	controls[MOUTH_OFFSET_Y] = ModelerControl("Mouth offset Y", 0.0, 2.0, 0.01f, 0.20);
-	controls[HAIR_HEAD_OFFSET] = ModelerControl("Hair head offset", 0.0, 0.1, 0.01f, 0.04);
-	controls[HAIR_THICKNESS] = ModelerControl("Hair thickness", 0.0, 0.5, 0.01f, 0.1);
-	controls[SIDEHAIR_DEPTH] = ModelerControl("Sidehair depth", 0.0, 2.0, 0.01f, 1.05);
-	controls[SIDEHAIR_HEIGHT] = ModelerControl("Sidehair height", 0.0, 3.0, 0.01f, 1.2);
-	controls[BACKHAIR_HEIGHT] = ModelerControl("Backhair height", 0.0, 2.0, 0.01f, 1.8);
-	controls[FRONTHAIR_HEIGHT] = ModelerControl("Fronthair height", 0.0, 2.0, 0.01f, 0.1);
-	controls[AHO_HAIR_SIZE] = ModelerControl("Aho hair size", 0.1, 2.0, 0.1f, 0.7);
-	controls[UPPER_ARM_WIDTH] = ModelerControl("Upper arm width", 0.0, 2.0, 0.01f, 0.22);
-	controls[UPPER_ARM_HEIGHT] = ModelerControl("Upper arm height", 0.0, 2.0, 0.01f, 0.7);
-	controls[UPPER_ARM_DEPTH] = ModelerControl("Upper arm depth", 0.0, 2.0, 0.01f, 0.22);
-	controls[UPPER_ARM_BODY_OFFSET_X] = ModelerControl("Upper arm body offset X", 0.0, 2.0, 0.01f, 0.03);
-	controls[UPPER_ARM_BODY_OFFSET_Y] = ModelerControl("Upper arm body offset Y", 0.0, 2.0, 0.01f, 0.40);
-	controls[LOWER_ARM_WIDTH] = ModelerControl("Lower arm width", 0.0, 2.0, 0.01f, 0.2);
-	controls[LOWER_ARM_HEIGHT] = ModelerControl("Lower arm height", 0.0, 2.0, 0.01f, 0.7);
-	controls[LOWER_ARM_DEPTH] = ModelerControl("Lower arm depth", 0.0, 2.0, 0.01f, 0.2);
-	controls[WAIST_HEIGHT] = ModelerControl("Waist height", 0.0, 2.0, 0.01f, 0.2);
-	controls[WAIST_TORSO_OFFSET] = ModelerControl("Waist torso offset", 0.0, 2.0, 0.01f, 0.02);
-	controls[UPPER_LEG_WIDTH] = ModelerControl("Upper leg width", 0.0, 2.0, 0.01f, 0.4);
-	controls[UPPER_LEG_HEIGHT] = ModelerControl("Upper leg height", 0.0, 2.0, 0.01f, 0.75);
-	controls[UPPER_LEG_DEPTH] = ModelerControl("Upper leg depth", 0.0, 2.0, 0.01f, 0.4);
-	controls[UPPER_LEG_OFFSET_X] = ModelerControl("Upper leg offset X", 0.0, 2.0, 0.01f, 0.05);
-	controls[UPPER_LEG_OFFSET_WAIST] = ModelerControl("Upper leg offset waist", 0.0, 2.0, 0.01f, 0.0);
-	controls[LOWER_LEG_WIDTH] = ModelerControl("Lower leg width", 0.0, 2.0, 0.01f, 0.3);
-	controls[LOWER_LEG_HEIGHT] = ModelerControl("Lower leg height", 0.0, 2.0, 0.01f, 0.7);
-	controls[LOWER_LEG_DEPTH] = ModelerControl("Lower leg depth", 0.0, 2.0, 0.01f, 0.3);
+	kumaInitControls(controls);
 	
 	ModelerApplication::Instance()->Init(&createKumaModel, controls, NUMCONTROLS);
 	return ModelerApplication::Instance()->Run();
