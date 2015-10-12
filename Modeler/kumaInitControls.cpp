@@ -62,7 +62,7 @@ void kumaInitControls(ModelerControl* controls)
 	controls[LSYSTEM_SELECTION] = ModelerControl("LSystem Selection", 0, kumaLSystems->size(), 1, 0);
 	controls[LSYSTEM_ITER] = ModelerControl("LSystem Iterations", 0, 10, 1, 1);
 
-	controls[IK_X] = ModelerControl("IK X", -2.0, 2.0, 0.1, 0.0);
+	controls[IK_X] = ModelerControl("IK X", -2.0, 2.0, 0.1, -0.4);
 	controls[IK_Y] = ModelerControl("IK Y", 0, 3.0, 0.1, 2.5);
 	controls[IK_Z] = ModelerControl("IK Z", 0, 2.0, 0.1, 1.0);
 	controls[IK_ON] = ModelerControl("IK ON", 0, 1, 1, 0);
