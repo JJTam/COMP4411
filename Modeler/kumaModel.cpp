@@ -225,7 +225,7 @@ void KumaModel::draw()
 		glPushMatrix();
 		if (detailLevel > 0)
 		{
-			glTranslated(-torsoDepth / 2, lowerLegHeight + upperLegHeight + waistHeight + waistTorsoOffset + upperLegWaistOffset, -0.5 / 2);
+			glTranslated(-torsoWidth / 2, lowerLegHeight + upperLegHeight + waistHeight + waistTorsoOffset + upperLegWaistOffset, -torsoDepth / 2);
 			drawBox(torsoWidth, torsoHeight, torsoDepth);
 
 			// head
@@ -234,9 +234,9 @@ void KumaModel::draw()
 			{
 				glTranslated(0, torsoHeight, -(headDepth - torsoDepth) / 2.0);
 				glTranslated(headWidth / 2, 0, headDepth / 2);
+				glRotated(headRotationX, 1, 0, 0);
+				glRotated(headRotationZ, 0, 0, 1);
 				glRotated(headRotationY, 0, 1, 0);
-				glRotated(headRotationX, cos(headRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(headRotationY * ANGLE2RAIDUS_FACTOR));
-				glRotated(headRotationZ, -sin(headRotationY * ANGLE2RAIDUS_FACTOR), sin(headRotationX * ANGLE2RAIDUS_FACTOR), cos(headRotationY * ANGLE2RAIDUS_FACTOR));
 				glTranslated(-headWidth / 2, 0, -headDepth / 2);
 				drawBox(headWidth, headHeight, headDepth);
 
@@ -343,11 +343,10 @@ void KumaModel::draw()
 			{
 				glTranslated(0, -(waistHeight + waistTorsoOffset), 0);
 				glTranslated(torsoWidth / 2, waistHeight, torsoDepth / 2);
+				glRotated(waistRotationX, 1, 0, 0);
+				glRotated(waistRotationZ, 0, 0, 1);
 				glRotated(waistRotationY, 0, 1, 0);
-				glRotated(waistRotationX, cos(waistRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(waistRotationY * ANGLE2RAIDUS_FACTOR));
-				glRotated(waistRotationZ, -sin(waistRotationY * ANGLE2RAIDUS_FACTOR), sin(waistRotationX * ANGLE2RAIDUS_FACTOR), cos(waistRotationY * ANGLE2RAIDUS_FACTOR));
 				glTranslated(-torsoWidth / 2, -waistHeight, -torsoDepth / 2);
-
 				setDiffuseColor(KUMA_BODY_COLOR);
 				drawBox(torsoWidth, waistHeight, torsoDepth);
 
@@ -357,9 +356,9 @@ void KumaModel::draw()
 				{
 					glTranslated(upperLegOffsetX, -upperLegWaistOffset, (torsoDepth - upperLegDepth) / 2);
 					glTranslated(upperLegWidth / 2, 0, upperLegDepth / 2);
+					glRotated(leftUpperLegRotationX, 1, 0, 0);
+					glRotated(leftUpperLegRotationZ, 0, 0, 1);
 					glRotated(leftUpperLegRotationY, 0, 1, 0);
-					glRotated(leftUpperLegRotationX, cos(leftUpperLegRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(leftUpperLegRotationY * ANGLE2RAIDUS_FACTOR));
-					glRotated(leftUpperLegRotationZ, -sin(leftUpperLegRotationY * ANGLE2RAIDUS_FACTOR), sin(leftUpperLegRotationX * ANGLE2RAIDUS_FACTOR), cos(leftUpperLegRotationY * ANGLE2RAIDUS_FACTOR));
 					glTranslated(-upperLegWidth / 2, 0, -upperLegDepth / 2);
 
 					drawBox(upperLegWidth, -upperLegHeight, upperLegDepth);
@@ -394,9 +393,9 @@ void KumaModel::draw()
 				{
 					glTranslated(torsoWidth - upperLegWidth - upperLegOffsetX, -upperLegWaistOffset, (torsoDepth - upperLegDepth) / 2);
 					glTranslated(upperLegWidth / 2, 0, upperLegDepth / 2);
+					glRotated(rightUpperLegRotationX, 1, 0, 0);
+					glRotated(rightUpperLegRotationZ, 0, 0, 1);
 					glRotated(rightUpperLegRotationY, 0, 1, 0);
-					glRotated(rightUpperLegRotationX, cos(rightUpperLegRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(rightUpperLegRotationY * ANGLE2RAIDUS_FACTOR));
-					glRotated(rightUpperLegRotationZ, -sin(rightUpperLegRotationY * ANGLE2RAIDUS_FACTOR), sin(rightUpperLegRotationX * ANGLE2RAIDUS_FACTOR), cos(rightUpperLegRotationY * ANGLE2RAIDUS_FACTOR));
 					glTranslated(-upperLegWidth / 2, 0, -upperLegDepth / 2);
 
 					setDiffuseColor(KUMA_BODY_COLOR);
@@ -442,9 +441,9 @@ void KumaModel::draw()
 			{
 				glTranslated(-(upperArmWidth + upperArmBodyOffsetX), (torsoHeight - upperArmBodyOffsetY), (torsoDepth - upperArmDepth) / 2);
 				glTranslated(upperArmWidth / 2, 0, upperArmDepth / 2);
+				glRotated(leftUpperArmRotationX, 1, 0, 0);
+				glRotated(leftUpperArmRotationZ, 0, 0, 1);
 				glRotated(leftUpperArmRotationY, 0, 1, 0);
-				glRotated(leftUpperArmRotationX, cos(leftUpperArmRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(leftUpperArmRotationY * ANGLE2RAIDUS_FACTOR));
-				glRotated(leftUpperArmRotationZ, -sin(leftUpperArmRotationY * ANGLE2RAIDUS_FACTOR), sin(leftUpperArmRotationX * ANGLE2RAIDUS_FACTOR), cos(leftUpperArmRotationY * ANGLE2RAIDUS_FACTOR));
 				glTranslated(-upperArmWidth / 2, 0, -upperArmDepth / 2);
 
 				setDiffuseColor(KUMA_BODY_COLOR);
@@ -459,7 +458,7 @@ void KumaModel::draw()
 					drawBox(lowerArmWidth, -lowerArmHeight, lowerArmDepth);
 				}
 				glPopMatrix();
-
+				 
 				// clothes (upper arm)
 				glPushMatrix();
 				if (shallDrawClothes)
@@ -484,9 +483,9 @@ void KumaModel::draw()
 			{
 				glTranslated((torsoWidth + upperArmBodyOffsetX), (torsoHeight - upperArmBodyOffsetY), (torsoDepth - upperArmDepth) / 2);
 				glTranslated(upperArmWidth / 2, 0, upperArmDepth / 2);
+				glRotated(rightUpperArmRotationX, 1, 0, 0);
+				glRotated(rightUpperArmRotationZ, 0, 0, 1);
 				glRotated(rightUpperArmRotationY, 0, 1, 0);
-				glRotated(rightUpperArmRotationX, cos(rightUpperArmRotationY * ANGLE2RAIDUS_FACTOR), 0, sin(rightUpperArmRotationY * ANGLE2RAIDUS_FACTOR));
-				glRotated(rightUpperArmRotationZ, -sin(rightUpperArmRotationY * ANGLE2RAIDUS_FACTOR), sin(rightUpperArmRotationX * ANGLE2RAIDUS_FACTOR), cos(rightUpperArmRotationY * ANGLE2RAIDUS_FACTOR));
 				glTranslated(-upperArmWidth / 2, 0, -upperArmDepth / 2);
 
 				setDiffuseColor(KUMA_BODY_COLOR);
