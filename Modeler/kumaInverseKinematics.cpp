@@ -83,260 +83,34 @@ void kumaIK() {
 		double localMin = minDist;
 		bool hasUpdate = false;
 
-		arZ = bestRes[2];
-		arY = bestRes[1];
-		arX = bestRes[0];
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		arX = bestRes[0] - step;
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arX = bestRes[0] + step;
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arY = bestRes[1] + step;
-		arX = bestRes[0];
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		brX = bestRes[3];
-		RUN_UPDATES;
-		
-		arX = bestRes[0] - step;
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arX = bestRes[0] + step;
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arY = bestRes[1] - step;
-		arX = bestRes[0];
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		arX = bestRes[0] - step;
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arX = bestRes[0] + step;
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arZ = bestRes[2] + step;
-		arY = bestRes[1];
-		arX = bestRes[0];
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		arX = bestRes[0] - step;
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-		
-		arX = bestRes[0] + step;
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arY = bestRes[1] + step;
-		arX = bestRes[0];
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-		
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		arX = bestRes[0] - step;
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arX = bestRes[0] + step;
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arY = bestRes[1] - step;
-		arX = bestRes[0];
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		arX = bestRes[0] - step;
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-		
-		arX = bestRes[0] + step;
-		brX = bestRes[3];
-		RUN_UPDATES;
-		
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arZ = bestRes[2] - step;
-		arY = bestRes[1];
-		arX = bestRes[0];
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		arX = bestRes[0] - step;
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arX = bestRes[0] + step;
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arY = bestRes[1] + step;
-		arX = bestRes[0];
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		arX = bestRes[0] - step;
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arX = bestRes[0] + step;
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arY = bestRes[1] - step;
-		arX = bestRes[0];
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-		
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		arX = bestRes[0] - step;
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
-
-		arX = bestRes[0] + step;
-		brX = bestRes[3];
-		RUN_UPDATES;
-
-		brX = bestRes[3] + step;
-		RUN_UPDATES;
-
-		brX = bestRes[3] - step;
-		RUN_UPDATES;
+		for (int dArY = -1; dArY <= 1; ++dArY)
+		{
+			arY = bestRes[1] + dArY * step;
+			if (arY > 1.5708 || arY < -1.5708) 
+				continue;
+			m3[0][0] = cos(arY); m3[0][2] = sin(arY); m3[2][0] = -sin(arY); m3[2][2] = cos(arY);
+			for (int dArZ = -1; dArZ <= 1; ++dArZ)
+			{
+				arZ = bestRes[2] + dArZ * step;
+				if (arZ > 0 || arZ < -3.14159)
+					continue;
+				m2[0][0] = cos(arZ); m2[0][1] = -sin(arZ); m2[1][0] = sin(arZ); m2[1][1] = cos(arZ);
+				for (int dArX = -1; dArX <= 1; ++dArX)
+				{
+					arX = bestRes[0] + dArX * step;
+					m1[1][1] = cos(arX); m1[1][2] = -sin(arX); m1[2][1] = sin(arX); m1[2][2] = cos(arX);
+					for (int dBrX = -1; dBrX <= 1; ++dBrX)
+					{
+						brX = bestRes[3] + dBrX * step;
+						if (brX > 0)
+							continue;
+						m5[1][1] = cos(brX); m5[1][2] = -sin(brX); m5[2][1] = sin(brX); m5[2][2] = cos(brX);
+
+						UPDATE_LOCAL;
+					}
+				}
+			}
+		}
 
 		if (hasUpdate)
 		{
