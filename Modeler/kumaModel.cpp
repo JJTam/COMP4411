@@ -114,6 +114,7 @@ void KumaModel::draw()
 
 	// metaballs
 	static vector< vector<float> > ball1 = { { -2.2f, 2.1f, -1.0f, 1.0f }, { -4.0f, 3.5f, -3.0f, 1.2f }, { -3.0f, 5.5f, -2.0f, 0.7f} };
+	setDiffuseColor(KUMA_CLOTH_PART2_COLOR);
 	if (VAL(DRAW_METABALLS) > 0) {
 		float sizeFactor = (float)VAL(METABALL_RADIUS);
 		ball1[0][3] = 1.0f * sizeFactor;
