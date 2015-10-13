@@ -20,6 +20,8 @@ extern vector<LSystem*>* kumaLSystems;
 extern void kumaLSystemSetup();
 extern void kumaIK();
 extern void kumaInitControls(ModelerControl* controls);
+extern void drawMetaball(int numMetaballs, const vector< vector<float> >& balls);
+extern void drawTorus(double posX, double posY, double posZ, double innerR, double outerR, int numc, int numt);
 
 // functions that are in helpers
 extern void kumaSetupLights();
@@ -106,6 +108,20 @@ void KumaModel::draw()
 			glTranslated(textureX, 0, textureZ);
 			glScaled(textureScale, textureScale, textureScale);
 			drawTexture();
+		}
+		glPopMatrix();
+	}
+
+	// metaballs
+	static vector< vector<float> > ball1 = { { -2.2f, 2.1f, -1.0f, 1.0f }, { -4.0f, 3.5f, -3.0f, 1.2f }, { -3.0f, 5.5f, -2.0f, 0.7f} };
+	if (VAL(DRAW_METABALLS) > 0) {
+		float sizeFactor = (float)VAL(METABALL_RADIUS);
+		ball1[0][3] = 1.0f * sizeFactor;
+		ball1[1][3] = 1.2f * sizeFactor;
+		ball1[2][3] = 0.7f * sizeFactor;
+		glPushMatrix();
+		{
+			drawMetaball(ball1.size(), ball1);
 		}
 		glPopMatrix();
 	}
@@ -221,6 +237,7 @@ void KumaModel::draw()
 		double rightUpperArmRotationZ = VAL(RIGHT_UPPER_ARM_ROTATION_Z);
 		double rightLowerArmRotationX = VAL(RIGHT_LOWER_ARM_ROTATION_X);
 
+		
 		// torso
 		glPushMatrix();
 		if (detailLevel > 0)
@@ -315,6 +332,17 @@ void KumaModel::draw()
 					drawTriangle(0.8, 1.2, -0.7,
 						0.7, 1.38, -0.85,
 						-1.5, 1.1, 0.3);
+
+					if (VAL(DRAW_TORUS) > 0)
+					{
+						setDiffuseColor(1.0f, 1.0f, 0.5f);
+						glPushMatrix();
+						{
+							glRotated(90, 1, 0, 0);
+							drawTorus(0.0f, 0.0f, -0.5f, 0.15f, 0.8f, 20, 20);
+						}
+						glPopMatrix();
+					}
 				}
 				glPopMatrix();
 			}
