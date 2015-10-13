@@ -44,32 +44,6 @@ ModelerView* createKumaModel(int x, int y, int w, int h, char *label)
 {
 	return new KumaModel(x, y, w, h, label);
 }
-static void torus(double innerR, double outerR, int numc, int numt)
-{
-	glPushMatrix();
-	glTranslated(0, 2, -3);
-	int i, j, k;
-	double s, t, x, y, z, twopi;
-
-	twopi = 2 * (double)M_PI;
-	for (i = 0; i < numc; i++) {
-		glBegin(GL_QUAD_STRIP);
-		for (j = 0; j <= numt; j++) {
-			for (k = 1; k >= 0; k--) {
-				s = (i + k) % numc + 0.5;
-				t = j % numt;
-
-				x = (outerR + innerR*cos(s*twopi / numc))*cos(t*twopi / numt);
-				y = (outerR + innerR*cos(s*twopi / numc))*sin(t*twopi / numt);
-				z = innerR * sin(s * twopi / numc);
-				glNormal3d((innerR*cos(s*twopi / numc))*cos(t*twopi / numt), (innerR*cos(s*twopi / numc))*sin(t*twopi / numt), innerR * sin(s * twopi / numc));
-				glVertex3f(x, y, z);
-			}
-		}
-		glEnd();
-	}
-	glPopMatrix();
-}
 
 void drawClothes(double clothBodyOffset, double clothThickness, double clothHeight, double clothPart2Height, double innerWidth, double innerHeight, double innerDepth)
 {
