@@ -65,10 +65,10 @@ void kumaInitControls(ModelerControl* controls)
 	controls[IK_X] = ModelerControl("IK X", -3.0, 2.0, 0.1, -0.4);
 	controls[IK_Y] = ModelerControl("IK Y", 0, 5.0, 0.1, 2.5);
 	controls[IK_Z] = ModelerControl("IK Z", -2.0, 2.0, 0.1, 1.0);
-	controls[IK_ON] = ModelerControl("IK ON", 0, 1, 1, 1);
+	controls[IK_ON] = ModelerControl("IK ON", 0, 1, 1, 0);
 	controls[IK_FAST] = ModelerControl("IK FAST", 0, 1, 1, 0);
 
-	controls[DRAW_TORUS] = ModelerControl("Draw Torus", 0, 1, 1, 1);
+	controls[DRAW_TORUS] = ModelerControl("Draw Torus", 0, 1, 1, 0);
 	controls[DRAW_METABALLS] = ModelerControl("Metaballs", 0, 1, 1, 0);
 	controls[METABALL_RADIUS] = ModelerControl("Metaball size", 0.1f, 2.0f, 0.1f, 1.0f);
 
