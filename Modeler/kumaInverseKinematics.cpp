@@ -70,43 +70,166 @@ void kumaIK() {
 	localBest[1] = arY;
 	localBest[2] = arZ;
 	localBest[3] = brX;
+	int localSigns[4];
+	localSigns[0] = localSigns[1] = localSigns[2] = localSigns[3] = 0;
 
 	double step = 0.01;
 
 	double tempDist = dist;
 
 #define UPDATE_MATRIX m3[0][0] = cos(arY);m3[0][2] = sin(arY);m3[2][0] = -sin(arY);m3[2][2] = cos(arY);m1[1][1] = cos(arX);m1[1][2] = -sin(arX);m1[2][1] = sin(arX);m1[2][2] = cos(arX);m2[0][0] = cos(arZ);m2[0][1] = -sin(arZ);m2[1][0] = sin(arZ);m2[1][1] = cos(arZ);m5[1][1] = cos(brX);m5[1][2] = -sin(brX);m5[2][1] = sin(brX);m5[2][2] = cos(brX);
-#define UPDATE_LOCAL m7 = m1 * (m2 * (m3 * (m4 * (m5 * m6)))); Bx = m7[0][3]; By = m7[1][3]; Bz = m7[2][3]; dist = (Bx - targetX) * (Bx - targetX) + (By - targetY) * (By - targetY) + (Bz - targetZ) * (Bz - targetZ); if (dist < localMin) { hasUpdate = true;localMin = dist; localBest[0] = arX; localBest[1] = arY; localBest[2] = arZ; localBest[3] = brX; }
+#define UPDATE_M7_AND_DIST m7 = m1 * (m2 * (m3 * (m4 * (m5 * m6)))); Bx = m7[0][3]; By = m7[1][3]; Bz = m7[2][3]; dist = (Bx - targetX) * (Bx - targetX) + (By - targetY) * (By - targetY) + (Bz - targetZ) * (Bz - targetZ);
+#define UPDATE_LOCAL UPDATE_M7_AND_DIST; if (dist < localMin) { hasUpdate = true;localMin = dist; localBest[0] = arX; localBest[1] = arY; localBest[2] = arZ; localBest[3] = brX; }
 #define RUN_UPDATES if (brX < 0 && arY < 1.5708 && arY > -1.5708 && arZ < 0 && arZ > -3.14159) { UPDATE_MATRIX; UPDATE_LOCAL; }
+
 	for (int i = 0; i < 400; ++i)
 	{
 		double localMin = minDist;
 		bool hasUpdate = false;
 
-		for (int dArY = -1; dArY <= 1; ++dArY)
+		if (VAL(IK_FAST) > 0)
 		{
-			arY = bestRes[1] + dArY * step;
-			if (arY > 1.5708 || arY < -1.5708) 
-				continue;
-			m3[0][0] = cos(arY); m3[0][2] = sin(arY); m3[2][0] = -sin(arY); m3[2][2] = cos(arY);
-			for (int dArZ = -1; dArZ <= 1; ++dArZ)
-			{
-				arZ = bestRes[2] + dArZ * step;
-				if (arZ > 0 || arZ < -3.14159)
-					continue;
-				m2[0][0] = cos(arZ); m2[0][1] = -sin(arZ); m2[1][0] = sin(arZ); m2[1][1] = cos(arZ);
-				for (int dArX = -1; dArX <= 1; ++dArX)
-				{
-					arX = bestRes[0] + dArX * step;
-					m1[1][1] = cos(arX); m1[1][2] = -sin(arX); m1[2][1] = sin(arX); m1[2][2] = cos(arX);
-					for (int dBrX = -1; dBrX <= 1; ++dBrX)
-					{
-						brX = bestRes[3] + dBrX * step;
-						if (brX > 0)
-							continue;
-						m5[1][1] = cos(brX); m5[1][2] = -sin(brX); m5[2][1] = sin(brX); m5[2][2] = cos(brX);
+			localSigns[0] = localSigns[1] = localSigns[2] = localSigns[3] = 0;
 
-						UPDATE_LOCAL;
+			brX = bestRes[3] + step;
+			if (brX < 0 && brX > -3.1415926)
+			{
+				m5[1][1] = cos(brX); m5[1][2] = -sin(brX); m5[2][1] = sin(brX); m5[2][2] = cos(brX);
+				UPDATE_M7_AND_DIST;
+				if (dist < localMin)
+				{
+					localSigns[3] = 1;
+				}
+			}
+			if (localSigns[3] == 0)
+			{
+				brX = bestRes[3] - step;
+				if (brX < 0 && brX > -3.1415926)
+				{
+					m5[1][1] = cos(brX); m5[1][2] = -sin(brX); m5[2][1] = sin(brX); m5[2][2] = cos(brX);
+					UPDATE_M7_AND_DIST;
+					if (dist < localMin)
+					{
+						localSigns[3] = -1;
+					}
+				}
+			}
+
+			arX = bestRes[0] + step;
+			if (arX < 3.1415926 && arX > -3.1415926)
+			{
+				m1[1][1] = cos(arX); m1[1][2] = -sin(arX); m1[2][1] = sin(arX); m1[2][2] = cos(arX);
+				UPDATE_M7_AND_DIST;
+				if (dist < localMin)
+				{
+					localSigns[0] = 1;
+				}
+			}
+			if (localSigns[0] == 0)
+			{
+				arX = bestRes[0] - step;
+				if (arX < 3.1415926 && arX > -3.1415926)
+				{
+					m1[1][1] = cos(arX); m1[1][2] = -sin(arX); m1[2][1] = sin(arX); m1[2][2] = cos(arX);
+					UPDATE_M7_AND_DIST;
+					if (dist < localMin)
+					{
+						localSigns[0] = -1;
+					}
+				}
+			}
+
+			arZ = bestRes[2] + step;
+			if (arZ < 0 && arZ > -3.14159)
+			{
+				m2[0][0] = cos(arZ); m2[0][1] = -sin(arZ); m2[1][0] = sin(arZ); m2[1][1] = cos(arZ);
+				UPDATE_M7_AND_DIST;
+				if (dist < localMin)
+				{
+					localSigns[2] = 1;
+				}
+			}
+			if (localSigns[2] == 0)
+			{
+				arZ = bestRes[2] - step;
+				if (arZ < 0 && arZ > -3.14159)
+				{
+					m2[0][0] = cos(arZ); m2[0][1] = -sin(arZ); m2[1][0] = sin(arZ); m2[1][1] = cos(arZ);
+					UPDATE_M7_AND_DIST;
+					if (dist < localMin)
+					{
+						localSigns[2] = -1;
+					}
+				}
+			}
+
+			arY = bestRes[1] + step;
+			if (arY < 1.5708 && arY > -1.5708)
+			{
+				m3[0][0] = cos(arY); m3[0][2] = sin(arY); m3[2][0] = -sin(arY); m3[2][2] = cos(arY);
+				UPDATE_M7_AND_DIST;
+				if (dist < localMin)
+				{
+					localSigns[1] = 1;
+				}
+			}
+			if (localSigns[1] == 0)
+			{
+				arY = bestRes[1] - step;
+				if (arY < 1.5708 && arY > -1.5708)
+				{
+					m3[0][0] = cos(arY); m3[0][2] = sin(arY); m3[2][0] = -sin(arY); m3[2][2] = cos(arY);
+					UPDATE_M7_AND_DIST;
+					if (dist < localMin)
+					{
+						localSigns[1] = -1;
+					}
+				}
+			}
+
+			if (localSigns[0] != 0 || localSigns[1] != 0 || localSigns[2] != 0 || localSigns[3] != 0)
+			{
+				localBest[0] += localSigns[0] * step;
+				localBest[1] += localSigns[1] * step;
+				localBest[2] += localSigns[2] * step;
+				localBest[3] += localSigns[3] * step;
+				arX = localBest[0];
+				arY = localBest[1];
+				arZ = localBest[2];
+				brX = localBest[3];
+				UPDATE_MATRIX;
+				UPDATE_M7_AND_DIST;
+				localMin = dist;
+				hasUpdate = true;
+			}
+		}
+		else
+		{
+			for (int dArY = -1; dArY <= 1; ++dArY)
+			{
+				arY = bestRes[1] + dArY * step;
+				if (arY > 1.5708 || arY < -1.5708)
+					continue;
+				m3[0][0] = cos(arY); m3[0][2] = sin(arY); m3[2][0] = -sin(arY); m3[2][2] = cos(arY);
+				for (int dArZ = -1; dArZ <= 1; ++dArZ)
+				{
+					arZ = bestRes[2] + dArZ * step;
+					if (arZ > 0 || arZ < -3.14159)
+						continue;
+					m2[0][0] = cos(arZ); m2[0][1] = -sin(arZ); m2[1][0] = sin(arZ); m2[1][1] = cos(arZ);
+					for (int dArX = -1; dArX <= 1; ++dArX)
+					{
+						arX = bestRes[0] + dArX * step;
+						m1[1][1] = cos(arX); m1[1][2] = -sin(arX); m1[2][1] = sin(arX); m1[2][2] = cos(arX);
+						for (int dBrX = -1; dBrX <= 1; ++dBrX)
+						{
+							brX = bestRes[3] + dBrX * step;
+							if (brX > 0 || brX < -3.1415926)
+								continue;
+							m5[1][1] = cos(brX); m5[1][2] = -sin(brX); m5[2][1] = sin(brX); m5[2][2] = cos(brX);
+
+							UPDATE_LOCAL;
+						}
 					}
 				}
 			}
