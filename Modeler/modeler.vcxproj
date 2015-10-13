@@ -148,6 +148,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CUBE_GRID.cpp" />
     <ClCompile Include="debugUtils.cpp" />
     <ClCompile Include="kumaAnimation.cpp" />
     <ClCompile Include="kumaInitControls.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="kumaModelHelpers.cpp" />
     <ClCompile Include="kumaModelTexture.cpp" />
     <ClCompile Include="LSystem.cpp" />
+    <ClCompile Include="MetaballHelper.cpp" />
     <ClCompile Include="modelerapp.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -187,10 +189,12 @@
     <ClInclude Include="animation.h" />
     <ClInclude Include="bitmap.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="CUBE_GRID.h" />
     <ClInclude Include="kumaLSystemOP.h" />
     <ClInclude Include="kumaModel.h" />
     <ClInclude Include="LSystem.h" />
     <ClInclude Include="mat.h" />
+    <ClInclude Include="METABALL.h" />
     <ClInclude Include="modelerapp.h" />
     <ClInclude Include="modelerdraw.h" />
     <ClInclude Include="modelerglobals.h" />
@@ -198,6 +202,7 @@
     <ClInclude Include="modelerview.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="vec.h" />
+    <ClInclude Include="VECTOR3D.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

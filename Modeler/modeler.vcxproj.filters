@@ -60,8 +60,14 @@
     <ClCompile Include="kumaModelTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CUBE_GRID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaballHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="kumaModelHelpers.cpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +111,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="kumaModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CUBE_GRID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="METABALL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VECTOR3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
