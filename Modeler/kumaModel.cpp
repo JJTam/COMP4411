@@ -147,13 +147,21 @@ void KumaModel::draw()
 
 	if (VAL(DRAW_TRIANGLES) > 0)
 	{
-		setDiffuseColor(0.8, 0.2, 0.2);
+		
 		glPushMatrix();
 		{
-			glTranslated(1.5, 0.5, 1.5);
+			glScaled(0.5, 0.5, 0.5);
+			glTranslated(3.0, 2.0, 1.5);
 			glRotated(-20, 1, 0, 1);
-			glScaled(0.2, 0.2, 0.2);
-			drawDiamond();
+			glPushMatrix();
+			{
+				setDiffuseColor(0.4, 0.4, 1.0);
+				glScaled(0.1, 0.1, 0.1);
+				drawDiamond();
+			}
+			glPopMatrix();
+			setDiffuseColor(1.0, 1.0, 1.0);
+			drawTorus(0, -1, 0, 0.1, 1, 20, 20);
 		}
 		glPopMatrix();
 	}
