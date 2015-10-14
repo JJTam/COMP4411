@@ -22,6 +22,7 @@ extern void kumaIK();
 extern void kumaInitControls(ModelerControl* controls);
 extern void drawMetaball(int numMetaballs, const vector< vector<float> >& balls);
 extern void drawTorus(double posX, double posY, double posZ, double innerR, double outerR, int numc, int numt);
+extern void drawDiamond();
 
 // functions that are in helpers
 extern void kumaSetupLights();
@@ -135,12 +136,26 @@ void KumaModel::draw()
 		glPushMatrix();
 		{
 			setDiffuseColor(1.0, 1.0, 1.0);
+			glTranslated(VAL(XPOS), VAL(YPOS), VAL(ZPOS));
 			glTranslated(VAL(IK_X) - 0.1, VAL(IK_Y) - 0.1, VAL(IK_Z) - 0.1);
 			drawBox(0.2, 0.2, 0.2);
 		}
 		glPopMatrix();
 		// run IK
 		kumaIK();
+	}
+
+	if (VAL(DRAW_TRIANGLES) > 0)
+	{
+		setDiffuseColor(0.8, 0.2, 0.2);
+		glPushMatrix();
+		{
+			glTranslated(1.5, 0.5, 1.5);
+			glRotated(-20, 1, 0, 1);
+			glScaled(0.2, 0.2, 0.2);
+			drawDiamond();
+		}
+		glPopMatrix();
 	}
 
 	// draw the model
