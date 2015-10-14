@@ -258,96 +258,111 @@ void KumaModel::draw()
 				glRotated(headRotationZ, 0, 0, 1);
 				glRotated(headRotationY, 0, 1, 0);
 				glTranslated(-headWidth / 2, 0, -headDepth / 2);
-				drawBox(headWidth, headHeight, headDepth);
 
-				// eyes
-				setDiffuseColor(KUMA_EYE_COLOR);
-				glPushMatrix();
-				if (detailLevel > 2)
+				static vector< vector<float> > headBalls = { { 0.0f, 0.0f, 0.0f, 5.0f }, { -6.0f, 7.0f, 0.0f, 2.0f }, { 6.0f, 7.0f, 0.0f, 2.0f } };
+				if (VAL(DRAW_METABALLS) > 0)
 				{
-					glTranslated(eyeOffsetX, eyeOffsetY, 0.99);
-					drawBox(eyeWidth, eyeHeight, 0.02);
-
-					glTranslated(headWidth - 2 * eyeOffsetX - eyeWidth, 0, 0);
-					drawBox(eyeWidth, eyeHeight, 0.02);
-				}
-				glPopMatrix();
-
-				// mouth
-				setDiffuseColor(KUMA_MOUTH_COLOR);
-				glPushMatrix();
-				if (detailLevel > 2)
-				{
-					glTranslated((headWidth - mouthWidth) / 2, mouthOffsetY, 0.99);
-					drawBox(mouthWidth, mouthHeight, 0.02);
-				}
-				glPopMatrix();
-
-				// hair
-				setDiffuseColor(KUMA_HAIR_COLOR);
-				glPushMatrix();
-				if (detailLevel > 2)
-				{
-					glTranslated(-(hairHeadOffset + hairThickness), headHeight + hairHeadOffset, -(hairHeadOffset + hairThickness));
-					// left
-					drawBox(hairThickness, -sideHairHeight, sideHairDepth + hairThickness + hairHeadOffset);
-					// top
-					drawBox(hairThickness * 2 + hairHeadOffset * 2 + headWidth,
-						hairThickness, sideHairDepth + hairThickness + hairHeadOffset);
-					// back
-					drawBox(hairThickness * 2 + hairHeadOffset * 2 + headWidth,
-						-backHairHeight, hairThickness + hairHeadOffset);
-					// right
-					glTranslated(hairThickness + hairHeadOffset * 2 + headWidth, 0, 0);
-					drawBox(hairThickness, -sideHairHeight, sideHairDepth + hairThickness + hairHeadOffset);
-					// front
-					glTranslated(hairThickness, 0, sideHairDepth + hairHeadOffset);
-					drawBox(-(hairThickness * 2 + hairHeadOffset * 2 + headWidth), -frontHairHeight, hairThickness);
-				}
-				glPopMatrix();
-
-				// Aho hair
-				glPushMatrix();
-				if (detailLevel > 2)
-				{
-					glTranslated(headWidth / 2, headHeight + hairHeadOffset + hairThickness, headDepth / 2);
-					glScaled(ahoHairScale, ahoHairScale, ahoHairScale);
-
-					// l1
-					drawTriangle(0, 0, 0,
-						0.2, 0.2, -0.1,
-						0.15, 0.3, -0.2);
-					// l2
-					drawTriangle(0.2, 0.2, -0.1,
-						-0.225, 0.7, 0.15,
-						-0.15, 0.56, 0.275);
-					drawTriangle(0.2, 0.2, -0.1,
-						0.15, 0.3, -0.2,
-						-0.225, 0.7, 0.15);
-					// l3
-					drawTriangle(-0.225, 0.7, 0.15,
-						0.8, 1.2, -0.7,
-						0.7, 1.38, -0.85);
-					drawTriangle(-0.225, 0.7, 0.15,
-						-0.15, 0.56, 0.275,
-						0.8, 1.2, -0.7);
-					// l4
-					drawTriangle(0.8, 1.2, -0.7,
-						0.7, 1.38, -0.85,
-						-1.5, 1.1, 0.3);
-
-					if (VAL(DRAW_TORUS) > 0)
+					glPushMatrix();
 					{
-						setDiffuseColor(1.0f, 1.0f, 0.5f);
-						glPushMatrix();
-						{
-							glRotated(90, 1, 0, 0);
-							drawTorus(0.0f, 0.0f, -0.5f, 0.15f, 0.8f, 20, 20);
-						}
-						glPopMatrix();
+						glTranslated(headWidth / 2, 0.50, headDepth / 2);
+						glScaled(0.1, 0.1, 0.1);
+						drawMetaball(headBalls.size(), headBalls);
 					}
+					glPopMatrix();
 				}
-				glPopMatrix();
+				else
+				{
+					drawBox(headWidth, headHeight, headDepth);
+
+					// eyes
+					setDiffuseColor(KUMA_EYE_COLOR);
+					glPushMatrix();
+					if (detailLevel > 2)
+					{
+						glTranslated(eyeOffsetX, eyeOffsetY, 0.99);
+						drawBox(eyeWidth, eyeHeight, 0.02);
+
+						glTranslated(headWidth - 2 * eyeOffsetX - eyeWidth, 0, 0);
+						drawBox(eyeWidth, eyeHeight, 0.02);
+					}
+					glPopMatrix();
+
+					// mouth
+					setDiffuseColor(KUMA_MOUTH_COLOR);
+					glPushMatrix();
+					if (detailLevel > 2)
+					{
+						glTranslated((headWidth - mouthWidth) / 2, mouthOffsetY, 0.99);
+						drawBox(mouthWidth, mouthHeight, 0.02);
+					}
+					glPopMatrix();
+
+					// hair
+					setDiffuseColor(KUMA_HAIR_COLOR);
+					glPushMatrix();
+					if (detailLevel > 2)
+					{
+						glTranslated(-(hairHeadOffset + hairThickness), headHeight + hairHeadOffset, -(hairHeadOffset + hairThickness));
+						// left
+						drawBox(hairThickness, -sideHairHeight, sideHairDepth + hairThickness + hairHeadOffset);
+						// top
+						drawBox(hairThickness * 2 + hairHeadOffset * 2 + headWidth,
+							hairThickness, sideHairDepth + hairThickness + hairHeadOffset);
+						// back
+						drawBox(hairThickness * 2 + hairHeadOffset * 2 + headWidth,
+							-backHairHeight, hairThickness + hairHeadOffset);
+						// right
+						glTranslated(hairThickness + hairHeadOffset * 2 + headWidth, 0, 0);
+						drawBox(hairThickness, -sideHairHeight, sideHairDepth + hairThickness + hairHeadOffset);
+						// front
+						glTranslated(hairThickness, 0, sideHairDepth + hairHeadOffset);
+						drawBox(-(hairThickness * 2 + hairHeadOffset * 2 + headWidth), -frontHairHeight, hairThickness);
+					}
+					glPopMatrix();
+
+					// Aho hair
+					glPushMatrix();
+					if (detailLevel > 2)
+					{
+						glTranslated(headWidth / 2, headHeight + hairHeadOffset + hairThickness, headDepth / 2);
+						glScaled(ahoHairScale, ahoHairScale, ahoHairScale);
+
+						// l1
+						drawTriangle(0, 0, 0,
+							0.2, 0.2, -0.1,
+							0.15, 0.3, -0.2);
+						// l2
+						drawTriangle(0.2, 0.2, -0.1,
+							-0.225, 0.7, 0.15,
+							-0.15, 0.56, 0.275);
+						drawTriangle(0.2, 0.2, -0.1,
+							0.15, 0.3, -0.2,
+							-0.225, 0.7, 0.15);
+						// l3
+						drawTriangle(-0.225, 0.7, 0.15,
+							0.8, 1.2, -0.7,
+							0.7, 1.38, -0.85);
+						drawTriangle(-0.225, 0.7, 0.15,
+							-0.15, 0.56, 0.275,
+							0.8, 1.2, -0.7);
+						// l4
+						drawTriangle(0.8, 1.2, -0.7,
+							0.7, 1.38, -0.85,
+							-1.5, 1.1, 0.3);
+
+						if (VAL(DRAW_TORUS) > 0)
+						{
+							setDiffuseColor(1.0f, 1.0f, 0.5f);
+							glPushMatrix();
+							{
+								glRotated(90, 1, 0, 0);
+								drawTorus(0.0f, 0.0f, -0.5f, 0.15f, 0.8f, 20, 20);
+							}
+							glPopMatrix();
+						}
+					}
+					glPopMatrix();
+				}
 			}
 			glPopMatrix(); // head
 
