@@ -70,7 +70,7 @@ void kumaInitControls(ModelerControl* controls)
 
 	controls[DRAW_TORUS] = ModelerControl("Draw Torus", 0, 1, 1, 0);
 	controls[DRAW_METABALLS] = ModelerControl("Metaballs", 0, 1, 1, 0);
-	controls[METABALL_RADIUS] = ModelerControl("Metaball size", 0.1f, 2.0f, 0.1f, 1.0f);
+	controls[METABALL_RADIUS] = ModelerControl("Metaball size", 0.6f, 2.0f, 0.1f, 1.0f);
 
 	controls[TORSO_WIDTH] = ModelerControl("Torso width", 0.0, 2.0, 0.01f, 1.0);
 	controls[TORSO_HEIGHT] = ModelerControl("Torso height", 0.0, 2.0, 0.01f, 1.2);

@@ -10,7 +10,7 @@ using namespace std;
 void drawMetaball(int numMetaballs,const vector< vector<float> >& balls)
 {
 	const int minGridSize = 10;
-	int gridSize = 60;
+	int gridSize = 30;
 	float threshold = 1.0f;
 	CUBE_GRID cubeGrid;
 
