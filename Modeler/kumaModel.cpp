@@ -113,9 +113,9 @@ void KumaModel::draw()
 	}
 
 	// metaballs
-	static vector< vector<float> > ball1 = { { -6.2f, 6.1f, -3.0f, 3.0f }, { 0.0f, 3.5f, -4.0f, 3.6f }, { 0.0f, 7.5f, -2.0f, 2.1f} };
+	static vector< vector<float> > ball1 = { { -6.2f, 6.1f, -3.0f, 3.0f }, { 0.0f, 3.5f, -4.0f, 3.6f }, { 0.0f, 7.0f, -2.0f, 2.1f} };
 	setDiffuseColor(KUMA_CLOTH_PART2_COLOR);
-	if (VAL(DRAW_METABALLS) > 0) {
+	if (VAL(DRAW_METABALLS) > 0 && VAL(METABALL_DEMOS) > 0) {
 		glPushMatrix();
 		{
 			float sizeFactor = (float)VAL(METABALL_RADIUS);
@@ -252,14 +252,14 @@ void KumaModel::draw()
 			glPushMatrix();
 			if (detailLevel > 1)
 			{
-				glTranslated(0, torsoHeight, -(headDepth - torsoDepth) / 2.0);
+				glTranslated((torsoWidth - headWidth) / 2, torsoHeight, -(headDepth - torsoDepth) / 2.0);
 				glTranslated(headWidth / 2, 0, headDepth / 2);
 				glRotated(headRotationX, 1, 0, 0);
 				glRotated(headRotationZ, 0, 0, 1);
 				glRotated(headRotationY, 0, 1, 0);
 				glTranslated(-headWidth / 2, 0, -headDepth / 2);
 
-				static vector< vector<float> > headBalls = { { 0.0f, 0.0f, 0.0f, 5.0f }, { -6.0f, 7.0f, 0.0f, 2.0f }, { 6.0f, 7.0f, 0.0f, 2.0f } };
+				static vector< vector<float> > headBalls = { { 0.0f, 0.0f, 0.0f, 5.0f }, { -6.0f, 6.7f, 0.0f, 2.0f }, { 6.0f, 6.7f, 0.0f, 2.0f } };
 				if (VAL(DRAW_METABALLS) > 0)
 				{
 					glPushMatrix();
@@ -279,7 +279,7 @@ void KumaModel::draw()
 					glPushMatrix();
 					if (detailLevel > 2)
 					{
-						glTranslated(eyeOffsetX, eyeOffsetY, 0.99);
+						glTranslated(eyeOffsetX, eyeOffsetY, headDepth - 0.01);
 						drawBox(eyeWidth, eyeHeight, 0.02);
 
 						glTranslated(headWidth - 2 * eyeOffsetX - eyeWidth, 0, 0);
@@ -292,7 +292,7 @@ void KumaModel::draw()
 					glPushMatrix();
 					if (detailLevel > 2)
 					{
-						glTranslated((headWidth - mouthWidth) / 2, mouthOffsetY, 0.99);
+						glTranslated((headWidth - mouthWidth) / 2, mouthOffsetY, headDepth - 0.01);
 						drawBox(mouthWidth, mouthHeight, 0.02);
 					}
 					glPopMatrix();
