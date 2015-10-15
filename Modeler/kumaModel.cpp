@@ -100,6 +100,7 @@ void KumaModel::draw()
 	kumaDrawLSystems();
 
 	// draw the texture
+	/*
 	if (VAL(DRAW_TEXTURE) > 0) {
 		glPushMatrix();
 		{
@@ -112,7 +113,7 @@ void KumaModel::draw()
 		}
 		glPopMatrix();
 	}
-
+	*/
 	// metaballs
 	static vector< vector<float> > ball1 = { { -6.2f, 6.1f, -3.0f, 3.0f }, { 0.0f, 3.5f, -4.0f, 3.6f }, { 0.0f, 7.0f, -2.0f, 2.1f} };
 	setDiffuseColor(KUMA_CLOTH_PART2_COLOR);
@@ -297,28 +298,40 @@ void KumaModel::draw()
 				{
 					drawBox(headWidth, headHeight, headDepth);
 
-					// eyes
-					setDiffuseColor(KUMA_EYE_COLOR);
-					glPushMatrix();
-					if (detailLevel > 2)
+					if (VAL(DRAW_TEXTURE) > 0)
 					{
-						glTranslated(eyeOffsetX, eyeOffsetY, headDepth - 0.01);
-						drawBox(eyeWidth, eyeHeight, 0.02);
-
-						glTranslated(headWidth - 2 * eyeOffsetX - eyeWidth, 0, 0);
-						drawBox(eyeWidth, eyeHeight, 0.02);
+						glPushMatrix();
+						{
+							glTranslated(0, 0, headDepth + 0.01);
+							drawTexture(headWidth);
+						}
+						glPopMatrix();
 					}
-					glPopMatrix();
-
-					// mouth
-					setDiffuseColor(KUMA_MOUTH_COLOR);
-					glPushMatrix();
-					if (detailLevel > 2)
+					else
 					{
-						glTranslated((headWidth - mouthWidth) / 2, mouthOffsetY, headDepth - 0.01);
-						drawBox(mouthWidth, mouthHeight, 0.02);
+						// eyes
+						setDiffuseColor(KUMA_EYE_COLOR);
+						glPushMatrix();
+						if (detailLevel > 2)
+						{
+							glTranslated(eyeOffsetX, eyeOffsetY, headDepth - 0.01);
+							drawBox(eyeWidth, eyeHeight, 0.02);
+
+							glTranslated(headWidth - 2 * eyeOffsetX - eyeWidth, 0, 0);
+							drawBox(eyeWidth, eyeHeight, 0.02);
+						}
+						glPopMatrix();
+
+						// mouth
+						setDiffuseColor(KUMA_MOUTH_COLOR);
+						glPushMatrix();
+						if (detailLevel > 2)
+						{
+							glTranslated((headWidth - mouthWidth) / 2, mouthOffsetY, headDepth - 0.01);
+							drawBox(mouthWidth, mouthHeight, 0.02);
+						}
+						glPopMatrix();
 					}
-					glPopMatrix();
 
 					// hair
 					setDiffuseColor(KUMA_HAIR_COLOR);

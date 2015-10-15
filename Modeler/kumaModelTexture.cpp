@@ -4,7 +4,7 @@
 #include "modelerglobals.h"
 #include "modelerui.h"
 
-void KumaModel::drawTexture()
+void KumaModel::drawTexture(int drawWidth)
 {
 	auto pui = ModelerApplication::Instance()->GetPUI();
 	static int width = 0;
@@ -43,7 +43,7 @@ void KumaModel::drawTexture()
 	}
 
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	if (drawWidth <= 0) drawWidth = width;
 	if (width > 0 && height > 0)
 	{
 		double hwfactor = height / (double)width;
@@ -51,10 +51,10 @@ void KumaModel::drawTexture()
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 		glBindTexture(GL_TEXTURE_2D, texName);
 		glBegin(GL_QUADS);
-		glTexCoord2f(0.0, 0.0); glVertex3f(-2.0, 0.0, 0.0);
-		glTexCoord2f(0.0, 1.0); glVertex3f(-2.0, 2.0 * hwfactor, 0.0);
-		glTexCoord2f(1.0, 1.0); glVertex3f(0.0, 2.0 * hwfactor, 0.0);
-		glTexCoord2f(1.0, 0.0); glVertex3f(0.0, 0.0, 0.0);
+		glTexCoord2f(0.0, 0.0); glVertex3f(0.0, 0.0, 0.0);
+		glTexCoord2f(0.0, 1.0); glVertex3f(0.0, drawWidth * hwfactor, 0.0);
+		glTexCoord2f(1.0, 1.0); glVertex3f(drawWidth, drawWidth * hwfactor, 0.0);
+		glTexCoord2f(1.0, 0.0); glVertex3f(drawWidth, 0.0, 0.0);
 		glEnd();
 		glFlush();
 		glDisable(GL_TEXTURE_2D);
