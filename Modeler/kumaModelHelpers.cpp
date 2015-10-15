@@ -137,3 +137,56 @@ void drawTorus(double posX, double posY, double posZ, double innerR, double oute
 	}
 	glPopMatrix();
 }
+
+#define DIAMOND_SIDES 8
+#define DIAMOND_R1 4
+#define DIAMOND_R2 3
+#define DIAMOND_H1 5
+#define DIAMOND_H2 6
+double* diamondRing1 = nullptr;
+double* diamondRing2 = nullptr;
+
+void initDiamondRings() {
+	if (diamondRing1 == nullptr)
+		diamondRing1 = new double[DIAMOND_SIDES * 2 + 2];
+	if (diamondRing2 == nullptr)
+		diamondRing2 = new double[DIAMOND_SIDES * 2 + 2];
+
+	for (int i = 0; i < DIAMOND_SIDES; ++i)
+	{
+		diamondRing1[i * 2] = DIAMOND_R1 * sin(i * (2 * M_PI) / DIAMOND_SIDES);
+		diamondRing2[i * 2] = DIAMOND_R2 * sin(i * (2 * M_PI) / DIAMOND_SIDES);
+		diamondRing1[i * 2 + 1] = DIAMOND_R1 * cos(i * (2 * M_PI) / DIAMOND_SIDES);
+		diamondRing2[i * 2 + 1] = DIAMOND_R2 * cos(i * (2 * M_PI) / DIAMOND_SIDES);
+	}
+
+	diamondRing1[DIAMOND_SIDES * 2] = diamondRing1[0];
+	diamondRing1[DIAMOND_SIDES * 2 + 1] = diamondRing1[1];
+	diamondRing2[DIAMOND_SIDES * 2] = diamondRing2[0];
+	diamondRing2[DIAMOND_SIDES * 2 + 1] = diamondRing2[1];
+}
+
+void drawDiamond() {
+	if (diamondRing1 == nullptr || diamondRing2 == nullptr)
+		initDiamondRings();
+
+	for (int i = 0; i < DIAMOND_SIDES; ++i)
+	{
+		drawTriangle(0.0, 0.0, 0.0,
+			diamondRing1[i * 2 + 2], DIAMOND_H1, diamondRing1[i * 2 + 3],
+			diamondRing1[i * 2], DIAMOND_H1, diamondRing1[i * 2 + 1]);
+		drawTriangle(diamondRing1[i * 2], DIAMOND_H1, diamondRing1[i * 2 + 1], 
+			diamondRing1[i * 2 + 2], DIAMOND_H1, diamondRing1[i * 2 + 3], 
+			diamondRing2[i * 2], DIAMOND_H2, diamondRing2[i * 2 + 1]);
+		drawTriangle(diamondRing1[i * 2 + 2], DIAMOND_H1, diamondRing1[i * 2 + 3], 
+			diamondRing2[i * 2 + 2], DIAMOND_H2, diamondRing2[i * 2 + 3], 
+			diamondRing2[i * 2], DIAMOND_H2, diamondRing2[i * 2 + 1]);
+	}
+
+	for (int i = 1; i < DIAMOND_SIDES; ++i)
+	{
+		drawTriangle(diamondRing2[0], DIAMOND_H2, diamondRing2[1], 
+			diamondRing2[i * 2], DIAMOND_H2, diamondRing2[i * 2 + 1], 
+			diamondRing2[i * 2 + 2], DIAMOND_H2, diamondRing2[i * 2 + 3]);
+	}
+}

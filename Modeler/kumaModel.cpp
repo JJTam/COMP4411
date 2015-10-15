@@ -22,6 +22,7 @@ extern void kumaIK();
 extern void kumaInitControls(ModelerControl* controls);
 extern void drawMetaball(int numMetaballs, const vector< vector<float> >& balls);
 extern void drawTorus(double posX, double posY, double posZ, double innerR, double outerR, int numc, int numt);
+extern void drawDiamond();
 
 // functions that are in helpers
 extern void kumaSetupLights();
@@ -99,6 +100,7 @@ void KumaModel::draw()
 	kumaDrawLSystems();
 
 	// draw the texture
+	/*
 	if (VAL(DRAW_TEXTURE) > 0) {
 		glPushMatrix();
 		{
@@ -111,17 +113,19 @@ void KumaModel::draw()
 		}
 		glPopMatrix();
 	}
-
+	*/
 	// metaballs
-	static vector< vector<float> > ball1 = { { -2.2f, 2.1f, -1.0f, 1.0f }, { -4.0f, 3.5f, -3.0f, 1.2f }, { -3.0f, 5.5f, -2.0f, 0.7f} };
+	static vector< vector<float> > ball1 = { { -6.2f, 6.1f, -3.0f, 3.0f }, { 0.0f, 3.5f, -4.0f, 3.6f }, { 0.0f, 7.0f, -2.0f, 2.1f} };
 	setDiffuseColor(KUMA_CLOTH_PART2_COLOR);
-	if (VAL(DRAW_METABALLS) > 0) {
-		float sizeFactor = (float)VAL(METABALL_RADIUS);
-		ball1[0][3] = 1.0f * sizeFactor;
-		ball1[1][3] = 1.2f * sizeFactor;
-		ball1[2][3] = 0.7f * sizeFactor;
+	if (VAL(DRAW_METABALLS) > 0 && VAL(METABALL_DEMOS) > 0) {
 		glPushMatrix();
 		{
+			float sizeFactor = (float)VAL(METABALL_RADIUS);
+			ball1[0][3] = 3.0f * sizeFactor;
+			ball1[1][3] = 3.6f * sizeFactor;
+			ball1[2][3] = 2.1f * sizeFactor;
+			glTranslated(-2, 1, -2);
+			glScaled(0.4, 0.4, 0.4);
 			drawMetaball(ball1.size(), ball1);
 		}
 		glPopMatrix();
@@ -133,12 +137,34 @@ void KumaModel::draw()
 		glPushMatrix();
 		{
 			setDiffuseColor(1.0, 1.0, 1.0);
+			glTranslated(VAL(XPOS), VAL(YPOS), VAL(ZPOS));
 			glTranslated(VAL(IK_X) - 0.1, VAL(IK_Y) - 0.1, VAL(IK_Z) - 0.1);
 			drawBox(0.2, 0.2, 0.2);
 		}
 		glPopMatrix();
 		// run IK
 		kumaIK();
+	}
+
+	if (VAL(DRAW_TRIANGLES) > 0)
+	{
+		
+		glPushMatrix();
+		{
+			glScaled(0.5, 0.5, 0.5);
+			glTranslated(3.0, 2.0, 1.5);
+			glRotated(-20, 1, 0, 1);
+			glPushMatrix();
+			{
+				setDiffuseColor(0.4, 0.4, 1.0);
+				glScaled(0.1, 0.1, 0.1);
+				drawDiamond();
+			}
+			glPopMatrix();
+			setDiffuseColor(1.0, 1.0, 1.0);
+			drawTorus(0, -1, 0, 0.1, 1, 20, 20);
+		}
+		glPopMatrix();
 	}
 
 	// draw the model
@@ -250,102 +276,129 @@ void KumaModel::draw()
 			glPushMatrix();
 			if (detailLevel > 1)
 			{
-				glTranslated(0, torsoHeight, -(headDepth - torsoDepth) / 2.0);
+				glTranslated((torsoWidth - headWidth) / 2, torsoHeight, -(headDepth - torsoDepth) / 2.0);
 				glTranslated(headWidth / 2, 0, headDepth / 2);
 				glRotated(headRotationX, 1, 0, 0);
 				glRotated(headRotationZ, 0, 0, 1);
 				glRotated(headRotationY, 0, 1, 0);
 				glTranslated(-headWidth / 2, 0, -headDepth / 2);
-				drawBox(headWidth, headHeight, headDepth);
 
-				// eyes
-				setDiffuseColor(KUMA_EYE_COLOR);
-				glPushMatrix();
-				if (detailLevel > 2)
+				static vector< vector<float> > headBalls = { { 0.0f, 0.0f, 0.0f, 5.0f }, { -6.0f, 6.7f, 0.0f, 2.0f }, { 6.0f, 6.7f, 0.0f, 2.0f } };
+				if (VAL(DRAW_METABALLS) > 0)
 				{
-					glTranslated(eyeOffsetX, eyeOffsetY, 0.99);
-					drawBox(eyeWidth, eyeHeight, 0.02);
-
-					glTranslated(headWidth - 2 * eyeOffsetX - eyeWidth, 0, 0);
-					drawBox(eyeWidth, eyeHeight, 0.02);
-				}
-				glPopMatrix();
-
-				// mouth
-				setDiffuseColor(KUMA_MOUTH_COLOR);
-				glPushMatrix();
-				if (detailLevel > 2)
-				{
-					glTranslated((headWidth - mouthWidth) / 2, mouthOffsetY, 0.99);
-					drawBox(mouthWidth, mouthHeight, 0.02);
-				}
-				glPopMatrix();
-
-				// hair
-				setDiffuseColor(KUMA_HAIR_COLOR);
-				glPushMatrix();
-				if (detailLevel > 2)
-				{
-					glTranslated(-(hairHeadOffset + hairThickness), headHeight + hairHeadOffset, -(hairHeadOffset + hairThickness));
-					// left
-					drawBox(hairThickness, -sideHairHeight, sideHairDepth + hairThickness + hairHeadOffset);
-					// top
-					drawBox(hairThickness * 2 + hairHeadOffset * 2 + headWidth,
-						hairThickness, sideHairDepth + hairThickness + hairHeadOffset);
-					// back
-					drawBox(hairThickness * 2 + hairHeadOffset * 2 + headWidth,
-						-backHairHeight, hairThickness + hairHeadOffset);
-					// right
-					glTranslated(hairThickness + hairHeadOffset * 2 + headWidth, 0, 0);
-					drawBox(hairThickness, -sideHairHeight, sideHairDepth + hairThickness + hairHeadOffset);
-					// front
-					glTranslated(hairThickness, 0, sideHairDepth + hairHeadOffset);
-					drawBox(-(hairThickness * 2 + hairHeadOffset * 2 + headWidth), -frontHairHeight, hairThickness);
-				}
-				glPopMatrix();
-
-				// Aho hair
-				glPushMatrix();
-				if (detailLevel > 2)
-				{
-					glTranslated(headWidth / 2, headHeight + hairHeadOffset + hairThickness, headDepth / 2);
-					glScaled(ahoHairScale, ahoHairScale, ahoHairScale);
-
-					// l1
-					drawTriangle(0, 0, 0,
-						0.2, 0.2, -0.1,
-						0.15, 0.3, -0.2);
-					// l2
-					drawTriangle(0.2, 0.2, -0.1,
-						-0.225, 0.7, 0.15,
-						-0.15, 0.56, 0.275);
-					drawTriangle(0.2, 0.2, -0.1,
-						0.15, 0.3, -0.2,
-						-0.225, 0.7, 0.15);
-					// l3
-					drawTriangle(-0.225, 0.7, 0.15,
-						0.8, 1.2, -0.7,
-						0.7, 1.38, -0.85);
-					drawTriangle(-0.225, 0.7, 0.15,
-						-0.15, 0.56, 0.275,
-						0.8, 1.2, -0.7);
-					// l4
-					drawTriangle(0.8, 1.2, -0.7,
-						0.7, 1.38, -0.85,
-						-1.5, 1.1, 0.3);
-
-					if (VAL(DRAW_TORUS) > 0)
+					glPushMatrix();
 					{
-						setDiffuseColor(1.0f, 1.0f, 0.5f);
+						glTranslated(headWidth / 2, 0.50, headDepth / 2);
+						glScaled(0.1, 0.1, 0.1);
+						drawMetaball(headBalls.size(), headBalls);
+					}
+					glPopMatrix();
+				}
+				else
+				{
+					drawBox(headWidth, headHeight, headDepth);
+
+					if (VAL(DRAW_TEXTURE) > 0)
+					{
 						glPushMatrix();
 						{
-							glRotated(90, 1, 0, 0);
-							drawTorus(0.0f, 0.0f, -0.5f, 0.15f, 0.8f, 20, 20);
+							glTranslated(0, 0, headDepth + 0.01);
+							drawTexture(headWidth);
 						}
 						glPopMatrix();
 					}
+					else
+					{
+						// eyes
+						setDiffuseColor(KUMA_EYE_COLOR);
+						glPushMatrix();
+						if (detailLevel > 2)
+						{
+							glTranslated(eyeOffsetX, eyeOffsetY, headDepth - 0.01);
+							drawBox(eyeWidth, eyeHeight, 0.02);
+
+							glTranslated(headWidth - 2 * eyeOffsetX - eyeWidth, 0, 0);
+							drawBox(eyeWidth, eyeHeight, 0.02);
+						}
+						glPopMatrix();
+
+						// mouth
+						setDiffuseColor(KUMA_MOUTH_COLOR);
+						glPushMatrix();
+						if (detailLevel > 2)
+						{
+							glTranslated((headWidth - mouthWidth) / 2, mouthOffsetY, headDepth - 0.01);
+							drawBox(mouthWidth, mouthHeight, 0.02);
+						}
+						glPopMatrix();
+					}
+
+					// hair
+					setDiffuseColor(KUMA_HAIR_COLOR);
+					glPushMatrix();
+					if (detailLevel > 2)
+					{
+						glTranslated(-(hairHeadOffset + hairThickness), headHeight + hairHeadOffset, -(hairHeadOffset + hairThickness));
+						// left
+						drawBox(hairThickness, -sideHairHeight, sideHairDepth + hairThickness + hairHeadOffset);
+						// top
+						drawBox(hairThickness * 2 + hairHeadOffset * 2 + headWidth,
+							hairThickness, sideHairDepth + hairThickness + hairHeadOffset);
+						// back
+						drawBox(hairThickness * 2 + hairHeadOffset * 2 + headWidth,
+							-backHairHeight, hairThickness + hairHeadOffset);
+						// right
+						glTranslated(hairThickness + hairHeadOffset * 2 + headWidth, 0, 0);
+						drawBox(hairThickness, -sideHairHeight, sideHairDepth + hairThickness + hairHeadOffset);
+						// front
+						glTranslated(hairThickness, 0, sideHairDepth + hairHeadOffset);
+						drawBox(-(hairThickness * 2 + hairHeadOffset * 2 + headWidth), -frontHairHeight, hairThickness);
+					}
+					glPopMatrix();
+
+					// Aho hair
+					glPushMatrix();
+					if (detailLevel > 2)
+					{
+						glTranslated(headWidth / 2, headHeight + hairHeadOffset + hairThickness, headDepth / 2);
+						glScaled(ahoHairScale, ahoHairScale, ahoHairScale);
+
+						// l1
+						drawTriangle(0, 0, 0,
+							0.2, 0.2, -0.1,
+							0.15, 0.3, -0.2);
+						// l2
+						drawTriangle(0.2, 0.2, -0.1,
+							-0.225, 0.7, 0.15,
+							-0.15, 0.56, 0.275);
+						drawTriangle(0.2, 0.2, -0.1,
+							0.15, 0.3, -0.2,
+							-0.225, 0.7, 0.15);
+						// l3
+						drawTriangle(-0.225, 0.7, 0.15,
+							0.8, 1.2, -0.7,
+							0.7, 1.38, -0.85);
+						drawTriangle(-0.225, 0.7, 0.15,
+							-0.15, 0.56, 0.275,
+							0.8, 1.2, -0.7);
+						// l4
+						drawTriangle(0.8, 1.2, -0.7,
+							0.7, 1.38, -0.85,
+							-1.5, 1.1, 0.3);
+
+						if (VAL(DRAW_TORUS) > 0)
+						{
+							setDiffuseColor(1.0f, 1.0f, 0.5f);
+							glPushMatrix();
+							{
+								glRotated(90, 1, 0, 0);
+								drawTorus(0.0f, 0.0f, -0.5f, 0.15f, 0.8f, 20, 20);
+							}
+							glPopMatrix();
+						}
+					}
+					glPopMatrix();
 				}
-				glPopMatrix();
 			}
 			glPopMatrix(); // head
 
