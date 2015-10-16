@@ -99,21 +99,6 @@ void KumaModel::draw()
 	// draw the LSystem
 	kumaDrawLSystems();
 
-	// draw the texture
-	/*
-	if (VAL(DRAW_TEXTURE) > 0) {
-		glPushMatrix();
-		{
-			double textureScale = VAL(TEXTURE_SIZE);
-			double textureX = VAL(TEXTURE_X);
-			double textureZ = VAL(TEXTURE_Z);
-			glTranslated(textureX, 0, textureZ);
-			glScaled(textureScale, textureScale, textureScale);
-			drawTexture();
-		}
-		glPopMatrix();
-	}
-	*/
 	// metaballs
 	static vector< vector<float> > ball1 = { { -6.2f, 6.1f, -3.0f, 3.0f }, { 0.0f, 3.5f, -4.0f, 3.6f }, { 0.0f, 7.0f, -2.0f, 2.1f} };
 	setDiffuseColor(KUMA_CLOTH_PART2_COLOR);
@@ -176,6 +161,34 @@ void KumaModel::draw()
 
 		double detailLevel = VAL(DRAW_LEVEL);
 		bool shallDrawClothes = VAL(DRAW_CLOTHES) > 0;
+
+		// limits
+		float armRotLimit = VAL(ARM_ROTATION_LIMIT);
+#define KUMA_LIMIT_ROT(x) if (VAL(x) < -armRotLimit) SETVAL(x, -armRotLimit); else if (VAL(x) > armRotLimit) SETVAL(x, armRotLimit);
+		KUMA_LIMIT_ROT(LEFT_UPPER_ARM_ROTATION_X);
+		KUMA_LIMIT_ROT(LEFT_UPPER_ARM_ROTATION_Y);
+		KUMA_LIMIT_ROT(LEFT_UPPER_ARM_ROTATION_Z);
+		KUMA_LIMIT_ROT(LEFT_LOWER_ARM_ROTATION_X);
+		KUMA_LIMIT_ROT(RIGHT_UPPER_ARM_ROTATION_X);
+		KUMA_LIMIT_ROT(RIGHT_UPPER_ARM_ROTATION_Y);
+		KUMA_LIMIT_ROT(RIGHT_UPPER_ARM_ROTATION_Z);
+		KUMA_LIMIT_ROT(RIGHT_LOWER_ARM_ROTATION_X);
+#undef KUMA_LIMIT_ROT
+
+		float waistLegRotLimit = VAL(WAIST_LEG_ROTATION_LIMIT);
+#define KUMA_LIMIT_ROT(x) if (VAL(x) < -waistLegRotLimit) SETVAL(x, -waistLegRotLimit); else if (VAL(x) > waistLegRotLimit) SETVAL(x, waistLegRotLimit);
+		KUMA_LIMIT_ROT(WAIST_ROTATION_X);
+		KUMA_LIMIT_ROT(WAIST_ROTATION_Y);
+		KUMA_LIMIT_ROT(WAIST_ROTATION_Z);
+		KUMA_LIMIT_ROT(LEFT_UPPER_LEG_ROTATION_X);
+		KUMA_LIMIT_ROT(LEFT_UPPER_LEG_ROTATION_Y);
+		KUMA_LIMIT_ROT(LEFT_UPPER_LEG_ROTATION_Z);
+		KUMA_LIMIT_ROT(LEFT_LOWER_LEG_ROTATION_X);
+		KUMA_LIMIT_ROT(RIGHT_UPPER_LEG_ROTATION_X);
+		KUMA_LIMIT_ROT(RIGHT_UPPER_LEG_ROTATION_Y);
+		KUMA_LIMIT_ROT(RIGHT_UPPER_LEG_ROTATION_Z);
+		KUMA_LIMIT_ROT(RIGHT_LOWER_LEG_ROTATION_X);
+#undef KUMA_LIMIT_ROT
 
 		// parameters
 		double torsoWidth = VAL(TORSO_WIDTH);
@@ -264,7 +277,6 @@ void KumaModel::draw()
 		double rightUpperArmRotationZ = VAL(RIGHT_UPPER_ARM_ROTATION_Z);
 		double rightLowerArmRotationX = VAL(RIGHT_LOWER_ARM_ROTATION_X);
 
-		
 		// torso
 		glPushMatrix();
 		if (detailLevel > 0)
