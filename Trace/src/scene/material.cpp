@@ -44,8 +44,11 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 		double b = 0.01;
 		double c = 0.01;
 		double fd = 1;
+		//f(d) disabled since without scaling it gives poor result!!!
 		//double fd = min<double>(1, 1 / (a + b*i.t + c*i.t*i.t));
 
+
+		// NEED TO ADD SHINENESS
 		sum2 += prod(currlight->getColor(zero),NL*kd+VR * ks)*fd;
 	}
 	return ke+sum1+sum2;
