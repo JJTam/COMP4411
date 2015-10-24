@@ -43,7 +43,8 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 		double a = 0.25;
 		double b = 0.01;
 		double c = 0.01;
-		double fd = min<double>(1, 1 / (a + b*i.t + c*i.t*i.t));
+		double fd = 1;
+		//double fd = min<double>(1, 1 / (a + b*i.t + c*i.t*i.t));
 
 		sum2 += prod(currlight->getColor(zero),NL*kd+VR * ks)*fd;
 	}
