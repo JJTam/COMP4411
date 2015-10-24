@@ -17,6 +17,35 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 	// shading model, including the contributions of all the light sources.
     // You will need to call both distanceAttenuation() and shadowAttenuation()
     // somewhere in your code in order to compute shadows and light falloff.
+	
+	vec3f zero;
+	// sum of ambient
+	vec3f sum1;
+	for (auto j = scene->beginLights(); j != scene->endLights(); ++j)
+	{
+		sum1 += prod(ka, (*j)->getAmbientColor(zero));
+	}
 
-	return kd;
+	// sum of lights
+	vec3f sum2;
+	for (auto j = scene->beginLights(); j != scene->endLights(); ++j)
+	{
+		auto currlight = *j;
+		double NL = (i.N * currlight->getDirection(r.getPosition() + i.t*r.getDirection()));
+		vec3f Rm = 2 * NL * i.N - r.getDirection();
+		double VR = Rm * -r.getDirection();
+		if (NL < 0)NL = 0;
+		if (VR < 0)VR = 0;
+
+		//a = constant_attenuation_coeff(from the.ray file)
+		//b = linear_attenuation_coeff(from the.ray file)
+		//c = quadratic_attenuation_coeff(from the.ray file)
+		double a = 0.25;
+		double b = 0.01;
+		double c = 0.01;
+		double fd = min<double>(1, 1 / (a + b*i.t + c*i.t*i.t));
+
+		sum2 += prod(currlight->getColor(zero),NL*kd+VR * ks)*fd;
+	}
+	return ke+sum1+sum2;
 }
