@@ -14,13 +14,17 @@ double DirectionalLight::distanceAttenuation( const vec3f& P ) const
 vec3f DirectionalLight::shadowAttenuation( const vec3f& P ) const
 {
 	isect i;
-	ray r(P, getDirection(vec3f(0,0,0)));
+	vec3f dir = getDirection(vec3f(0, 0, 0));
+	ray r(P, dir);
+	
 	if (scene->intersect(r,i))
 	{
 		const Material& m = i.getMaterial();
-		return m.kt;
+		return prod(m.kt, shadowAttenuation(P + i.t * dir));
+		//return m.kt;
 	}
-	else return vec3f(1,1,1);
+	
+	return vec3f(1,1,1);
 }
 
 vec3f DirectionalLight::getColor( const vec3f& P ) const
@@ -79,7 +83,8 @@ vec3f PointLight::shadowAttenuation(const vec3f& P) const
 		if (i1.t < (position - P).length())
 		{
 			const Material& m = i1.getMaterial();
-			return m.kt;
+			return prod(m.kt, shadowAttenuation(P + dir * i1.t));
+			//return m.kt;
 		}
 	}
     return vec3f(1,1,1);

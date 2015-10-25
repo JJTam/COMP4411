@@ -47,9 +47,5 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 
 	i.t = Tnear;
 	i.obj = this;
-	const Material& tmp = getMaterial();
-	Material *m = new Material();
-	*m += tmp;
-	i.setMaterial(m);
 	return true;
 }
