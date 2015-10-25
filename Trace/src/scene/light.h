@@ -11,6 +11,7 @@ public:
 	virtual double distanceAttenuation( const vec3f& P ) const = 0;
 	virtual vec3f getColor( const vec3f& P ) const = 0;
 	virtual vec3f getDirection( const vec3f& P ) const = 0;
+	virtual vec3f getAmbientColor(const vec3f& P) const = 0;
 
 protected:
 	Light( Scene *scene, const vec3f& col )
@@ -29,6 +30,7 @@ public:
 	virtual double distanceAttenuation( const vec3f& P ) const;
 	virtual vec3f getColor( const vec3f& P ) const;
 	virtual vec3f getDirection( const vec3f& P ) const;
+	virtual vec3f getAmbientColor(const vec3f& P) const;
 
 protected:
 	vec3f 		orientation;
@@ -44,9 +46,24 @@ public:
 	virtual double distanceAttenuation( const vec3f& P ) const;
 	virtual vec3f getColor( const vec3f& P ) const;
 	virtual vec3f getDirection( const vec3f& P ) const;
+	virtual vec3f getAmbientColor(const vec3f& P) const;
 
 protected:
 	vec3f position;
+};
+
+class AmbientLight
+	: public Light
+{
+public:
+	AmbientLight(Scene *scene, const vec3f& color)
+		: Light(scene, color) {}
+	virtual vec3f shadowAttenuation(const vec3f& P) const;
+	virtual double distanceAttenuation(const vec3f& P) const;
+	virtual vec3f getDirection(const vec3f& P) const;
+	virtual vec3f getColor(const vec3f& P) const;
+	virtual vec3f getAmbientColor(const vec3f& P) const;
+
 };
 
 #endif // __LIGHT_H__

@@ -8,6 +8,7 @@
 #include "scene/ray.h"
 #include "fileio/read.h"
 #include "fileio/parse.h"
+#include <iostream>
 
 // Trace a top-level ray through normalized window coordinates (x,y)
 // through the projection plane, and out into the scene.  All we do is
@@ -146,6 +147,7 @@ void RayTracer::traceLines( int start, int stop )
 void RayTracer::tracePixel( int i, int j )
 {
 	vec3f col;
+
 
 	if( !scene )
 		return;
