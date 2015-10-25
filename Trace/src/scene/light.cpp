@@ -1,6 +1,8 @@
 #include <cmath>
 
 #include "light.h"
+#include <iostream>
+using namespace std;
 
 double DirectionalLight::distanceAttenuation( const vec3f& P ) const
 {
@@ -13,7 +15,13 @@ vec3f DirectionalLight::shadowAttenuation( const vec3f& P ) const
 {
     // YOUR CODE HERE:
     // You should implement shadow-handling code here.
-    return vec3f(1,1,1);
+	isect i;
+	ray r(P, getDirection(vec3f(0,0,0)));
+	if (scene->intersect(r,i))
+	{
+		return vec3f(0, 0, 0);
+	}
+	else return vec3f(1,1,1);
 }
 
 vec3f DirectionalLight::getColor( const vec3f& P ) const
@@ -67,6 +75,12 @@ vec3f PointLight::getDirection( const vec3f& P ) const
 
 vec3f PointLight::shadowAttenuation(const vec3f& P) const
 {
+	vec3f dir = (position - P).normalize();
+	isect i1;
+	if (scene->intersect(ray(P, dir), i1))
+	{
+		if (i1.t < (position - P).length())return vec3f(0, 0, 0);
+	}
     // YOUR CODE HERE:
     // You should implement shadow-handling code here.
     return vec3f(1,1,1);

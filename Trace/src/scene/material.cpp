@@ -31,21 +31,16 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 	for (auto j = scene->beginLights(); j != scene->endLights(); ++j)
 	{
 		auto currlight = *j;
-		double NL = (i.N * currlight->getDirection(r.getPosition() + i.t*r.getDirection()));
-		vec3f Rm = (2 * NL * i.N - currlight->getDirection(r.getPosition() + i.t*r.getDirection())).normalize();
+		vec3f isectpos = r.getPosition() + i.t*r.getDirection();
+		double NL = (i.N * currlight->getDirection(isectpos));
+		vec3f Rm = (2 * NL * i.N - currlight->getDirection(isectpos)).normalize();
 		double VR = Rm * -r.getDirection();
 		if (NL < 0)NL = 0;
 		if (VR < 0)VR = 0;
 		VR = pow(VR, shininess * 128);
 
-		//a = constant_attenuation_coeff(from the.ray file)
-		//b = linear_attenuation_coeff(from the.ray file)
-		//c = quadratic_attenuation_coeff(from the.ray file)
-		double a = 0.25;
-		double b = 0.01;
-		double c = 0.01;
 		
-		sum2 += prod(currlight->getColor(zero), NL*kd + VR * ks * currlight->distanceAttenuation(r.getPosition() + i.t*r.getDirection()));
+		sum2 += prod(currlight->shadowAttenuation(r.getPosition() + i.t*r.getDirection()), prod(currlight->getColor(zero), NL*kd + VR * ks * currlight->distanceAttenuation(isectpos)));
 	}
 	return ke+sum1+sum2;
 }

@@ -3,6 +3,8 @@
 #include <float.h>
 #include <utility>
 #include "Box.h"
+#include <iostream>
+using namespace std;
 
 bool Box::intersectLocal( const ray& r, isect& i ) const
 {
@@ -14,6 +16,7 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 	double Tnear = -DBL_MAX;
 	double Tfar = DBL_MAX;
 	double T1, T2;
+	double error = 1.0e-10;
 	// X plane
 	if (dir[0] == 0)
 	{
@@ -38,7 +41,7 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 			i.N = tmpN;
 		}
 		if (T2 < Tfar)Tfar = T2;
-		if (Tnear > Tfar || Tfar < 0)return false;
+		if (Tnear > Tfar || Tfar <= error)return false;
 	}
 	// Y plane
 	if (dir[1] == 0)
@@ -64,7 +67,7 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 			i.N = tmpN;
 		}
 		if (T2 < Tfar)Tfar = T2;
-		if (Tnear > Tfar || Tfar < 0)return false;
+		if (Tnear > Tfar || Tfar <= error)return false;
 	}
 	// Z plane
 	if (dir[2] == 0)
@@ -90,9 +93,10 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 			i.N = tmpN;
 		}
 		if (T2 < Tfar)Tfar = T2;
-		if (Tnear > Tfar || Tfar < 0)return false;
+		if (Tnear > Tfar || Tfar <= error)return false;
 	}
 	i.t = Tnear;
+	i.obj = this;
 	const Material& tmp = getMaterial();
 	Material *m = new Material();
 	*m += tmp;
