@@ -75,12 +75,12 @@ double AmbientLight::distanceAttenuation(const vec3f& P) const
 vec3f AmbientLight::getColor(const vec3f& P) const
 {
 	// Color doesn't depend on P 
-	return color;
+	return vec3f(0,0,0);
 }
 
 vec3f AmbientLight::getDirection(const vec3f& P) const
 {
-	return (vec3f(0, 0, 0) - P).normalize();
+	return vec3f(0, 0, 0);
 }
 
 

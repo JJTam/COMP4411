@@ -32,10 +32,11 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 	{
 		auto currlight = *j;
 		double NL = (i.N * currlight->getDirection(r.getPosition() + i.t*r.getDirection()));
-		vec3f Rm = 2 * NL * i.N - r.getDirection();
+		vec3f Rm = (2 * NL * i.N - r.getDirection()).normalize();
 		double VR = Rm * -r.getDirection();
 		if (NL < 0)NL = 0;
 		if (VR < 0)VR = 0;
+		VR = pow(VR, shininess * 128);
 
 		//a = constant_attenuation_coeff(from the.ray file)
 		//b = linear_attenuation_coeff(from the.ray file)
@@ -47,8 +48,6 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 		//f(d) disabled since without scaling it gives poor result!!!
 		//double fd = min<double>(1, 1 / (a + b*i.t + c*i.t*i.t));
 
-
-		// NEED TO ADD SHINENESS
 		sum2 += prod(currlight->getColor(zero),NL*kd+VR * ks)*fd;
 	}
 	return ke+sum1+sum2;
