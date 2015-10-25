@@ -8,9 +8,6 @@ using namespace std;
 
 bool Box::intersectLocal( const ray& r, isect& i ) const
 {
-	// YOUR CODE HERE:
-    // Add box intersection code here.
-	// it currently ignores all boxes and just returns false.
 	vec3f origin = r.getPosition();
 	vec3f dir = r.getDirection();
 	double Tnear = -DBL_MAX;
