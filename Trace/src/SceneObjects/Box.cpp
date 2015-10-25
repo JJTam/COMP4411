@@ -17,84 +17,37 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 	double Tfar = DBL_MAX;
 	double T1, T2;
 	double error = 1.0e-10;
-	// X plane
-	if (dir[0] == 0)
+	// X,Y,Z planes
+	for (int plane = 0; plane < 3; ++plane)
 	{
-		if (origin[0]<-0.5 || origin[0]>0.5)
+		if (dir[plane] == 0)
 		{
-			return false;
+			if (origin[plane]<-0.5 || origin[plane]>0.5)
+			{
+				return false;
+			}
+		}
+		else
+		{
+			T1 = (-0.5 - origin[plane]) / dir[plane];
+			T2 = (0.5 - origin[plane]) / dir[plane];
+			vec3f tmpN(0, 0, 0);
+			tmpN[plane] = -1;
+			if (T1 > T2)
+			{
+				swap<double>(T1, T2);
+				tmpN[plane] = 1;
+			}
+			if (T1 > Tnear)
+			{
+				Tnear = T1;
+				i.N = tmpN;
+			}
+			if (T2 < Tfar)Tfar = T2;
+			if (Tnear > Tfar || Tfar <= error)return false;
 		}
 	}
-	else
-	{
-		T1 = (-0.5 - origin[0]) / dir[0];
-		T2 = (0.5 - origin[0]) / dir[0];
-		vec3f tmpN(-1, 0, 0);
-		if (T1 > T2)
-		{
-			swap<double>(T1, T2);
-			tmpN[0] = 1;
-		}
-		if (T1 > Tnear)
-		{
-			Tnear = T1;
-			i.N = tmpN;
-		}
-		if (T2 < Tfar)Tfar = T2;
-		if (Tnear > Tfar || Tfar <= error)return false;
-	}
-	// Y plane
-	if (dir[1] == 0)
-	{
-		if (origin[1]<-0.5 || origin[1]>0.5)
-		{
-			return false;
-		}
-	}
-	else
-	{
-		T1 = (-0.5 - origin[1]) / dir[1];
-		T2 = (0.5 - origin[1]) / dir[1];
-		vec3f tmpN(0, -1, 0);
-		if (T1 > T2)
-		{
-			swap<double>(T1, T2);
-			tmpN[1] = 1;
-		}
-		if (T1 > Tnear)		
-		{
-			Tnear = T1;
-			i.N = tmpN;
-		}
-		if (T2 < Tfar)Tfar = T2;
-		if (Tnear > Tfar || Tfar <= error)return false;
-	}
-	// Z plane
-	if (dir[2] == 0)
-	{
-		if (origin[2]<-0.5 || origin[2]>0.5)
-		{
-			return false;
-		}
-	}
-	else
-	{
-		T1 = (-0.5 - origin[2]) / dir[2];
-		T2 = (0.5 - origin[2]) / dir[2];
-		vec3f tmpN(0, 0, -1);
-		if (T1 > T2)
-		{
-			swap<double>(T1, T2);
-			tmpN[2] = 1;
-		}
-		if (T1 > Tnear)		
-		{
-			Tnear = T1;
-			i.N = tmpN;
-		}
-		if (T2 < Tfar)Tfar = T2;
-		if (Tnear > Tfar || Tfar <= error)return false;
-	}
+
 	i.t = Tnear;
 	i.obj = this;
 	const Material& tmp = getMaterial();
