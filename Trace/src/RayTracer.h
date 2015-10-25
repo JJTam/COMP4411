@@ -15,7 +15,7 @@ public:
     ~RayTracer();
 
     vec3f trace( Scene *scene, double x, double y );
-	vec3f traceRay( Scene *scene, const ray& r, const vec3f& thresh, int depth, double prevIndex = 1.0);
+	vec3f traceRay(Scene *scene, const ray& r, const vec3f& thresh, int depth, bool isInSpace = true);
 
 
 	void getBuffer( unsigned char *&buf, int &w, int &h );

@@ -25,7 +25,7 @@ vec3f RayTracer::trace( Scene *scene, double x, double y )
 // Do recursive ray tracing!  You'll want to insert a lot of code here
 // (or places called from here) to handle reflection, refraction, etc etc.
 vec3f RayTracer::traceRay( Scene *scene, const ray& r, 
-	const vec3f& thresh, int depth, double prevIndex)
+	const vec3f& thresh, int depth, bool isInSpace)
 {
 	isect i;
 	 
@@ -41,16 +41,19 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 
 		const Material& m = i.getMaterial();
 		vec3f result = m.shade(scene, r, i);
+
+		vec3f ones(1.0, 1.0, 1.0);
+		vec3f ktInv = ones - m.kt;
+		result = prod(ktInv, result);
+
 		if (depth < m_pUI->getDepth())
 		{
-			double currentIndex = m.index;
-
-			// if m is reflective; let's assume that it is
-			if (true)
+			// if m is reflective
+			if (m.kr[0] > 0 || m.kr[1] > 0 || m.kr[2] > 0)
 			{
 				vec3f reflectDir = (2 * ((-r.getDirection()) * i.N) * i.N - (-r.getDirection())).normalize();
 				ray nextRay(r.getPosition() + r.getDirection() * i.t, reflectDir);
-				vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, currentIndex);
+				vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace);
 
 				result += prod(m.kr, nextResult);
 			}
@@ -58,7 +61,8 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 			// if m is transmissive
 			if (m.kt[0] > 0 || m.kt[1] > 0 || m.kt[2] > 0)
 			{
-				double indexRatio = prevIndex / currentIndex;
+				
+				double indexRatio = isInSpace ? 1.0 / i.getMaterial().index : i.getMaterial().index;
 				double NI = -r.getDirection() * i.N;
 				double cosThetaTsq = 1 - indexRatio * indexRatio * (1 - NI * NI);
 				if (cosThetaTsq >= 0)
@@ -66,7 +70,7 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 					vec3f refractDir = (indexRatio * NI - sqrt(cosThetaTsq)) * i.N - indexRatio * -r.getDirection();
 					refractDir = refractDir.normalize();
 					ray nextRay(r.getPosition() + r.getDirection() * i.t, refractDir);
-					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, currentIndex);
+					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace);
 
 					result += prod(m.kt, nextResult);
 				}
