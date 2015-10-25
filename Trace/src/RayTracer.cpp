@@ -9,6 +9,7 @@
 #include "fileio/read.h"
 #include "fileio/parse.h"
 #include <iostream>
+#include "ui/TraceUI.h"
 
 // Trace a top-level ray through normalized window coordinates (x,y)
 // through the projection plane, and out into the scene.  All we do is
@@ -24,13 +25,11 @@ vec3f RayTracer::trace( Scene *scene, double x, double y )
 // Do recursive ray tracing!  You'll want to insert a lot of code here
 // (or places called from here) to handle reflection, refraction, etc etc.
 vec3f RayTracer::traceRay( Scene *scene, const ray& r, 
-	const vec3f& thresh, int depth )
+	const vec3f& thresh, int depth, double prevIndex)
 {
 	isect i;
-
+	 
 	if( scene->intersect( r, i ) ) {
-		// YOUR CODE HERE
-
 		// An intersection occured!  We've got work to do.  For now,
 		// this code gets the material for the surface that was intersected,
 		// and asks that material to provide a color for the ray.  
@@ -41,8 +40,40 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		// rays.
 
 		const Material& m = i.getMaterial();
-		return m.shade(scene, r, i);
-	
+		vec3f result = m.shade(scene, r, i);
+		if (depth < m_pUI->getDepth())
+		{
+			double currentIndex = m.index;
+
+			// if m is reflective; let's assume that it is
+			if (true)
+			{
+				vec3f reflectDir = (2 * ((-r.getDirection()) * i.N) * i.N - (-r.getDirection())).normalize();
+				ray nextRay(r.getPosition() + r.getDirection() * i.t, reflectDir);
+				vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, currentIndex);
+
+				result += prod(m.kr, nextResult);
+			}
+
+			// if m is transmissive
+			if (m.kt[0] > 0 || m.kt[1] > 0 || m.kt[2] > 0)
+			{
+				double indexRatio = prevIndex / currentIndex;
+				double NI = -r.getDirection() * i.N;
+				double cosThetaTsq = 1 - indexRatio * indexRatio * (1 - NI * NI);
+				if (cosThetaTsq >= 0)
+				{
+					vec3f refractDir = (indexRatio * NI - sqrt(cosThetaTsq)) * i.N - indexRatio * -r.getDirection();
+					refractDir = refractDir.normalize();
+					ray nextRay(r.getPosition() + r.getDirection() * i.t, refractDir);
+					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, currentIndex);
+
+					result += prod(m.kt, nextResult);
+				}
+			}
+		}
+
+		return result;
 	} else {
 		// No intersection.  This ray travels to infinity, so we color
 		// it according to the background color, which in this (simple) case

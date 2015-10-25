@@ -182,6 +182,7 @@ void TraceUI::show()
 void TraceUI::setRayTracer(RayTracer *tracer)
 {
 	raytracer = tracer;
+	tracer->m_pUI = this;
 	m_traceGlWindow->setRayTracer(tracer);
 }
 
