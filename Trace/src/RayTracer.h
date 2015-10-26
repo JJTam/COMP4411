@@ -15,6 +15,7 @@ public:
     ~RayTracer();
 
     vec3f trace( Scene *scene, double x, double y );
+	vec3f trace(Scene *scene, double x, double y, int depth);
 	vec3f traceRay(Scene *scene, const ray& r, const vec3f& thresh, int depth, bool isInSpace = true);
 
 
@@ -23,12 +24,14 @@ public:
 	void traceSetup( int w, int h );
 	void traceLines( int start = 0, int stop = 10000000 );
 	void tracePixel( int i, int j );
+	void calculateAll();
 
 	bool loadScene( char* fn );
 
 	bool sceneLoaded();
 
 	TraceUI* m_pUI;
+	vec3f* all;
 
 private:
 	unsigned char *buffer;

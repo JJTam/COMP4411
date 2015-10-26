@@ -30,6 +30,7 @@ public:
 	Fl_Slider*			m_depthSlider;
 	Fl_Slider*			m_supersamplingSlider;
 	Fl_Slider*			m_jitterSlider;
+	Fl_Slider*			m_adaptiveSlider;
 
 	Fl_Button*			m_renderButton;
 	Fl_Button*			m_stopButton;
@@ -46,6 +47,7 @@ public:
 
 	int			m_nSupersampling;
 	int			m_nJitter;
+	int			m_nAdaptiveDepth;
 
 private:
 	RayTracer*	raytracer;
@@ -70,6 +72,7 @@ private:
 	static void cb_depthSlides(Fl_Widget* o, void* v);
 	static void cb_supersamplingSlides(Fl_Widget* o, void* v);
 	static void cb_jitterSlides(Fl_Widget* o, void* v);
+	static void cb_adaptiveSlides(Fl_Widget* o, void* v);
 
 	static void cb_render(Fl_Widget* o, void* v);
 	static void cb_stop(Fl_Widget* o, void* v);

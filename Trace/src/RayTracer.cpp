@@ -20,6 +20,9 @@ vec3f RayTracer::trace( Scene *scene, double x, double y )
 	int supersampling = m_pUI->m_nSupersampling;
 	int jitter_grid_numbers = m_pUI->m_nJitter;
 
+
+
+
 	if (supersampling != 0)
 	{
 		double lower_bound = 0.0;
@@ -126,6 +129,7 @@ RayTracer::RayTracer()
 	buffer = NULL;
 	buffer_width = buffer_height = 256;
 	scene = NULL;
+	all = NULL;
 
 	m_bSceneLoaded = false;
 }
@@ -213,6 +217,39 @@ void RayTracer::traceLines( int start, int stop )
 			tracePixel(i,j);
 }
 
+vec3f RayTracer::trace(Scene* scene, double x, double y, int depth)
+{
+	double x1 = (x - 0.5) / buffer_width;
+	double x2 = (x - 0.5 + 1.0 / pow(2, depth)) / buffer_width;
+	double y1 = (y - 0.5) / buffer_height;
+	double y2 = (y - 0.5 + 1.0 / pow(2, depth)) / buffer_height;
+
+	ray r1(vec3f(0, 0, 0), vec3f(0, 0, 0));
+	scene->getCamera()->rayThrough(x1, y1 ,r1);
+	vec3f tmp1 = traceRay(scene, r1, vec3f(1.0, 1.0, 1.0), 0).clamp();
+	ray r2(vec3f(0, 0, 0), vec3f(0, 0, 0));
+	scene->getCamera()->rayThrough(x2, y1, r2);
+	vec3f tmp2 = traceRay(scene, r2, vec3f(1.0, 1.0, 1.0), 0).clamp();
+	ray r3(vec3f(0, 0, 0), vec3f(0, 0, 0));
+	scene->getCamera()->rayThrough(x1, y2, r3);
+	vec3f tmp3 = traceRay(scene, r3, vec3f(1.0, 1.0, 1.0), 0).clamp();
+	ray r4(vec3f(0, 0, 0), vec3f(0, 0, 0));
+	scene->getCamera()->rayThrough(x2, y2, r4);
+	vec3f tmp4 = traceRay(scene, r4, vec3f(1.0, 1.0, 1.0), 0).clamp();
+
+	vec3f avg = (tmp1 + tmp2 + tmp3 + tmp4) / 4;
+	if (depth < m_pUI->m_nAdaptiveDepth)
+	{
+		if ((tmp1 - avg).length() > 1.0e-4 || (tmp2 - avg).length() > 1.0e-4 || (tmp3 - avg).length() > 1.0e-4 || (tmp4 - avg).length() > 1.0e-4)
+		{
+			vec3f sum = trace(scene, x, y, depth + 1) + trace(scene, x + 1 / pow(2, depth + 1), y, depth + 1) +
+				trace(scene, x, y + 1 / pow(2, depth + 1), depth + 1) + trace(scene, x + 1 / pow(2, depth + 1), y + 1 / pow(2, depth + 1), depth + 1);
+			return sum / 4;
+		}
+	}
+	return avg;
+}
+
 void RayTracer::tracePixel( int i, int j )
 {
 	vec3f col;
@@ -221,14 +258,55 @@ void RayTracer::tracePixel( int i, int j )
 	if( !scene )
 		return;
 
-	double x = double(i)/double(buffer_width);
-	double y = double(j)/double(buffer_height);
 
-	col = trace( scene,x,y );
+	if (m_pUI->m_nAdaptiveDepth>0)
+	{
+		if (i == 0 && j == 0)
+		{
+			calculateAll();
+		}
+		//caculate avg;
+		vec3f avg = all[i + j*(buffer_width + 1)] + all[i + 1 + j*(buffer_width + 1)] + all[i + (j + 1)*(buffer_width + 1)] + all[i + 1 + (j + 1)*(buffer_width + 1)];
+		avg = avg / 4;
+		if ((avg - all[i + j*(buffer_width + 1)]).length() > 1.0e-4 || (avg - all[i + 1 + j*(buffer_width + 1)]).length() > 1.0e-4
+			|| (avg - all[i + (j + 1)*(buffer_width + 1)]).length() > 1.0e-4 || (avg - all[(i + 1) + (j + 1)*(buffer_width + 1)]).length() > 1.0e-4)
+		{
+			col = trace(scene, i, j, 1) + trace(scene, i+0.5, j, 1) + trace(scene, i, j+0.5, 1) + trace(scene, i+0.5, j+0.5, 1);
+			col = col / 4;
+		}
+		else col = avg;
 
+	}
+	else
+	{
+		double x = double(i) / double(buffer_width);
+		double y = double(j) / double(buffer_height);
+
+		col = trace(scene, x, y);
+	}
 	unsigned char *pixel = buffer + ( i + j * buffer_width ) * 3;
 
 	pixel[0] = (int)( 255.0 * col[0]);
 	pixel[1] = (int)( 255.0 * col[1]);
 	pixel[2] = (int)( 255.0 * col[2]);
+}
+
+void RayTracer::calculateAll()
+{
+	if (all != NULL)
+	{
+		delete[] all;
+	}
+
+	all = new vec3f[(buffer_height+1)*(buffer_width+1)];
+	for (int y = 0; y < buffer_height+1; ++y)
+	{
+		for (int x = 0; x < buffer_width+1; ++x)
+		{
+			ray r(vec3f(0, 0, 0), vec3f(0, 0, 0));
+			scene->getCamera()->rayThrough((x-0.5)/buffer_width, (y-0.5)/buffer_height, r);
+			all[x + y*(buffer_width+1)] = traceRay(scene, r, vec3f(1.0, 1.0, 1.0), 0).clamp();
+		}
+	}
+
 }

@@ -102,6 +102,11 @@ void TraceUI::cb_jitterSlides(Fl_Widget* o, void* v)
 	((TraceUI*)(o->user_data()))->m_nJitter = int(((Fl_Slider *)o)->value());
 }
 
+void TraceUI::cb_adaptiveSlides(Fl_Widget* o, void* v)
+{
+	((TraceUI*)(o->user_data()))->m_nAdaptiveDepth = int(((Fl_Slider *)o)->value());
+}
+
 
 void TraceUI::cb_render(Fl_Widget* o, void* v)
 {
@@ -228,6 +233,7 @@ TraceUI::TraceUI() {
 	m_nSize = 150;
 	m_nSupersampling = 0;
 	m_nJitter = 0;
+	m_nAdaptiveDepth = 0;
 	m_mainWindow = new Fl_Window(100, 40, 320, 300, "Ray <Not Loaded>");
 		m_mainWindow->user_data((void*)(this));	// record self to be used by static callback functions
 		// install menu bar
@@ -283,6 +289,18 @@ TraceUI::TraceUI() {
 		m_jitterSlider->value(m_nJitter);
 		m_jitterSlider->align(FL_ALIGN_RIGHT);
 		m_jitterSlider->callback(cb_jitterSlides);
+
+		m_adaptiveSlider = new Fl_Value_Slider(10, 130, 180, 20, "Adaptive AA depth");
+		m_adaptiveSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_adaptiveSlider->type(FL_HOR_NICE_SLIDER);
+		m_adaptiveSlider->labelfont(FL_COURIER);
+		m_adaptiveSlider->labelsize(12);
+		m_adaptiveSlider->minimum(0);
+		m_adaptiveSlider->maximum(5);
+		m_adaptiveSlider->step(1);
+		m_adaptiveSlider->value(m_nAdaptiveDepth);
+		m_adaptiveSlider->align(FL_ALIGN_RIGHT);
+		m_adaptiveSlider->callback(cb_adaptiveSlides);
 
 		m_renderButton = new Fl_Button(240, 27, 70, 25, "&Render");
 		m_renderButton->user_data((void*)(this));
