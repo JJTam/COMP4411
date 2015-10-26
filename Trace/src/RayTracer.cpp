@@ -8,7 +8,7 @@
 #include "scene/ray.h"
 #include "fileio/read.h"
 #include "fileio/parse.h"
-#include <iostream>
+#include <random>
 #include "ui/TraceUI.h"
 
 // Trace a top-level ray through normalized window coordinates (x,y)
@@ -17,9 +17,36 @@
 // in an initial ray weight of (0.0,0.0,0.0) and an initial recursion depth of 0.
 vec3f RayTracer::trace( Scene *scene, double x, double y )
 {
-    ray r( vec3f(0,0,0), vec3f(0,0,0) );
-    scene->getCamera()->rayThrough( x,y,r );
-	return traceRay( scene, r, vec3f(1.0,1.0,1.0), 0 ).clamp();
+	int supersampling = m_pUI->m_nSupersampling;
+	int jitter_grid_numbers = m_pUI->m_nJitter;
+
+	if (supersampling != 0)
+	{
+		double lower_bound = 0.0;
+		double upper_bound = 1.0*jitter_grid_numbers;
+		std::uniform_real_distribution<double> rand(lower_bound, upper_bound);
+		static std::default_random_engine re;
+		vec3f sum;
+		for (int i = 0; i < supersampling; ++i)
+		{
+			for (int j = 0; j < supersampling; ++j)
+			{
+				ray r(vec3f(0, 0, 0), vec3f(0, 0, 0));
+				double offsetX = ((i + 0.5 + (rand(re) - upper_bound / 2)) / supersampling - 0.5) / buffer_width;
+				double offsetY = ((j + 0.5 + (rand(re) - upper_bound / 2)) / supersampling - 0.5) / buffer_height;
+				scene->getCamera()->rayThrough(x + offsetX, y + offsetY, r);
+				sum += traceRay(scene, r, vec3f(1.0, 1.0, 1.0), 0).clamp();
+			}
+		}
+		sum /= supersampling*supersampling;
+		return sum;
+	}
+	else
+	{
+		ray r(vec3f(0, 0, 0), vec3f(0, 0, 0));
+		scene->getCamera()->rayThrough(x, y, r);
+		return traceRay(scene, r, vec3f(1.0, 1.0, 1.0), 0).clamp();
+	}
 }
 
 // Do recursive ray tracing!  You'll want to insert a lot of code here
