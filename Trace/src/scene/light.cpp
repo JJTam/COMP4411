@@ -140,6 +140,10 @@ double SpotLight::distanceAttenuation(const vec3f& P) const
 vec3f SpotLight::getColor(const vec3f& P) const
 {
 	vec3f intersectdir = (P - pos).normalize();
+	if (con_angle != 0)
+	{
+		if (intersectdir*cone_dir < cos(con_angle*3.14159 / 180)) return vec3f(0,0,0);
+	}
 	double tmp = dir*intersectdir;
 	if (tmp < 0)tmp = 0;
 	else tmp = pow(tmp, coefficient);

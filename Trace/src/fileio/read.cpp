@@ -553,8 +553,10 @@ static void processObject( Obj *obj, Scene *scene, mmap& materials )
 		scene->add(new SpotLight(scene,
 			tupleToVec(getColorField(child)),
 			tupleToVec(getField(child, "position")),
-			tupleToVec(getField(child, "direction")),
-			getField(child, "coeff")->getScalar()
+			tupleToVec(getField(child, "direction")).normalize(),
+			getField(child, "coeff")->getScalar(),
+			hasField(child, "cone_dir") ? tupleToVec(getField(child, "direction")):vec3f(0,0,0),
+			hasField(child, "con_angle") ? getField(child, "con_angle")->getScalar():0
 			));
 	} else if( 	name == "sphere" ||
 				name == "box" ||

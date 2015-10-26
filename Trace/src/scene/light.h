@@ -78,8 +78,8 @@ class SpotLight
 	: public Light
 {
 public:
-	SpotLight(Scene *scene, const vec3f& color, const vec3f& pos, const vec3f& dir, int coefficient)
-		: Light(scene, color),pos(pos),dir(dir),coefficient(coefficient) {}
+	SpotLight(Scene *scene, const vec3f& color, const vec3f& pos, const vec3f& dir, int coefficient, const vec3f& cone_dir,double con_angle)
+		: Light(scene, color), pos(pos), dir(dir), coefficient(coefficient), cone_dir(cone_dir),con_angle(con_angle){}
 	virtual vec3f shadowAttenuation(const vec3f& P) const;
 	virtual double distanceAttenuation(const vec3f& P) const;
 	virtual vec3f getDirection(const vec3f& P) const;
@@ -90,6 +90,8 @@ public:
 	vec3f pos;
 	vec3f dir;
 	int coefficient;
+	vec3f cone_dir;
+	double con_angle;
 };
 
 #endif // __LIGHT_H__
