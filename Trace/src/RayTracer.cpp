@@ -51,7 +51,11 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 			// if m is reflective
 			if (m.kr[0] > 0 || m.kr[1] > 0 || m.kr[2] > 0)
 			{
-				vec3f reflectDir = (2 * ((-r.getDirection()) * i.N) * i.N - (-r.getDirection())).normalize();
+				// This is for the sphere and cylinder, who give me wrong normal...
+				bool wrongNormal = i.N * r.getDirection() > 0;
+				vec3f iNormal = wrongNormal ? -i.N : i.N;
+
+				vec3f reflectDir = (2 * ((-r.getDirection()) * iNormal) * iNormal - (-r.getDirection())).normalize();
 				ray nextRay(r.getPosition() + r.getDirection() * i.t, reflectDir);
 				vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace);
 
@@ -64,10 +68,10 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 				
 				double indexRatio = isInSpace ? 1.0 / i.getMaterial().index : i.getMaterial().index;
 
-				// This is for the sphere, who gives me wrong normal...
+				// This is for the sphere and cylinder, who give me wrong normal...
 				bool wrongNormal = i.N * r.getDirection() > 0;
 				vec3f iNormal = wrongNormal ? -i.N : i.N;
-
+				
 				double NI = -r.getDirection() * iNormal;
 				double cosThetaTsq = 1 - indexRatio * indexRatio * (1 - NI * NI);
 				if (cosThetaTsq >= 0)
