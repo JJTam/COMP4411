@@ -13,7 +13,7 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 	double Tnear = -DBL_MAX;
 	double Tfar = DBL_MAX;
 	double T1, T2;
-	double error = 1.0e-10;
+	double error = 1.0e-8;
 	// X,Y,Z planes
 	for (int plane = 0; plane < 3; ++plane)
 	{
@@ -44,8 +44,8 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 			if (Tnear > Tfar || Tfar <= error)return false;
 		}
 	}
-
 	i.t = Tnear;
+	if (i.t < error)i.t = Tfar;
 	i.obj = this;
 	return true;
 }
