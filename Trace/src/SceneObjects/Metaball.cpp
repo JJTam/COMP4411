@@ -75,7 +75,7 @@ bool Metaball::intersectLocal(const ray& r, isect& i) const
 	isect tmp1;
 	isect tmp2;
 	if (intersectCircle(r, tmp1, ball1pos) == false && intersectCircle(r, tmp2, ball2pos) == false) return false;
-	for (double t = 5; t < 10.0; t += 0.1)
+	for (double t = 5; t < 10.0; t += 0.02)
 	{
 		vec3f point = r.getPosition() + t * r.getDirection();
 		double value = calvalue(point, ball1pos, ball2pos);
@@ -83,11 +83,9 @@ bool Metaball::intersectLocal(const ray& r, isect& i) const
 		if (value > threshold)
 		{
 			vec3f normal;
-			normal[0] = calvalue(point + vec3f(0.001, 0, 0), ball1pos, ball2pos)-value;
-			normal[1] = calvalue(point + vec3f(0, 0.001, 0), ball1pos, ball2pos)-value;
-			normal[2] = calvalue(point + vec3f(0, 0, 0.001), ball1pos, ball2pos)-value;
+			normal += 2 * (point - ball1pos) / ((point - ball1pos).length()*(point - ball1pos).length());
+			normal += 2 * (point - ball2pos) / ((point - ball2pos).length()*(point - ball2pos).length());
 			normal = normal.normalize();
-			if (normal*r.getDirection() < 0)normal = -normal;
 			i.t = t;
 			i.N = normal;
 			i.obj = this;
