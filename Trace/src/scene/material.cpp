@@ -40,7 +40,7 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 		if (VR < 0)VR = 0;
 		VR = pow(VR, shininess * 128);
 
-		sum2 += prod(currlight->shadowAttenuation(isectpos), prod(currlight->getColor(zero), (NL*kd + VR * ks) * currlight->distanceAttenuation(isectpos)));
+		sum2 += prod(currlight->shadowAttenuation(isectpos), prod(currlight->getColor(isectpos), (NL*kd + VR * ks) * currlight->distanceAttenuation(isectpos)));
 	}
 	return ke+sum1+sum2;
 }
