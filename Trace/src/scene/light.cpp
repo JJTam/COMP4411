@@ -157,6 +157,17 @@ vec3f SpotLight::getDirection(const vec3f& P) const
 
 vec3f SpotLight::shadowAttenuation(const vec3f& P) const
 {
+	vec3f direction = (pos - P).normalize();
+	isect i1;
+	if (scene->intersect(ray(P, direction), i1))
+	{
+		if (i1.t < (pos - P).length())
+		{
+			const Material& m = i1.getMaterial();
+			return prod(m.kt, shadowAttenuation(P + direction * i1.t));
+			//return m.kt;
+		}
+	}
 	return vec3f(1, 1, 1);
 }
 
