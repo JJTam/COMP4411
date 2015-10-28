@@ -28,12 +28,34 @@ void TraceUI::cb_load_scene(Fl_Menu_* o, void* v)
 	char* newfile = fl_file_chooser("Open Scene?", "*.ray", NULL );
 
 	if (newfile != NULL) {
+		pUI->loadedFile = newfile;
 		char buf[256];
 
 		if (pUI->raytracer->loadScene(newfile)) {
 			sprintf(buf, "Ray <%s>", newfile);
 			done=true;	// terminate the previous rendering
 		} else{
+			sprintf(buf, "Ray <Not Loaded>");
+		}
+
+		pUI->m_mainWindow->label(buf);
+	}
+}
+
+void TraceUI::cb_reload_scene(Fl_Menu_* o, void* v)
+{
+	TraceUI* pUI = whoami(o);
+
+	char* newfile = pUI->loadedFile;
+
+	if (pUI->loadedFile != NULL) {
+		char buf[256];
+
+		if (pUI->raytracer->loadScene(newfile)) {
+			sprintf(buf, "Ray <%s>", newfile);
+			done = true;
+		}
+		else{
 			sprintf(buf, "Ray <Not Loaded>");
 		}
 
@@ -118,6 +140,9 @@ void TraceUI::cb_render(Fl_Widget* o, void* v)
 		int width=pUI->getSize();
 		int	height = (int)(width / pUI->raytracer->aspectRatio() + 0.5);
 		pUI->m_traceGlWindow->resizeWindow( width, height );
+
+		if (pUI->m_traceGlWindow->shown())
+			pUI->m_traceGlWindow->hide();
 
 		pUI->m_traceGlWindow->show();
 
@@ -216,6 +241,7 @@ int TraceUI::getDepth()
 Fl_Menu_Item TraceUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
 		{ "&Load Scene...",	FL_ALT + 'l', (Fl_Callback *)TraceUI::cb_load_scene },
+		{ "&Reload Scene...", FL_ALT + 'r', (Fl_Callback *)TraceUI::cb_reload_scene },
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)TraceUI::cb_save_image },
 		{ "&Exit",			FL_ALT + 'e', (Fl_Callback *)TraceUI::cb_exit },
 		{ 0 },
@@ -234,6 +260,8 @@ TraceUI::TraceUI() {
 	m_nSupersampling = 0;
 	m_nJitter = 0;
 	m_nAdaptiveDepth = 0;
+	loadedFile = NULL;
+
 	m_mainWindow = new Fl_Window(100, 40, 320, 300, "Ray <Not Loaded>");
 		m_mainWindow->user_data((void*)(this));	// record self to be used by static callback functions
 		// install menu bar
@@ -301,6 +329,50 @@ TraceUI::TraceUI() {
 		m_adaptiveSlider->value(m_nAdaptiveDepth);
 		m_adaptiveSlider->align(FL_ALIGN_RIGHT);
 		m_adaptiveSlider->callback(cb_adaptiveSlides);
+
+		m_distReflSlider = new Fl_Value_Slider(10, 155, 180, 20, "Dist Reflection");
+		m_distReflSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_distReflSlider->type(FL_HOR_NICE_SLIDER);
+		m_distReflSlider->labelfont(FL_COURIER);
+		m_distReflSlider->labelsize(12);
+		m_distReflSlider->minimum(0);
+		m_distReflSlider->maximum(1);
+		m_distReflSlider->step(1);
+		m_distReflSlider->value(0);
+		m_distReflSlider->align(FL_ALIGN_RIGHT);
+
+		m_distRefrSlider = new Fl_Value_Slider(10, 180, 180, 20, "Dist Refraction");
+		m_distRefrSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_distRefrSlider->type(FL_HOR_NICE_SLIDER);
+		m_distRefrSlider->labelfont(FL_COURIER);
+		m_distRefrSlider->labelsize(12);
+		m_distRefrSlider->minimum(0);
+		m_distRefrSlider->maximum(1);
+		m_distRefrSlider->step(1);
+		m_distRefrSlider->value(0);
+		m_distRefrSlider->align(FL_ALIGN_RIGHT);
+
+		m_distRaysSlider = new Fl_Value_Slider(10, 205, 180, 20, "Dist Rays (n^2)");
+		m_distRaysSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_distRaysSlider->type(FL_HOR_NICE_SLIDER);
+		m_distRaysSlider->labelfont(FL_COURIER);
+		m_distRaysSlider->labelsize(12);
+		m_distRaysSlider->minimum(2);
+		m_distRaysSlider->maximum(6);
+		m_distRaysSlider->step(1);
+		m_distRaysSlider->value(2);
+		m_distRaysSlider->align(FL_ALIGN_RIGHT);
+
+		m_distSizeSlider = new Fl_Value_Slider(10, 230, 180, 20, "Dist Size");
+		m_distSizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_distSizeSlider->type(FL_HOR_NICE_SLIDER);
+		m_distSizeSlider->labelfont(FL_COURIER);
+		m_distSizeSlider->labelsize(12);
+		m_distSizeSlider->minimum(0);
+		m_distSizeSlider->maximum(0.1f);
+		m_distSizeSlider->step(0.001f);
+		m_distSizeSlider->value(0.005f);
+		m_distSizeSlider->align(FL_ALIGN_RIGHT);
 
 		m_renderButton = new Fl_Button(240, 27, 70, 25, "&Render");
 		m_renderButton->user_data((void*)(this));

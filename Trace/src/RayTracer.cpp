@@ -11,6 +11,12 @@
 #include <random>
 #include "ui/TraceUI.h"
 
+bool distReflection;
+bool distRefraction;
+double distSize;
+int distRays;
+double distStep;
+
 // Trace a top-level ray through normalized window coordinates (x,y)
 // through the projection plane, and out into the scene.  All we do is
 // enter the main ray-tracing method, getting things started by plugging
@@ -19,9 +25,6 @@ vec3f RayTracer::trace( Scene *scene, double x, double y )
 {
 	int supersampling = m_pUI->m_nSupersampling;
 	int jitter_grid_numbers = m_pUI->m_nJitter;
-
-
-
 
 	if (supersampling != 0)
 	{
@@ -60,14 +63,6 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 	isect i;
 	 
 	if( scene->intersect( r, i ) ) {
-		// An intersection occured!  We've got work to do.  For now,
-		// this code gets the material for the surface that was intersected,
-		// and asks that material to provide a color for the ray.  
-
-		// This is a great place to insert code for recursive ray tracing.
-		// Instead of just returning the result of shade(), add some
-		// more steps: add in the contributions from reflected and refracted
-		// rays.
 
 		const Material& m = i.getMaterial();
 		vec3f result = m.shade(scene, r, i);
@@ -78,14 +73,47 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		
 		if (depth < m_pUI->getDepth())
 		{
+			vec3f nextRayPos = r.getPosition() + r.getDirection() * i.t;
+
 			// if m is reflective
 			if (m.kr[0] > 0 || m.kr[1] > 0 || m.kr[2] > 0)
 			{
 				vec3f reflectDir = (2 * ((-r.getDirection()) * i.N) * i.N - (-r.getDirection())).normalize();
-				ray nextRay(r.getPosition() + r.getDirection() * i.t, reflectDir);
-				vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace);
 
-				result += prod(m.ks, nextResult);
+				// distributed reflection
+				if (!distReflection)
+				{
+					ray nextRay(nextRayPos, reflectDir);
+					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace);
+
+					result += prod(m.ks, nextResult);
+				}
+				else
+				{
+					double theta1 = -distSize / 2;
+					vec4f dirv4(reflectDir[0], reflectDir[1], reflectDir[2], 1);
+					vec3f axis1(-reflectDir[0], 0, reflectDir[2]);
+					vec3f axis2(0, 1, 0);
+					vec3f ksScaled = m.ks / (distRays * distRays);
+					for (int i1 = 0; i1 < distRays; ++i1)
+					{
+						mat4f rot1 = mat4f::rotate(axis1, theta1);
+						double theta2 = -distSize / 2;
+						for (int i2 = 0; i2 < distRays; ++i2)
+						{
+							mat4f rot2 = mat4f::rotate(axis2, theta2);
+							vec4f newDirv4 = rot1 * (rot2 * dirv4);
+
+							ray nextRay(nextRayPos, newDirv4);
+							vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace);
+
+							result += prod(ksScaled, nextResult);
+
+							theta2 += distStep;
+						}
+						theta1 += distStep;
+					}
+				}
 			}
 
 			// if m is transmissive
@@ -100,9 +128,41 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 					{
 						vec3f refractDir = (indexRatio * NI - sqrt(cosThetaTsq)) * i.N - indexRatio * -r.getDirection();
 						refractDir = refractDir.normalize();
-						ray nextRay(r.getPosition() + r.getDirection() * i.t, refractDir);
-						vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace);
-						result += prod(m.kt, nextResult);
+
+						if (!distRefraction)
+						{
+							ray nextRay(nextRayPos, refractDir);
+							vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace);
+							result += prod(m.kt, nextResult);
+						}
+						else
+						{
+							double theta1 = -distSize / 2;
+							vec4f dirv4(refractDir[0], refractDir[1], refractDir[2], 1);
+							vec3f axis1(-refractDir[0], 0, refractDir[2]);
+							vec3f axis2(0, 1, 0);
+							vec3f ktScaled = m.kt / (distRays * distRays);
+							for (int i1 = 0; i1 < distRays; ++i1)
+							{
+								mat4f rot1 = mat4f::rotate(axis1, theta1);
+								double theta2 = -distSize / 2;
+								for (int i2 = 0; i2 < distRays; ++i2)
+								{
+									mat4f rot2 = mat4f::rotate(axis2, theta2);
+									vec4f newDirv4 = rot1 * (rot2 * dirv4);
+									vec3f newDirv3(newDirv4[0], newDirv4[1], newDirv4[2]);
+									if (newDirv4[3] != 0)
+										newDirv3 = newDirv3 / newDirv4[3];
+									ray nextRay(nextRayPos, newDirv3);
+									vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace);
+
+									result += prod(ktScaled, nextResult);
+
+									theta2 += distStep;
+								}
+								theta1 += distStep;
+							}
+						}
 					}
 				}
 				else
@@ -258,6 +318,11 @@ void RayTracer::tracePixel( int i, int j )
 	if( !scene )
 		return;
 
+	distReflection = m_pUI->m_distReflSlider->value() > 0;
+	distRefraction = m_pUI->m_distRefrSlider->value() > 0;
+	distSize = m_pUI->m_distSizeSlider->value();
+	distRays = m_pUI->m_distRaysSlider->value();
+	distStep = distSize / (distRays - 1);
 
 	if (m_pUI->m_nAdaptiveDepth>0)
 	{
