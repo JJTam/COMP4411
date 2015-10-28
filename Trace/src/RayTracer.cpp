@@ -91,7 +91,6 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 				else
 				{
 					double theta1 = -distSize / 2;
-					double theta2 = -distSize / 2;
 					vec4f dirv4(reflectDir[0], reflectDir[1], reflectDir[2], 1);
 					vec3f axis1(-reflectDir[0], 0, reflectDir[2]);
 					vec3f axis2(0, 1, 0);
@@ -99,10 +98,11 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 					for (int i1 = 0; i1 < distRays; ++i1)
 					{
 						mat4f rot1 = mat4f::rotate(axis1, theta1);
+						double theta2 = -distSize / 2;
 						for (int i2 = 0; i2 < distRays; ++i2)
 						{
 							mat4f rot2 = mat4f::rotate(axis2, theta2);
-							vec4f newDirv4 = rot2 * (rot1 * dirv4);
+							vec4f newDirv4 = rot1 * (rot2 * dirv4);
 
 							ray nextRay(nextRayPos, newDirv4);
 							vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace);
@@ -138,7 +138,6 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 						else
 						{
 							double theta1 = -distSize / 2;
-							double theta2 = -distSize / 2;
 							vec4f dirv4(refractDir[0], refractDir[1], refractDir[2], 1);
 							vec3f axis1(-refractDir[0], 0, refractDir[2]);
 							vec3f axis2(0, 1, 0);
@@ -146,12 +145,15 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 							for (int i1 = 0; i1 < distRays; ++i1)
 							{
 								mat4f rot1 = mat4f::rotate(axis1, theta1);
+								double theta2 = -distSize / 2;
 								for (int i2 = 0; i2 < distRays; ++i2)
 								{
 									mat4f rot2 = mat4f::rotate(axis2, theta2);
-									vec4f newDirv4 = rot2 * (rot1 * dirv4);
-
-									ray nextRay(nextRayPos, newDirv4);
+									vec4f newDirv4 = rot1 * (rot2 * dirv4);
+									vec3f newDirv3(newDirv4[0], newDirv4[1], newDirv4[2]);
+									if (newDirv4[3] != 0)
+										newDirv3 = newDirv3 / newDirv4[3];
+									ray nextRay(nextRayPos, newDirv3);
 									vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace);
 
 									result += prod(ktScaled, nextResult);
@@ -320,7 +322,7 @@ void RayTracer::tracePixel( int i, int j )
 	distRefraction = m_pUI->m_distRefrSlider->value() > 0;
 	distSize = m_pUI->m_distSizeSlider->value();
 	distRays = m_pUI->m_distRaysSlider->value();
-	distStep = distSize / ((int)distRays - 1);
+	distStep = distSize / (distRays - 1);
 
 	if (m_pUI->m_nAdaptiveDepth>0)
 	{

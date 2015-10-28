@@ -357,7 +357,7 @@ TraceUI::TraceUI() {
 		m_distRaysSlider->type(FL_HOR_NICE_SLIDER);
 		m_distRaysSlider->labelfont(FL_COURIER);
 		m_distRaysSlider->labelsize(12);
-		m_distRaysSlider->minimum(1);
+		m_distRaysSlider->minimum(2);
 		m_distRaysSlider->maximum(6);
 		m_distRaysSlider->step(1);
 		m_distRaysSlider->value(2);
@@ -371,7 +371,7 @@ TraceUI::TraceUI() {
 		m_distSizeSlider->minimum(0);
 		m_distSizeSlider->maximum(0.1f);
 		m_distSizeSlider->step(0.001f);
-		m_distSizeSlider->value(0.01);
+		m_distSizeSlider->value(0.005f);
 		m_distSizeSlider->align(FL_ALIGN_RIGHT);
 
 		m_renderButton = new Fl_Button(240, 27, 70, 25, "&Render");
