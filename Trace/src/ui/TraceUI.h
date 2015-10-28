@@ -35,6 +35,11 @@ public:
 	Fl_Button*			m_renderButton;
 	Fl_Button*			m_stopButton;
 
+	Fl_Slider*  m_distReflSlider;
+	Fl_Slider*  m_distRefrSlider;
+	Fl_Slider*  m_distRaysSlider;
+	Fl_Slider*  m_distSizeSlider;
+
 	TraceGLWindow*		m_traceGlWindow;
 
 	// member functions
