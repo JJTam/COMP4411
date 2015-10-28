@@ -28,12 +28,34 @@ void TraceUI::cb_load_scene(Fl_Menu_* o, void* v)
 	char* newfile = fl_file_chooser("Open Scene?", "*.ray", NULL );
 
 	if (newfile != NULL) {
+		pUI->loadedFile = newfile;
 		char buf[256];
 
 		if (pUI->raytracer->loadScene(newfile)) {
 			sprintf(buf, "Ray <%s>", newfile);
 			done=true;	// terminate the previous rendering
 		} else{
+			sprintf(buf, "Ray <Not Loaded>");
+		}
+
+		pUI->m_mainWindow->label(buf);
+	}
+}
+
+void TraceUI::cb_reload_scene(Fl_Menu_* o, void* v)
+{
+	TraceUI* pUI = whoami(o);
+
+	char* newfile = pUI->loadedFile;
+
+	if (pUI->loadedFile != NULL) {
+		char buf[256];
+
+		if (pUI->raytracer->loadScene(newfile)) {
+			sprintf(buf, "Ray <%s>", newfile);
+			done = true;
+		}
+		else{
 			sprintf(buf, "Ray <Not Loaded>");
 		}
 
@@ -219,6 +241,7 @@ int TraceUI::getDepth()
 Fl_Menu_Item TraceUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
 		{ "&Load Scene...",	FL_ALT + 'l', (Fl_Callback *)TraceUI::cb_load_scene },
+		{ "&Reload Scene...", FL_ALT + 'r', (Fl_Callback *)TraceUI::cb_reload_scene },
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)TraceUI::cb_save_image },
 		{ "&Exit",			FL_ALT + 'e', (Fl_Callback *)TraceUI::cb_exit },
 		{ 0 },
@@ -237,6 +260,8 @@ TraceUI::TraceUI() {
 	m_nSupersampling = 0;
 	m_nJitter = 0;
 	m_nAdaptiveDepth = 0;
+	loadedFile = NULL;
+
 	m_mainWindow = new Fl_Window(100, 40, 320, 300, "Ray <Not Loaded>");
 		m_mainWindow->user_data((void*)(this));	// record self to be used by static callback functions
 		// install menu bar

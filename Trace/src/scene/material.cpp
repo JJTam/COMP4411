@@ -32,7 +32,8 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 	for (auto j = scene->beginLights(); j != scene->endLights(); ++j)
 	{
 		auto currlight = *j;
-		
+		if (currlight->getDirection(isectpos).iszero())
+			continue;
 		double NL = (i.N * currlight->getDirection(isectpos));
 		vec3f Rm = (2 * NL * i.N - currlight->getDirection(isectpos)).normalize();
 		double VR = Rm * -r.getDirection();
