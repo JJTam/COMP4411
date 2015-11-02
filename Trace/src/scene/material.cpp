@@ -41,7 +41,29 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 		if (VR < 0)VR = 0;
 		VR = pow(VR, shininess * 128);
 
-		sum2 += prod(currlight->shadowAttenuation(isectpos), prod(currlight->getColor(isectpos), (NL*kd + VR * ks) * currlight->distanceAttenuation(isectpos)));
+		vec3f shadowA = currlight->shadowAttenuation(isectpos);
+		shadowA[0] = ((int)(shadowA[0] * 255)) / 40 * 40 / 255.0;
+		shadowA[1] = ((int)(shadowA[0] * 255)) / 40 * 40 / 255.0;
+		shadowA[2] = ((int)(shadowA[0] * 255)) / 40 * 40 / 255.0;
+		double distA = currlight->distanceAttenuation(isectpos);
+		distA = ((int)(distA * 255)) / 40 * 40 / 255.0;
+		sum2 += prod(shadowA, prod(currlight->getColor(isectpos), (NL*kd + VR * ks) * distA));
 	}
-	return ke+sum1+sum2;
+
+	if (i.obj->supports2DMap() && textureBitmap != NULL && textureBitmapWidth > 0 && textureBitmapHeight > 0)
+	{
+		int x = 0;
+		int y = 0;
+		i.obj->isetTo2DMap(i, x, y);
+		x %= textureBitmapWidth;
+		y %= textureBitmapHeight;
+		vec3f tKe(textureBitmap[3 * (y * textureBitmapWidth + x)] / 255.0,
+			textureBitmap[3 * (y * textureBitmapWidth + x) + 1] / 255.0,
+			textureBitmap[3 * (y * textureBitmapWidth + x) + 2] / 255.0);
+		return tKe + sum1 + sum2;
+	}
+	else
+	{
+		return ke + sum1 + sum2;
+	}
 }

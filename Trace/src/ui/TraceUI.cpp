@@ -14,6 +14,9 @@
 
 static bool done;
 
+// Static part
+TraceUI* TraceUI::first_instance = NULL;
+
 //------------------------------------- Help Functions --------------------------------------------
 TraceUI* TraceUI::whoami(Fl_Menu_* o)	// from menu item back to UI itself
 {
@@ -261,6 +264,8 @@ TraceUI::TraceUI() {
 	m_nJitter = 0;
 	m_nAdaptiveDepth = 0;
 	loadedFile = NULL;
+	if (TraceUI::first_instance == NULL)
+		TraceUI::first_instance = this;
 
 	m_mainWindow = new Fl_Window(100, 40, 320, 300, "Ray <Not Loaded>");
 		m_mainWindow->user_data((void*)(this));	// record self to be used by static callback functions

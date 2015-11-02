@@ -11,6 +11,7 @@
 
 #include "read.h"
 #include "parse.h"
+#include "bitmap.h"
 
 #include "../scene/scene.h"
 #include "../SceneObjects/trimesh.h"
@@ -474,7 +475,21 @@ static Material *processMaterial(Obj *child, mmap *bindings)
 	if (hasField(child, "shininess")) {
 		mat->shininess = getField(child, "shininess")->getScalar();
 	}
-
+	if (hasField(child, "texture")) {
+		string fname = getField(child, "texture")->getString();
+		int w, h;
+		unsigned char* bitmap = readBMP(fname.c_str(), w, h);
+		if (bitmap != NULL && w > 0 && h > 0)
+		{
+			mat->textureBitmap = bitmap;
+			mat->textureBitmapWidth = w;
+			mat->textureBitmapHeight = h;
+		}
+		else
+		{
+			printf("Failed loading texture bitmap %s.\n", fname.c_str());
+		}
+	}
 	if (bindings != NULL) {
 		// Want to bind, better have "name" field:
 		if (hasField(child, "name")) {
