@@ -23,7 +23,7 @@ public:
     }
 
 	bool supports2DMap() const { return true; }
-	void isectTo2DMap(const vec3f&, int& x, int& y) const;
+	void isectTo2DMap(const isect&, const vec3f&, int& x, int& y) const;
 };
 
 #endif // __BOX_H__
