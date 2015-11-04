@@ -49,3 +49,8 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 	i.obj = this;
 	return true;
 }
+
+void Box::isectTo2DMap(const vec3f& pos, int& x, int& y) const
+{
+	
+}

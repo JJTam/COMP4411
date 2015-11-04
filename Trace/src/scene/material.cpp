@@ -6,18 +6,6 @@
 // the color of that point.
 vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 {
-	// YOUR CODE HERE
-
-	// For now, this method just returns the diffuse color of the object.
-	// This gives a single matte color for every distinct surface in the
-	// scene, and that's it.  Simple, but enough to get you started.
-	// (It's also inconsistent with the phong model...)
-
-	// Your mission is to fill in this method with the rest of the phong
-	// shading model, including the contributions of all the light sources.
-    // You will need to call both distanceAttenuation() and shadowAttenuation()
-    // somewhere in your code in order to compute shadows and light falloff.
-	
 	vec3f zero;
 	// sum of ambient
 	vec3f sum1;
@@ -54,7 +42,7 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 	{
 		int x = 0;
 		int y = 0;
-		i.obj->isetTo2DMap(i, x, y);
+		i.obj->isectTo2DMap(isectpos, x, y);
 		x %= textureBitmapWidth;
 		y %= textureBitmapHeight;
 		vec3f tKe(textureBitmap[3 * (y * textureBitmapWidth + x)] / 255.0,

@@ -214,7 +214,7 @@ public:
 	virtual void setMaterial( Material *m ) = 0;
 
 	// map an intersection point to a 2D mapping image
-	virtual void isetTo2DMap(const isect&, int& x, int& y) const { x = 0; y = 0; }
+	virtual void isectTo2DMap(const vec3f&, int& x, int& y) const { x = 0; y = 0; }
 	// check if the 2D mapping is supported
 	virtual bool supports2DMap() const { return false; }
 
