@@ -52,5 +52,22 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
 
 void Box::isectTo2DMap(const isect& i, const vec3f& pos, int& x, int& y) const
 {
-	
+	int totalPixels = 200;
+	vec3f posLocal = transform->globalToLocalCoords(pos);
+
+	if (0.5 - abs(posLocal[0]) < 1e-8)
+	{
+		x = (posLocal[1] + 0.5) * totalPixels;
+		y = (posLocal[2] + 0.5) * totalPixels;
+	}
+	else if (0.5 - abs(posLocal[1]) < 1e-8)
+	{
+		x = (posLocal[0] + 0.5) * totalPixels;
+		y = (posLocal[2] + 0.5) * totalPixels;
+	}
+	else
+	{
+		x = (posLocal[0] + 0.5) * totalPixels;
+		y = (posLocal[1] + 0.5) * totalPixels;
+	}
 }
