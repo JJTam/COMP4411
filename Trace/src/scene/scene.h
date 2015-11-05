@@ -263,6 +263,7 @@ public:
 	{ lights.push_back( light ); }
 
 	bool intersect( const ray& r, isect& i ) const;
+	bool intersect_for_shadow(const ray& r, vec3f& result, double maxT) const;
 	void initScene();
 
 	list<Light*>::const_iterator beginLights() const { return lights.begin(); }

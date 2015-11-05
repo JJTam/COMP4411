@@ -171,6 +171,46 @@ bool Scene::intersect( const ray& r, isect& i ) const
 	return have_one;
 }
 
+bool Scene::intersect_for_shadow(const ray& r, vec3f& result, double maxT) const
+{
+	result = vec3f(1.0, 1.0, 1.0);
+	typedef list<Geometry*>::const_iterator iter;
+	iter j;
+
+	isect cur;
+	bool have_one = false;
+
+	// try the non-bounded objects
+	for (j = nonboundedobjects.begin(); j != nonboundedobjects.end(); ++j) {
+		if ((*j)->intersect(r, cur) && cur.t < maxT) {
+			result = prod(result, cur.getMaterial().kt);
+			if (traceUI->m_thresholdSlider->value() != 0 && result.length() < traceUI->m_thresholdSlider->value()*3)
+			{
+				result = vec3f(0, 0, 0);
+				return true;
+			}
+			if (!have_one) {
+				have_one = true;
+			}
+		}
+	}
+
+	// try the bounded objects
+	for (j = boundedobjects.begin(); j != boundedobjects.end(); ++j) {
+		if ((*j)->intersect(r, cur) && cur.t < maxT) {
+			result = prod(result, cur.getMaterial().kt);
+			if (traceUI->m_thresholdSlider->value()!=0 && result.length() < traceUI->m_thresholdSlider->value()*3)
+			{
+				result = vec3f(0, 0, 0);
+				return true;
+			}
+			if (!have_one) {
+				have_one = true;
+			}
+		}
+	}
+	return have_one;
+}
 void Scene::initScene()
 {
 	bool first_boundedobject = true;

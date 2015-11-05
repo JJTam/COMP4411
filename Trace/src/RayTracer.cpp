@@ -85,7 +85,7 @@ vec3f RayTracer::traceRay(Scene *scene, const ray& r,
 				if (!distReflection)
 				{
 					ray nextRay(nextRayPos, reflectDir);
-					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace,m.ks.length()*intensity);
+					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace, (m.ks[0] + m.ks[1] + m.ks[2])/3 *intensity);
 
 					result += prod(m.ks, nextResult);
 				}
@@ -106,7 +106,7 @@ vec3f RayTracer::traceRay(Scene *scene, const ray& r,
 							vec4f newDirv4 = rot1 * (rot2 * dirv4);
 
 							ray nextRay(nextRayPos, newDirv4);
-							vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace, ksScaled.length()*intensity);
+							vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace, (ksScaled[0] + ksScaled[1] + ksScaled[2]) / 3 * intensity);
 
 							result += prod(ksScaled, nextResult);
 
@@ -133,7 +133,7 @@ vec3f RayTracer::traceRay(Scene *scene, const ray& r,
 						if (!distRefraction)
 						{
 							ray nextRay(nextRayPos, refractDir);
-							vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace, m.kt.length()*intensity);
+							vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace, (m.kt[0] + m.kt[1] + m.kt[2]) / 3 * intensity);
 							result += prod(m.kt, nextResult);
 						}
 						else
@@ -155,7 +155,7 @@ vec3f RayTracer::traceRay(Scene *scene, const ray& r,
 									if (newDirv4[3] != 0)
 										newDirv3 = newDirv3 / newDirv4[3];
 									ray nextRay(nextRayPos, newDirv3);
-									vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace, ktScaled.length()*intensity);
+									vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace, (ktScaled[0] + ktScaled[1] + ktScaled[2]) / 3 * intensity);
 
 									result += prod(ktScaled, nextResult);
 
@@ -169,7 +169,7 @@ vec3f RayTracer::traceRay(Scene *scene, const ray& r,
 				else
 				{
 					ray nextRay(r.getPosition() + r.getDirection() * i.t, r.getDirection());
-					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace, m.kt.length()*intensity);
+					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace, (m.kt[0] + m.kt[1] + m.kt[2]) / 3 * intensity);
 					result += prod(m.kt, nextResult);
 				}
 			}
