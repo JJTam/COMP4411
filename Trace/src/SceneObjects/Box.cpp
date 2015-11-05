@@ -70,4 +70,7 @@ void Box::isectTo2DMap(const isect& i, const vec3f& pos, int& x, int& y) const
 		x = (posLocal[0] + 0.5) * totalPixels;
 		y = (posLocal[1] + 0.5) * totalPixels;
 	}
+
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
 }
