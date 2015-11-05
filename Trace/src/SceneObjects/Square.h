@@ -22,6 +22,9 @@ public:
 		localbounds.max = vec3f(0.5f, 0.5f, RAY_EPSILON);
         return localbounds;
     }
+
+	virtual bool supports2DMap() const { return true; }
+	virtual void isectTo2DMap(const isect&, const vec3f&, int& x, int& y) const;
 };
 
 #endif // __SQUARE_H__
