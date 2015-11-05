@@ -374,6 +374,17 @@ TraceUI::TraceUI() {
 		m_distSizeSlider->value(0.005f);
 		m_distSizeSlider->align(FL_ALIGN_RIGHT);
 
+		m_thresholdSlider = new Fl_Value_Slider(10, 255, 180, 20, "Intensity threshold");
+		m_thresholdSlider->user_data((void*)(this));	// record self to be used by static callback functions
+		m_thresholdSlider->type(FL_HOR_NICE_SLIDER);
+		m_thresholdSlider->labelfont(FL_COURIER);
+		m_thresholdSlider->labelsize(12);
+		m_thresholdSlider->minimum(0);
+		m_thresholdSlider->maximum(1.0);
+		m_thresholdSlider->step(0.01);
+		m_thresholdSlider->value(0);
+		m_thresholdSlider->align(FL_ALIGN_RIGHT);
+
 		m_renderButton = new Fl_Button(240, 27, 70, 25, "&Render");
 		m_renderButton->user_data((void*)(this));
 		m_renderButton->callback(cb_render);

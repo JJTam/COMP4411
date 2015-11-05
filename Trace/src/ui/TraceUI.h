@@ -39,6 +39,7 @@ public:
 	Fl_Slider*  m_distRefrSlider;
 	Fl_Slider*  m_distRaysSlider;
 	Fl_Slider*  m_distSizeSlider;
+	Fl_Slider*  m_thresholdSlider;
 
 	TraceGLWindow*		m_traceGlWindow;
 

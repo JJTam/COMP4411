@@ -57,8 +57,8 @@ vec3f RayTracer::trace( Scene *scene, double x, double y )
 
 // Do recursive ray tracing!  You'll want to insert a lot of code here
 // (or places called from here) to handle reflection, refraction, etc etc.
-vec3f RayTracer::traceRay( Scene *scene, const ray& r, 
-	const vec3f& thresh, int depth, bool isInSpace)
+vec3f RayTracer::traceRay(Scene *scene, const ray& r,
+	const vec3f& thresh, int depth, bool isInSpace, double intensity)
 {
 	isect i;
 	 
@@ -70,21 +70,22 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		vec3f ones(1.0, 1.0, 1.0);
 		vec3f ktInv = ones - m.kt;
 		result = prod(ktInv, result);
-		
-		if (depth < m_pUI->getDepth())
+
+		if (depth < m_pUI->getDepth() && (m_pUI->m_thresholdSlider->value() == 0 || intensity > m_pUI->m_thresholdSlider->value()))
 		{
 			vec3f nextRayPos = r.getPosition() + r.getDirection() * i.t;
 
 			// if m is reflective
 			if (m.kr[0] > 0 || m.kr[1] > 0 || m.kr[2] > 0)
 			{
+				
 				vec3f reflectDir = (2 * ((-r.getDirection()) * i.N) * i.N - (-r.getDirection())).normalize();
 
 				// distributed reflection
 				if (!distReflection)
 				{
 					ray nextRay(nextRayPos, reflectDir);
-					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace);
+					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace,m.ks.length()*intensity);
 
 					result += prod(m.ks, nextResult);
 				}
@@ -105,7 +106,7 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 							vec4f newDirv4 = rot1 * (rot2 * dirv4);
 
 							ray nextRay(nextRayPos, newDirv4);
-							vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace);
+							vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, isInSpace, ksScaled.length()*intensity);
 
 							result += prod(ksScaled, nextResult);
 
@@ -132,7 +133,7 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 						if (!distRefraction)
 						{
 							ray nextRay(nextRayPos, refractDir);
-							vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace);
+							vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace, m.kt.length()*intensity);
 							result += prod(m.kt, nextResult);
 						}
 						else
@@ -154,7 +155,7 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 									if (newDirv4[3] != 0)
 										newDirv3 = newDirv3 / newDirv4[3];
 									ray nextRay(nextRayPos, newDirv3);
-									vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace);
+									vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace, ktScaled.length()*intensity);
 
 									result += prod(ktScaled, nextResult);
 
@@ -168,7 +169,7 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 				else
 				{
 					ray nextRay(r.getPosition() + r.getDirection() * i.t, r.getDirection());
-					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace);
+					vec3f nextResult = traceRay(scene, nextRay, thresh, depth + 1, !isInSpace, m.kt.length()*intensity);
 					result += prod(m.kt, nextResult);
 				}
 			}
