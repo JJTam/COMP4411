@@ -37,7 +37,6 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 		distA = ((int)(distA * 255)) / 40 * 40 / 255.0;
 		sum2 += prod(shadowA, prod(currlight->getColor(isectpos), (NL*kd + VR * ks) * distA));
 	}
-
 	if (i.obj->supports2DMap() && textureBitmap != NULL && textureBitmapWidth > 0 && textureBitmapHeight > 0)
 	{
 		int x = 0;

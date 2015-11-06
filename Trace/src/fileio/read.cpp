@@ -498,6 +498,9 @@ static Material *processMaterial(Obj *child, mmap *bindings)
 			mat->textureDensity = 200;
 		}
 	}
+	else if (hasField(child, "texture")) {
+		printf("Texture field presents but not texture_density. Using default value 200.\n");
+	}
 	if (bindings != NULL) {
 		// Want to bind, better have "name" field:
 		if (hasField(child, "name")) {
