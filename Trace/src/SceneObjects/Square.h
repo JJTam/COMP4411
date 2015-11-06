@@ -24,7 +24,7 @@ public:
     }
 
 	virtual bool supports2DMap() const { return true; }
-	virtual void isectTo2DMap(const isect&, const vec3f&, int& x, int& y) const;
+	virtual void isectTo2DMap(const isect&, const vec3f&, int density, int& x, int& y) const;
 };
 
 #endif // __SQUARE_H__

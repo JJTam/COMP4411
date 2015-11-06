@@ -42,9 +42,8 @@ bool Sphere::intersectLocal( const ray& r, isect& i ) const
 	return true;
 }
 
-void Sphere::isectTo2DMap(const isect& i, const vec3f& pos, int& x, int& y) const
+void Sphere::isectTo2DMap(const isect& i, const vec3f& pos, int density, int& x, int& y) const
 {
-	int totalPixels = 420;
 	vec3f posLocal = transform->globalToLocalCoords(pos);
 
 	double u = acos(posLocal[1] / posLocal.length());
@@ -60,12 +59,12 @@ void Sphere::isectTo2DMap(const isect& i, const vec3f& pos, int& x, int& y) cons
 		v = M_PI / 2;
 	}
 
-	x = (2 - u / M_PI) * totalPixels;
+	x = (2 - u / M_PI) * density;
 
 	if (v < 0)
-		y = v / (2 * M_PI) * totalPixels + totalPixels / 2;
+		y = v / (2 * M_PI) * density + density / 2;
 	else
-		y = v / (2 * M_PI) * totalPixels;
+		y = v / (2 * M_PI) * density;
 
 	if (x < 0) x = 0;
 	if (y < 0) y = 0;

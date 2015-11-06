@@ -145,3 +145,13 @@ bool Cylinder::intersectCaps( const ray& r, isect& i ) const
 
 	return false;
 }
+
+void Cylinder::isectTo2DMap(const isect& i, const vec3f& pos, int density, int& x, int& y) const
+{
+	vec3f posLocal = transform->globalToLocalCoords(pos);
+
+	
+
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
+}

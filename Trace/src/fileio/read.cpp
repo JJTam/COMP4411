@@ -490,6 +490,14 @@ static Material *processMaterial(Obj *child, mmap *bindings)
 			printf("Failed loading texture bitmap %s.\n", fname.c_str());
 		}
 	}
+	if (hasField(child, "texture_density")) {
+		mat->textureDensity = (int)getField(child, "texture_density")->getScalar();
+		if (mat->textureDensity <= 0)
+		{
+			printf("Texture density invalid: %d. Reset to 200.\n");
+			mat->textureDensity = 200;
+		}
+	}
 	if (bindings != NULL) {
 		// Want to bind, better have "name" field:
 		if (hasField(child, "name")) {

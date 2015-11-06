@@ -38,13 +38,12 @@ bool Square::intersectLocal( const ray& r, isect& i ) const
 	return true;
 }
 
-void Square::isectTo2DMap(const isect& i, const vec3f& pos, int& x, int& y) const
+void Square::isectTo2DMap(const isect& i, const vec3f& pos, int density, int& x, int& y) const
 {
-	int totalPixels = 200;
 	vec3f posLocal = transform->globalToLocalCoords(pos);
 
-	x = (1 - (posLocal[0] + 0.5)) * totalPixels;
-	y = (posLocal[1] + 0.5) * totalPixels;
+	x = (1 - (posLocal[0] + 0.5)) * density;
+	y = (posLocal[1] + 0.5) * density;
 
 	if (x < 0) x = 0;
 	if (y < 0) y = 0;

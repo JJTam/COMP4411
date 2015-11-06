@@ -26,6 +26,9 @@ public:
     bool intersectBody( const ray& r, isect& i ) const;
 	bool intersectCaps( const ray& r, isect& i ) const;
 
+	virtual bool supports2DMap() const { return true; }
+	virtual void isectTo2DMap(const isect&, const vec3f&, int density, int& x, int& y) const;
+
 protected:
 	bool capped;
 };

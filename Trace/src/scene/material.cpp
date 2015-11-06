@@ -42,7 +42,7 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 	{
 		int x = 0;
 		int y = 0;
-		i.obj->isectTo2DMap(i, isectpos, x, y);
+		i.obj->isectTo2DMap(i, isectpos, textureDensity, x, y);
 		x %= textureBitmapWidth;
 		y %= textureBitmapHeight;
 		vec3f tKe(textureBitmap[3 * (y * textureBitmapWidth + x)] / 255.0,
