@@ -2,6 +2,7 @@
 
 #include "light.h"
 #include <iostream>
+#include <utility>
 using namespace std;
 
 double DirectionalLight::distanceAttenuation( const vec3f& P ) const
@@ -13,14 +14,15 @@ double DirectionalLight::distanceAttenuation( const vec3f& P ) const
 
 vec3f DirectionalLight::shadowAttenuation( const vec3f& P ) const
 {
-	isect i;
+	//isect i;
 	vec3f dir = getDirection(vec3f(0, 0, 0));
 	ray r(P, dir);
-	
-	if (scene->intersect(r,i))
+	vec3f result;
+	if (scene->intersect_for_shadow(r,result,DBL_MAX))
 	{
-		const Material& m = i.getMaterial();
-		return prod(m.kt, shadowAttenuation(P + i.t * dir));
+		return result;
+		//const Material& m = i.getMaterial();
+		//return prod(m.kt, shadowAttenuation(P + i.t * dir));
 		//return m.kt;
 	}
 	
@@ -83,16 +85,23 @@ vec3f PointLight::getDirection( const vec3f& P ) const
 vec3f PointLight::shadowAttenuation(const vec3f& P) const
 {
 	vec3f dir = (position - P).normalize();
-	isect i1;
-	if (scene->intersect(ray(P, dir), i1))
+	//isect i1;
+	vec3f result;
+	if (scene->intersect_for_shadow(ray(P, dir), result, (position - P).length()))
 	{
+		return result;
+	}
+	/*if (scene->intersect(ray(P, dir), i1))
+	{
+		
 		if (i1.t < (position - P).length())
 		{
 			const Material& m = i1.getMaterial();
 			return prod(m.kt, shadowAttenuation(P + dir * i1.t));
 			//return m.kt;
 		}
-	}
+		
+	}*/
     return vec3f(1,1,1);
 }
 
@@ -157,18 +166,25 @@ vec3f SpotLight::getDirection(const vec3f& P) const
 
 vec3f SpotLight::shadowAttenuation(const vec3f& P) const
 {
-	vec3f direction = (pos - P).normalize();
-	isect i1;
-	if (scene->intersect(ray(P, direction), i1))
-	{
-		if (i1.t < (pos - P).length())
+		vec3f dir = (pos - P).normalize();
+		//isect i1;
+		vec3f result;
+		if (scene->intersect_for_shadow(ray(P, dir), result, (pos - P).length()))
 		{
-			const Material& m = i1.getMaterial();
-			return prod(m.kt, shadowAttenuation(P + direction * i1.t));
-			//return m.kt;
+			return result;
 		}
-	}
-	return vec3f(1, 1, 1);
+		/*if (scene->intersect(ray(P, dir), i1))
+		{
+
+		if (i1.t < (position - P).length())
+		{
+		const Material& m = i1.getMaterial();
+		return prod(m.kt, shadowAttenuation(P + dir * i1.t));
+		//return m.kt;
+		}
+
+		}*/
+		return vec3f(1, 1, 1);
 }
 
 vec3f SpotLight::getAmbientColor(const vec3f& P) const

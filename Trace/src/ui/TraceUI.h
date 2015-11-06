@@ -22,6 +22,8 @@ class TraceUI {
 public:
 	TraceUI();
 
+	static TraceUI* first_instance;
+
 	// The FLTK widgets
 	Fl_Window*			m_mainWindow;
 	Fl_Menu_Bar*		m_menubar;
@@ -39,6 +41,7 @@ public:
 	Fl_Slider*  m_distRefrSlider;
 	Fl_Slider*  m_distRaysSlider;
 	Fl_Slider*  m_distSizeSlider;
+	Fl_Slider*  m_thresholdSlider;
 
 	TraceGLWindow*		m_traceGlWindow;
 

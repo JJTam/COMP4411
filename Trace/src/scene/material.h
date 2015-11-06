@@ -42,7 +42,10 @@ public:
     double shininess;
     double index;               // index of refraction
 
-    
+	unsigned char* textureBitmap = NULL;
+	int textureBitmapWidth = 0;
+	int textureBitmapHeight = 0;
+	int textureDensity = 200;
                                 // material with zero coeffs for everything
                                 // as opposed to the "default" material which is
                                 // a pleasant blue.

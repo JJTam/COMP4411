@@ -3,6 +3,10 @@
 
 #include "Cone.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979
+#endif
+
 bool Cone::intersectLocal( const ray& r, isect& i ) const
 {
 	i.obj = this;
@@ -51,12 +55,13 @@ bool Cone::intersectBody( const ray& r, isect& i ) const
 		vec3f P = r.at( t1 );
 		double z = P[2];
 		if( z >= 0.0 && z <= height ) {
-			// It's okay.
+			double n3 = -C*P[2] + (b_radius - t_radius)*b_radius / height;
 			i.t = t1;
-            i.N = vec3f( P[0], P[1], 
-              -(C*P[2]+(t_radius-b_radius)*t_radius/height)).normalize();
+            i.N = vec3f( P[0], P[1], n3).normalize();
 				
-			
+			if (!capped && (i.N).dot(r.getDirection()) > 0)
+				i.N = -i.N;
+
 			return true;
 		}
 	}
@@ -64,12 +69,9 @@ bool Cone::intersectBody( const ray& r, isect& i ) const
 	vec3f P = r.at( t2 );
 	double z = P[2];
 	if( z >= 0.0 && z <= height ) {
+		double n3 = -C*P[2] + (b_radius - t_radius)*b_radius / height;
 		i.t = t2;
-        i.N = vec3f( P[0], P[1], 
-              -(C*P[2]+(t_radius-b_radius)*t_radius/height)).normalize();
-		// In case we are _inside_ the _uncapped_ cone, we need to flip the normal.
-		// Essentially, the cone in this case is a double-sided surface
-		// and has _2_ normals
+        i.N = vec3f( P[0], P[1], n3).normalize();
 	
 		if( !capped && (i.N).dot( r.getDirection() ) > 0 )
 				i.N = -i.N;
@@ -141,4 +143,32 @@ bool Cone::intersectCaps( const ray& r, isect& i ) const
 	}
 
 	return false;
+}
+
+void Cone::isectTo2DMap(const isect& i, const vec3f& pos, int density, int& x, int& y) const
+{
+	vec3f posLocal = transform->globalToLocalCoords(pos);
+	auto bounds = ComputeLocalBoundingBox();
+
+	if (abs(posLocal[2] - bounds.min[2]) < 1e-8 ||
+		abs(posLocal[2] - bounds.max[2]) < 1e-8)
+		return;
+
+	double theta;
+	if (posLocal[0] > 0)
+	{
+		theta = asin(posLocal[1]);
+		if (theta < 0)
+			theta += 2 * M_PI;
+	}
+	else
+	{
+		theta = M_PI - asin(posLocal[1]);
+	}
+
+	x = theta / (2 * M_PI) * density;
+	y = posLocal[2] * density;
+
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
 }

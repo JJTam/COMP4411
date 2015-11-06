@@ -2,6 +2,10 @@
 
 #include "Cylinder.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979
+#endif
+
 bool Cylinder::intersectLocal( const ray& r, isect& i ) const
 {
 	i.obj = this;
@@ -144,4 +148,30 @@ bool Cylinder::intersectCaps( const ray& r, isect& i ) const
 	}
 
 	return false;
+}
+
+void Cylinder::isectTo2DMap(const isect& i, const vec3f& pos, int density, int& x, int& y) const
+{
+	vec3f posLocal = transform->globalToLocalCoords(pos);
+
+	if (posLocal[2] < 1e-8 || 1 - posLocal[2] < 1e-8)
+		return;
+
+	double theta;
+	if (posLocal[0] > 0)
+	{
+		theta = asin(posLocal[1]);
+		if (theta < 0)
+			theta += 2 * M_PI;
+	}
+	else
+	{
+		theta = M_PI - asin(posLocal[1]);
+	}
+
+	x = theta / (2 * M_PI) * density;
+	y = posLocal[2] * density;
+
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
 }

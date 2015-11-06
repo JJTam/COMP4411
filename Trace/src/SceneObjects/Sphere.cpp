@@ -2,6 +2,10 @@
 
 #include "Sphere.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979
+#endif
+
 bool Sphere::intersectLocal( const ray& r, isect& i ) const
 {
 	vec3f v = -r.getPosition();
@@ -38,3 +42,30 @@ bool Sphere::intersectLocal( const ray& r, isect& i ) const
 	return true;
 }
 
+void Sphere::isectTo2DMap(const isect& i, const vec3f& pos, int density, int& x, int& y) const
+{
+	vec3f posLocal = transform->globalToLocalCoords(pos);
+
+	double u = acos(posLocal[1] / posLocal.length());
+
+	double v;
+
+	if (abs(posLocal[0]) > 1e-8)
+	{
+		v = atan(posLocal[2] / posLocal[0]);
+	}
+	else
+	{
+		v = M_PI / 2;
+	}
+
+	x = (2 - u / M_PI) * density;
+
+	if (v < 0)
+		y = v / (2 * M_PI) * density + density / 2;
+	else
+		y = v / (2 * M_PI) * density;
+
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
+}

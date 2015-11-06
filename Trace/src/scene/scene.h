@@ -190,7 +190,7 @@ public:
 
     // default method for ComputeLocalBoundingBox returns a bogus bounding box;
     // this should be overridden if hasBoundingBoxCapability() is true.
-    virtual BoundingBox ComputeLocalBoundingBox() { return BoundingBox(); }
+    virtual BoundingBox ComputeLocalBoundingBox() const { return BoundingBox(); }
 
     void setTransform(TransformNode *transform) { this->transform = transform; };
     
@@ -212,6 +212,11 @@ class SceneObject
 public:
 	virtual const Material& getMaterial() const = 0;
 	virtual void setMaterial( Material *m ) = 0;
+
+	// map an intersection point to a 2D mapping image
+	virtual void isectTo2DMap(const isect&, const vec3f&, int density, int& x, int& y) const { x = 0; y = 0; }
+	// check if the 2D mapping is supported
+	virtual bool supports2DMap() const { return false; }
 
 protected:
 	SceneObject( Scene *scene )
@@ -263,6 +268,7 @@ public:
 	{ lights.push_back( light ); }
 
 	bool intersect( const ray& r, isect& i ) const;
+	bool intersect_for_shadow(const ray& r, vec3f& result, double maxT) const;
 	void initScene();
 
 	list<Light*>::const_iterator beginLights() const { return lights.begin(); }

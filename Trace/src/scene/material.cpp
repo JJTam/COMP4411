@@ -6,18 +6,6 @@
 // the color of that point.
 vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 {
-	// YOUR CODE HERE
-
-	// For now, this method just returns the diffuse color of the object.
-	// This gives a single matte color for every distinct surface in the
-	// scene, and that's it.  Simple, but enough to get you started.
-	// (It's also inconsistent with the phong model...)
-
-	// Your mission is to fill in this method with the rest of the phong
-	// shading model, including the contributions of all the light sources.
-    // You will need to call both distanceAttenuation() and shadowAttenuation()
-    // somewhere in your code in order to compute shadows and light falloff.
-	
 	vec3f zero;
 	// sum of ambient
 	vec3f sum1;
@@ -41,7 +29,28 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 		if (VR < 0)VR = 0;
 		VR = pow(VR, shininess * 128);
 
-		sum2 += prod(currlight->shadowAttenuation(isectpos), prod(currlight->getColor(isectpos), (NL*kd + VR * ks) * currlight->distanceAttenuation(isectpos)));
+		vec3f shadowA = currlight->shadowAttenuation(isectpos);
+		shadowA[0] = ((int)(shadowA[0] * 255)) / 40 * 40 / 255.0;
+		shadowA[1] = ((int)(shadowA[0] * 255)) / 40 * 40 / 255.0;
+		shadowA[2] = ((int)(shadowA[0] * 255)) / 40 * 40 / 255.0;
+		double distA = currlight->distanceAttenuation(isectpos);
+		distA = ((int)(distA * 255)) / 40 * 40 / 255.0;
+		sum2 += prod(shadowA, prod(currlight->getColor(isectpos), (NL*kd + VR * ks) * distA));
 	}
-	return ke+sum1+sum2;
+	if (i.obj->supports2DMap() && textureBitmap != NULL && textureBitmapWidth > 0 && textureBitmapHeight > 0)
+	{
+		int x = 0;
+		int y = 0;
+		i.obj->isectTo2DMap(i, isectpos, textureDensity, x, y);
+		x %= textureBitmapWidth;
+		y %= textureBitmapHeight;
+		vec3f tKe(textureBitmap[3 * (y * textureBitmapWidth + x)] / 255.0,
+			textureBitmap[3 * (y * textureBitmapWidth + x) + 1] / 255.0,
+			textureBitmap[3 * (y * textureBitmapWidth + x) + 2] / 255.0);
+		return tKe + sum1 + sum2;
+	}
+	else
+	{
+		return ke + sum1 + sum2;
+	}
 }
