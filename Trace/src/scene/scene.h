@@ -190,7 +190,7 @@ public:
 
     // default method for ComputeLocalBoundingBox returns a bogus bounding box;
     // this should be overridden if hasBoundingBoxCapability() is true.
-    virtual BoundingBox ComputeLocalBoundingBox() { return BoundingBox(); }
+    virtual BoundingBox ComputeLocalBoundingBox() const { return BoundingBox(); }
 
     void setTransform(TransformNode *transform) { this->transform = transform; };
     

@@ -64,7 +64,7 @@ public:
 
     virtual bool hasBoundingBoxCapability() const { return true; }
       
-    virtual BoundingBox ComputeLocalBoundingBox()
+    virtual BoundingBox ComputeLocalBoundingBox() const
     {
         BoundingBox localbounds;
         localbounds.max = maximum( parent->vertices[ids[0]], parent->vertices[ids[1]]);
