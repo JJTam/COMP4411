@@ -34,6 +34,8 @@ static void processGeometry(string name, Obj *child, Scene *scene,
 	const mmap& materials, TransformNode *transform);
 static void processTrimesh(string name, Obj *child, Scene *scene,
 	const mmap& materials, TransformNode *transform);
+static void processHeightField(string name, Obj *child, Scene *scene,
+	const mmap& materials, TransformNode *transform);
 static void processCamera(Obj *child, Scene *scene);
 static Material *getMaterial(Obj *child, const mmap& bindings);
 static Material *processMaterial(Obj *child, mmap *bindings = NULL);
@@ -304,6 +306,9 @@ static void processGeometry(string name, Obj *child, Scene *scene,
 	else if (name == "trimesh" || name == "polymesh") { // 'polymesh' is for backwards compatibility
 		processTrimesh(name, child, scene, materials, transform);
 	}
+	else if (name == "height_field") {
+		processHeightField(name, child, scene, materials, transform);
+	}
 	else {
 		SceneObject *obj = NULL;
 		Material *mat;
@@ -419,6 +424,106 @@ static void processTrimesh(string name, Obj *child, Scene *scene,
 	scene->add(tmesh);
 }
 
+static void processHeightField(string name, Obj *child, Scene *scene,
+	const mmap& materials, TransformNode *transform)
+{
+	unsigned char* heightMap = NULL;
+	unsigned char* colorMap = NULL;
+	int heightW, heightH, colorW, colorH;
+	// check and read maps
+	if (!hasField(child, "height_map") || !hasField(child, "color_map"))
+	{
+		printf("Heightfield need both height_map and color_map!\n");
+		return;
+	}
+
+	string filename = getField(child, "height_map")->getString();
+	heightMap = readBMP(filename.c_str(), heightW, heightH);
+	if (heightMap == NULL || heightW < 2 || heightH < 2)
+	{
+		printf(("Error reading height map: " + filename + "\n").c_str());
+		if (heightMap)
+			delete[] heightMap;
+		return;
+	}
+	filename = getField(child, "color_map")->getString();
+	colorMap = readBMP(filename.c_str(), colorW, colorH);
+	if (colorMap == NULL || colorW < 2 || colorH < 2)
+	{
+		printf(("Error reading color map: " + filename + "\n").c_str());
+		if (colorMap)
+			delete[] colorMap;
+		return;
+	}
+	if (colorW != heightW || colorH != heightH)
+	{
+		printf("Heightfield: dimension of height map and color map does not agree.\n");
+		return;
+	}
+	
+	Material *mat;
+	if (hasField(child, "material"))
+		mat = getMaterial(getField(child, "material"), materials);
+	else
+		mat = new Material();
+
+	Trimesh *tmesh = new Trimesh(scene, mat, transform);
+
+	double meshBegin = -1;
+	double meshEnd = 1;
+	double meshMaxHeight = 1;
+	double meshDx = (meshEnd - meshBegin) / heightW;
+	double meshDy = (meshEnd - meshBegin) / heightH;
+
+	vec3f vertex(meshBegin, meshBegin, 0);
+	for (int y = 0; y < heightH; ++y)
+	{
+		vertex[0] = meshBegin;
+		for (int x = heightW - 1; x >= 0; --x)
+		{
+			vertex[1] = heightMap[(x + y * heightW) * 3] / 255.0 * meshMaxHeight;
+			tmesh->addVertex(vertex);
+			vertex[0] += meshDx;
+		}
+		vertex[2] += meshDy;
+	}
+
+	for (int y = 0; y < heightH - 1; ++y)
+	{
+		for (int x = 0; x < heightW - 1; ++x)
+		{
+			tmesh->addFace(x + y * heightW, x + (y + 1) * heightW, x + y * heightW + 1);
+			tmesh->addFace(x + y * heightW + 1, x + (y + 1) * heightW, x + (y + 1) * heightW + 1);
+		}
+	}
+
+	Material* faceMat;
+	for (int y = 0; y < heightH; ++y)
+	{
+		for (int x = heightW - 1; x >= 0; --x)
+		{
+			vec3f color(colorMap[(x + y * heightW) * 3] / 255.0,
+				colorMap[(x + y * heightW) * 3 + 1] / 255.0,
+				colorMap[(x + y * heightW) * 3 + 2] / 255.0);
+
+			faceMat = new Material(*mat);
+			faceMat->ke = color;
+			tmesh->addMaterial(faceMat);
+		}
+	}
+
+	bool generateNormals = false;
+	maybeExtractField(child, "gennormals", generateNormals);
+	if (generateNormals)
+		tmesh->generateNormals();
+
+	char *error;
+	if (error = tmesh->doubleCheck())
+		throw ParseError(error);
+
+	scene->add(tmesh);
+}
+
 static Material *getMaterial(Obj *child, const mmap& bindings)
 {
 	string tfield = child->getTypeName();
@@ -500,6 +605,9 @@ static Material *processMaterial(Obj *child, mmap *bindings)
 	}
 	else if (hasField(child, "texture")) {
 		printf("Texture field presents but not texture_density. Using default value 200.\n");
+	}
+	if (hasField(child, "solid_texture")) {
+		mat->solidTexture = (int)getField(child, "solid_texture")->getScalar();
 	}
 	if (bindings != NULL) {
 		// Want to bind, better have "name" field:
@@ -629,7 +737,8 @@ static void processObject(Obj *obj, Scene *scene, mmap& materials)
 		name == "transform" ||
 		name == "trimesh" ||
 		name == "polymesh" ||
-		name == "metaball") { // polymesh is for backwards compatibility.
+		name == "metaball" ||
+		name == "height_field") { // polymesh is for backwards compatibility.
 		processGeometry(name, child, scene, materials, &scene->transformRoot);
 		//scene->add( geo );
 	}
