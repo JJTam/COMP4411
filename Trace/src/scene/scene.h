@@ -85,22 +85,22 @@ public:
     }
     
     // Coordinate-Space transformation
-    vec3f globalToLocalCoords(const vec3f &v)
+    vec3f globalToLocalCoords(const vec3f &v) const
     {
         return inverse * v;
     }
 
-    vec3f localToGlobalCoords(const vec3f &v)
+	vec3f localToGlobalCoords(const vec3f &v) const
     {
         return xform * v;
     }
 
-    vec4f localToGlobalCoords(const vec4f &v)
+	vec4f localToGlobalCoords(const vec4f &v) const
     {
         return xform * v;
     }
 
-    vec3f localToGlobalCoordsNormal(const vec3f &v)
+	vec3f localToGlobalCoordsNormal(const vec3f &v) const
     {
         return (normi * v).normalize();
     }
@@ -193,6 +193,7 @@ public:
     virtual BoundingBox ComputeLocalBoundingBox() const { return BoundingBox(); }
 
     void setTransform(TransformNode *transform) { this->transform = transform; };
+	const TransformNode* getTransform() const { return this->transform; }
     
 	Geometry( Scene *scene ) 
 		: SceneElement( scene ) {}
