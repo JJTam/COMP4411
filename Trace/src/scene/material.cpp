@@ -30,11 +30,7 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 		VR = pow(VR, shininess * 128);
 
 		vec3f shadowA = currlight->shadowAttenuation(isectpos);
-		shadowA[0] = ((int)(shadowA[0] * 255)) / 40 * 40 / 255.0;
-		shadowA[1] = ((int)(shadowA[0] * 255)) / 40 * 40 / 255.0;
-		shadowA[2] = ((int)(shadowA[0] * 255)) / 40 * 40 / 255.0;
 		double distA = currlight->distanceAttenuation(isectpos);
-		distA = ((int)(distA * 255)) / 40 * 40 / 255.0;
 		sum2 += prod(shadowA, prod(currlight->getColor(isectpos), (NL*kd + VR * ks) * distA));
 	}
 	if (i.obj->supports2DMap() && textureBitmap != NULL && textureBitmapWidth > 0 && textureBitmapHeight > 0)
