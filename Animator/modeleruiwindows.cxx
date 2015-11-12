@@ -129,7 +129,7 @@ ModelerUIWindows::ModelerUIWindows() {
 		  o->labelsize(12);
 		  o->user_data((void*)(this));
 		  }
-			{ Fl_Value_Slider* o = m_pflatnessSlider = new Fl_Value_Slider(230, 500, 200, 20, "Flatness");
+			{ Fl_Value_Slider* o = m_pflatnessSlider = new Fl_Value_Slider(220, 490, 200, 20, "Flatness");
 			o->user_data((void*)(this));	// record self to be used by static callback functions
 			o->type(FL_HOR_NICE_SLIDER);
 			o->labelfont(FL_COURIER);
