@@ -84,7 +84,7 @@ ModelerUIWindows::ModelerUIWindows() {
         o->end();
         Fl_Group::current()->resizable(o);
       }
-      { Fl_Group* o = m_pgrpCurveGroup = new Fl_Group(160, 55, 425, 435, "Curves");
+      { Fl_Group* o = m_pgrpCurveGroup = new Fl_Group(160, 55, 425, 465, "Curves");
         o->labelsize(12);
         { Fl_Group* o = new Fl_Group(160, 55, 420, 410);
           { Fl_Box* o = new Fl_Box(160, 55, 40, 20, "Useless Box");
@@ -109,7 +109,7 @@ ModelerUIWindows::ModelerUIWindows() {
           o->end();
           Fl_Group::current()->resizable(o);
         }
-        { Fl_Group* o = new Fl_Group(160, 470, 420, 20);
+        { Fl_Group* o = new Fl_Group(160, 470, 420, 50);
           { Fl_Box* o = new Fl_Box(160, 470, 75, 20, "Curve Type:");
             o->labelsize(12);
             o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
@@ -134,7 +134,7 @@ ModelerUIWindows::ModelerUIWindows() {
 			o->type(FL_HOR_NICE_SLIDER);
 			o->labelfont(FL_COURIER);
 			o->labelsize(12);
-			o->minimum(0);
+			o->minimum(0.001);
 			o->maximum(0.2);
 			o->step(0.001);
 			o->value(0.01);

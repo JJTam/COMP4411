@@ -134,7 +134,7 @@ void BezierCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPts,
 				ptvEvaluatedCurvePts.push_back(ptvCtrlPts[i]);
 			}
 		}
-		cout << count << endl;
+		cout << "Number of lines: " << count << endl;
 		return;
 	}
 
