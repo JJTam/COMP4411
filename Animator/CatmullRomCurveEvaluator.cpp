@@ -2,10 +2,11 @@
 #include <assert.h>
 #include "vec.h"
 #include "mat.h"
-
+#include "modelerapp.h"
+#include "modelerui.h"
 Point calculateCatmullRom(double t, const Point& p1, const Point& p2, const Point& p3, const Point& p4)
 {
-	double tension = 0.5;
+	double tension = ModelerApplication::getPUI()->m_ptensionSlider->value();
 	Point result;
 	Vec4f T(t*t*t, t*t, t, 1);
 	Mat4f M(2, -2, 1, 1,
