@@ -60,7 +60,7 @@ void BezierCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPts,
 	bool adaptive = ModelerApplication::getPUI()->m_pbtAdaptive->value();
 
 	int count = 0;
-	int sampleRate = 60;
+	int sampleRate = 120;
 	ptvEvaluatedCurvePts.clear();
 
 	int CtrlPtGroupCount = (ptvCtrlPts.size() - 1) / 3;
@@ -86,7 +86,7 @@ void BezierCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPts,
 				{
 					if (ptvEvaluatedCurvePts[i].x > fAniLength)
 					{
-						if(!first)ptvEvaluatedCurvePts[i].x -= fAniLength;
+						if (!first)ptvEvaluatedCurvePts[i].x -= fAniLength;
 						else
 						{
 							first = false;
