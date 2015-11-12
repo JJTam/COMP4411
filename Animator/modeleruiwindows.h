@@ -56,6 +56,7 @@ public:
   Fl_Light_Button *m_pbtWrap;
   Fl_Light_Button *m_pbtAdaptive;
   Fl_Value_Slider *m_pflatnessSlider;
+  Fl_Value_Slider *m_ptensionSlider;
   Fl_Button *m_pbtZoomAll;
   Fl_Button *m_pbtStepBack;
   Fl_Button *m_pbtPlay;
