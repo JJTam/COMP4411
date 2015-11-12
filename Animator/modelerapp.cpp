@@ -61,6 +61,11 @@ ModelerApplication* ModelerApplication::Instance()
 	return (m_instance) ? (m_instance) : (m_instance = new ModelerApplication());
 }
 
+ModelerUI* ModelerApplication::getPUI()
+{
+	return ModelerApplication::Instance()->m_ui;
+}
+
 void ModelerApplication::Init(ModelerViewCreator_f createView, 
                               const ModelerControl controls[], unsigned numControls)
 {

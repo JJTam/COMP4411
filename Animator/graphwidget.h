@@ -114,6 +114,9 @@ public:
 	Point windowToGrid( Point p ) ;
 	Point gridToWindow( Point p ) ;
 
+	CurveEvaluator** m_ppceCurveEvaluators;
+	void setCurrCurveDirty();
+
 protected:
 	int m_iEventToDo;
 	bool m_bHasEvent;
@@ -136,7 +139,7 @@ protected:
 	std::vector<Curve*> m_pcrvvCurves;
 	std::vector<CurveDomain> m_cdvCurveDomains;
 	std::vector<int> m_ivCurveTypes;
-	CurveEvaluator** m_ppceCurveEvaluators;
+	
 	std::vector<int> m_ivActiveCurves;
 	std::vector<int_vector> m_ivvCurrCtrlPts;
 	float m_fEndTime;

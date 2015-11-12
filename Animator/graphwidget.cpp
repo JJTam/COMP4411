@@ -26,7 +26,7 @@
 
 #include "LinearCurveEvaluator.h"
 #include "BezierCurveEvaluator.h"
- 
+#include "BSplineCurveEvaluator.h"
 
 #define LEFT		1
 #define MIDDLE		2
@@ -117,7 +117,7 @@ m_flcCurrCurve(FL_BLACK)
 	m_ppceCurveEvaluators[CURVE_TYPE_LINEAR] = new LinearCurveEvaluator();
 
 	// TODO: replace the linear evaluator for one of the three types of curves
-	m_ppceCurveEvaluators[CURVE_TYPE_BSPLINE] = new LinearCurveEvaluator();
+	m_ppceCurveEvaluators[CURVE_TYPE_BSPLINE] = new BSplineCurveEvaluator();
 	m_ppceCurveEvaluators[CURVE_TYPE_BEZIER] = new BezierCurveEvaluator();
 	m_ppceCurveEvaluators[CURVE_TYPE_CATMULLROM] = new LinearCurveEvaluator();
 	// Note that C2-Interpolating curve is not a requirement
@@ -1136,5 +1136,10 @@ Point GraphWidget::gridToWindow( Point p ) {
 	val.y = (int)(((double)p.y * dLongMarkLengthY - leftTime()) / dRange * (double)iWindowHeight + 0.5);
 
 	return val;
+}
+
+void GraphWidget::setCurrCurveDirty()
+{
+	this->m_pcrvvCurves[m_iCurrCurve]->m_bDirty = true;
 }
 

@@ -125,10 +125,27 @@ ModelerUIWindows::ModelerUIWindows() {
             o->labelsize(12);
             o->user_data((void*)(this));
           }
-          { Fl_Button* o = m_pbtZoomAll = new Fl_Button(505, 470, 75, 20, "Z&oom All");
-            o->labelsize(12);
-            o->user_data((void*)(this));
-          }
+		  { Fl_Light_Button* o = m_pbtAdaptive = new Fl_Light_Button(415, 470, 70, 20, "Adaptive");
+		  o->labelsize(12);
+		  o->user_data((void*)(this));
+		  }
+			{ Fl_Value_Slider* o = m_pflatnessSlider = new Fl_Value_Slider(230, 500, 200, 20, "Flatness");
+			o->user_data((void*)(this));	// record self to be used by static callback functions
+			o->type(FL_HOR_NICE_SLIDER);
+			o->labelfont(FL_COURIER);
+			o->labelsize(12);
+			o->minimum(0);
+			o->maximum(0.2);
+			o->step(0.001);
+			o->value(0.01);
+			o->align(FL_ALIGN_LEFT);
+			Fl_Group::current()->resizable(o);
+			}
+		  { Fl_Button* o = m_pbtZoomAll = new Fl_Button(505, 470, 75, 20, "Z&oom All");
+		  o->labelsize(12);
+		  o->user_data((void*)(this));
+		  }
+
           o->end();
         }
         o->end();

@@ -109,6 +109,10 @@ private:
 	static void cb_curveType(Fl_Choice*, void*);
 	inline void cb_wrap_i(Fl_Light_Button*, void*);
 	static void cb_wrap(Fl_Light_Button*, void*);
+	inline void cb_adaptive_i(Fl_Light_Button*, void*);
+	static void cb_adaptive(Fl_Light_Button*, void*);
+	inline void cb_flatness_i(Fl_Light_Button*, void*);
+	static void cb_flatness(Fl_Light_Button*, void*);
 	inline void cb_indicatorWnd_i(IndicatorWindow*, void*);
 	static void cb_indicatorWnd(IndicatorWindow*, void*);
 	inline void cb_setCamKeyFrame_i(Fl_Button*, void*);
