@@ -39,6 +39,7 @@ public:
 
 	// Fetch the global ModelerApplication instance
 	static ModelerApplication* Instance();
+	static ModelerUI* getPUI();
 
     // Initialize the application; see sample models for usage
 	void Init(ModelerViewCreator_f createView, 

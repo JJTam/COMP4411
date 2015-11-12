@@ -14,6 +14,8 @@ public:
 		std::vector<Point>& ptvEvaluatedCurvePts,
 		const float& fAniLength,
 		const bool& bWrap) const;
+	Point calculateBezier(float t, const Point& p1, const Point& p2, const Point& p3, const Point& p4) const;
+	int adaptiveBezier(std::vector<Point>& ptvEvaluatedCurvePts, const Point& p1, const Point& p2, const Point& p3, const Point& p4, double flatness)const;
 };
 
 #endif

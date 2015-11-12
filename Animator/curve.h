@@ -53,6 +53,7 @@ public:
 	void toStream(std::ostream& output_stream) const;
 	void fromStream(std::istream& input_stream);
 
+	mutable bool m_bDirty;
 protected:
 	void init(const float fStartYValue = 0.0f);
 	void reevaluate(void) const;
@@ -63,7 +64,7 @@ protected:
 
 	mutable std::vector<Point> m_ptvCtrlPts;
 	mutable std::vector<Point> m_ptvEvaluatedCurvePts;
-	mutable bool m_bDirty;
+	
 
 	float m_fMaxX;
 	bool m_bWrap;

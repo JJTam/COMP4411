@@ -84,7 +84,7 @@ ModelerUIWindows::ModelerUIWindows() {
         o->end();
         Fl_Group::current()->resizable(o);
       }
-      { Fl_Group* o = m_pgrpCurveGroup = new Fl_Group(160, 55, 425, 435, "Curves");
+      { Fl_Group* o = m_pgrpCurveGroup = new Fl_Group(160, 55, 425, 465, "Curves");
         o->labelsize(12);
         { Fl_Group* o = new Fl_Group(160, 55, 420, 410);
           { Fl_Box* o = new Fl_Box(160, 55, 40, 20, "Useless Box");
@@ -109,7 +109,7 @@ ModelerUIWindows::ModelerUIWindows() {
           o->end();
           Fl_Group::current()->resizable(o);
         }
-        { Fl_Group* o = new Fl_Group(160, 470, 420, 20);
+        { Fl_Group* o = new Fl_Group(160, 470, 420, 50);
           { Fl_Box* o = new Fl_Box(160, 470, 75, 20, "Curve Type:");
             o->labelsize(12);
             o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
@@ -125,10 +125,27 @@ ModelerUIWindows::ModelerUIWindows() {
             o->labelsize(12);
             o->user_data((void*)(this));
           }
-          { Fl_Button* o = m_pbtZoomAll = new Fl_Button(505, 470, 75, 20, "Z&oom All");
-            o->labelsize(12);
-            o->user_data((void*)(this));
-          }
+		  { Fl_Light_Button* o = m_pbtAdaptive = new Fl_Light_Button(415, 470, 70, 20, "Adaptive");
+		  o->labelsize(12);
+		  o->user_data((void*)(this));
+		  }
+			{ Fl_Value_Slider* o = m_pflatnessSlider = new Fl_Value_Slider(220, 490, 200, 20, "Flatness");
+			o->user_data((void*)(this));	// record self to be used by static callback functions
+			o->type(FL_HOR_NICE_SLIDER);
+			o->labelfont(FL_COURIER);
+			o->labelsize(12);
+			o->minimum(0.001);
+			o->maximum(0.2);
+			o->step(0.001);
+			o->value(0.01);
+			o->align(FL_ALIGN_LEFT);
+			Fl_Group::current()->resizable(o);
+			}
+		  { Fl_Button* o = m_pbtZoomAll = new Fl_Button(505, 470, 75, 20, "Z&oom All");
+		  o->labelsize(12);
+		  o->user_data((void*)(this));
+		  }
+
           o->end();
         }
         o->end();
