@@ -114,6 +114,9 @@
     <ClCompile Include="kumaModelTexture.cpp">
       <Filter>Source Files\Model</Filter>
     </ClCompile>
+    <ClCompile Include="C2interpolatingCurveEvaluator.cpp">
+      <Filter>Source Files\Curves</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="curve.h">
@@ -190,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="kumaGlobals.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C2interpolatingCurveEvaluator.h">
+      <Filter>Header Files\Curves.</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
