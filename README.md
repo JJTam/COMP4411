@@ -8,6 +8,6 @@ Impressionist [**Done**](https://github.com/logchan/COMP4411/wiki/Impressionist)
 
 Modeler [**Done**](https://github.com/logchan/COMP4411/wiki/Modeler)
 
-Trace [**In progress**](https://github.com/logchan/COMP4411/wiki/Trace)
+Trace [**Done**](https://github.com/logchan/COMP4411/wiki/Trace)
 
-Animator  **Not added**
+Animator  [**In Progress**](https://github.com/logchan/COMP4411/wiki/Animator)
