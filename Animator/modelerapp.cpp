@@ -106,6 +106,8 @@ ModelerApplication::~ModelerApplication()
 {
     // FLTK handles widget deletion
     delete m_ui;
+	if (ps)
+		delete ps;
 }
 
 int ModelerApplication::Run()
