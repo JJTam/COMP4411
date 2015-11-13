@@ -81,8 +81,8 @@ protected:
 	bool simulate;						// flag for simulation mode
 	bool dirty;							// flag for updating ui (don't worry about this)
 
-	int particleLife = 100;
-	int particleGenerationSpeed = 5;
+	int particleLife;
+	int particleGenerationSpeed;
 	std::vector< std::list<Particle>* > bakedParticles;
 	std::default_random_engine* rnd_generator;
 	int bakeTimeToIndex(float t);

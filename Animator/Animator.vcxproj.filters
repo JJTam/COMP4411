@@ -69,9 +69,6 @@
     <ClCompile Include="modelerview.cpp">
       <Filter>Source Files\Model</Filter>
     </ClCompile>
-    <ClCompile Include="robotarm.cpp">
-      <Filter>Source Files\Model</Filter>
-    </ClCompile>
     <ClCompile Include="bitmap.cpp">
       <Filter>Source Files\Particles</Filter>
     </ClCompile>
@@ -107,6 +104,15 @@
     </ClCompile>
     <ClCompile Include="CatmullRomCurveEvaluator.cpp">
       <Filter>Source Files\Curves</Filter>
+    </ClCompile>
+    <ClCompile Include="kumaModel.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="kumaInitControls.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="kumaModelTexture.cpp">
+      <Filter>Source Files\Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +184,12 @@
     </ClInclude>
     <ClInclude Include="CatmullRomCurveEvaluator.h">
       <Filter>Header Files\Curves.</Filter>
+    </ClInclude>
+    <ClInclude Include="kumaModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kumaGlobals.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

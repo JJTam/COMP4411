@@ -18,6 +18,8 @@ using namespace std;
 
 ParticleSystem::ParticleSystem() 
 {
+	particleLife = 100;
+	particleGenerationSpeed = 4;
 	simulate = false;
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
 	rnd_generator = new default_random_engine(seed);
@@ -215,10 +217,10 @@ Particle ParticleSystem::generateNewParticle()
 {
 	// TODO: read and randomize parameters
 	ParticleType type = ParticleType::BOX;
-	Vec3f size(0.2, 0.2, 0.2);
+	Vec3f size(0.05, 0.05, 0.05);
 	Vec3f initPos(0, 0, 0);
 	uniform_real_distribution<double> dist(-0.5, 0.5);
-	Vec3f initSpeed(3 + dist(*rnd_generator), 3 + dist(*rnd_generator), 3 + dist(*rnd_generator));
+	Vec3f initSpeed(0 + dist(*rnd_generator), 0.5 + dist(*rnd_generator), 3 + dist(*rnd_generator));
 	Vec3f initAcc(0, -2.4, 0);
 	return Particle(type, 1, particleLife, size, initPos, initSpeed, initAcc);
 }
