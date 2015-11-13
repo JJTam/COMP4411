@@ -229,7 +229,6 @@ void KumaModel::draw()
 							if (ps != NULL) {
 								// this should be done inside particle system
 								setDiffuseColor(0.3, 0.3, 1.0);
-								ps->computeForcesAndUpdateParticles(t);
 								ps->drawParticles(t);
 							}
 
@@ -508,7 +507,9 @@ int main()
 	ModelerControl controls[NUMCONTROLS];
 	kumaInitControls(controls);
 	
-	ParticleSystem *ps = new ParticleSystem();
+	Vec3f pcolor(0.2, 0.2, 1.0);
+	Vec3f psize(0.05, 0.05, 0.05);
+	ParticleSystem *ps = new ParticleSystem(5, 20, psize, pcolor, ParticleType::BALL);
 	ModelerApplication::Instance()->SetParticleSystem(ps);
 
 	ModelerApplication::Instance()->Init(&createKumaModel, controls, NUMCONTROLS);

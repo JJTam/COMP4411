@@ -16,11 +16,21 @@ using namespace std;
  * Constructors
  ***************/
 
-ParticleSystem::ParticleSystem() 
+ParticleSystem::ParticleSystem(int genSpeed, int life, const Vec3f& size, const Vec3f& color, ParticleType type, int fps)
 {
-	particleLife = 100;
-	particleGenerationSpeed = 4;
 	simulate = false;
+
+	particleLife = life;
+	particleGenerationSpeed = genSpeed;
+	particleColor = color;
+	particleType = type;
+	particleSize = size;
+
+	if (fps <= 0)
+		fps = 30;
+	bake_fps = fps;
+	spf = 1.0 / bake_fps;
+
 	unsigned seed = chrono::system_clock::now().time_since_epoch().count();
 	rnd_generator = new default_random_engine(seed);
 }
@@ -88,10 +98,20 @@ void ParticleSystem::resetSimulation(float t)
 }
 
 /** Compute forces and update particles **/
-void ParticleSystem::computeForcesAndUpdateParticles(float t)
+void ParticleSystem::computeForcesAndUpdateParticles(int idx)
 {
+	// right now, gravity and air resistance only
+	static float arfact = 0.1;
 
-	// TODO
+	list<Particle>* lst = bakedParticles[idx];
+	for (auto iter = lst->begin(); iter != lst->end(); ++iter)
+	{
+		auto& p = *iter;
+		Vec3f force(0, -9.8 * p.mass, 0);
+		force -= prod(p.velocity, p.velocity) * arfact;
+
+		p.acceleration = force / p.mass;
+	}
 }
 
 /** Render particles */
@@ -116,20 +136,22 @@ void ParticleSystem::drawParticles(float t)
 	{
 		for (auto iter = lst->cbegin(); iter != lst->cend(); ++iter)
 		{
-			switch (iter->type)
+			glPushMatrix();
 			{
-			case ParticleType::BOX:
-				glPushMatrix();
+				glTranslatef(iter->position[0], iter->position[1], iter->position[2]);
+				glScalef(iter->sizes[0], iter->sizes[1], iter->sizes[2]);
+				switch (iter->type)
 				{
-					glTranslatef(iter->position[0], iter->position[1], iter->position[2]);
-					glScalef(iter->sizes[0], iter->sizes[1], iter->sizes[2]);
+				case ParticleType::BOX:
 					drawBox(1, 1, 1);
+					break;
+				case ParticleType::BALL:
+					drawSphere(0.5);
+				default:
+					break;
 				}
-				glPopMatrix();
-				break;
-			default:
-				break;
 			}
+			glPopMatrix();
 		}
 	}
 	glPopMatrix();
@@ -176,6 +198,7 @@ void ParticleSystem::bakeParticles(float t)
 	list<Particle>* currLst = new list<Particle>;
 	int frameDiff = index - lastBaked;
 	float timeDiff = frameDiff * spf;
+	computeForcesAndUpdateParticles(lastBaked);
 	for (auto iter = lastLst->cbegin(); iter != lastLst->cend(); ++iter)
 	{
 		const Particle& p = *iter;
@@ -215,13 +238,12 @@ void ParticleSystem::clearBaked()
 
 Particle ParticleSystem::generateNewParticle()
 {
-	// TODO: read and randomize parameters
 	ParticleType type = ParticleType::BOX;
-	Vec3f size(0.05, 0.05, 0.05);
+	Vec3f size(particleSize[0], particleSize[1], particleSize[2]);
 	Vec3f initPos(0, 0, 0);
 	uniform_real_distribution<double> dist(-0.5, 0.5);
 	Vec3f initSpeed(0 + dist(*rnd_generator), 0.5 + dist(*rnd_generator), 3 + dist(*rnd_generator));
-	Vec3f initAcc(0, -2.4, 0);
+	Vec3f initAcc(0, 0, 0);
 	return Particle(type, 1, particleLife, size, initPos, initSpeed, initAcc);
 }
 

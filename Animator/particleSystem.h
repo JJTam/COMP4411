@@ -27,7 +27,7 @@ class ParticleSystem {
 public:
 
 	/** Constructor **/
-	ParticleSystem();
+	ParticleSystem(int genSpeed, int life, const Vec3f& size, const Vec3f& color, ParticleType type, int fps = 30);
 
 	/** Destructor **/
 	virtual ~ParticleSystem();
@@ -40,10 +40,6 @@ public:
 	// This fxn should save the configuration of all particles
 	// at current time t.
 	virtual void bakeParticles(float t);
-
-	// This function should compute forces acting on all particles
-	// and update their state (pos and vel) appropriately.
-	virtual void computeForcesAndUpdateParticles(float t);
 
 	// This function should reset the system to its initial state.
 	// When you need to reset your simulation, PLEASE USE THIS FXN.
@@ -68,25 +64,48 @@ public:
 	bool isSimulate() { return simulate; }
 	bool isDirty() { return dirty; }
 	void setDirty(bool d) { dirty = d; }
+	int getParticleLife() { return particleLife; }
+	void setParticleLife(int l) { particleLife = l; }
+	int getParticleGenerationSpeed() { return particleGenerationSpeed; }
+	void setParticleGenerationSpeed(int s) { particleGenerationSpeed = s; }
+	Vec3f getColor() { return particleColor; }
+	void setColor(const Vec3f& c) { particleColor = c; }
+	ParticleType getParticleType() { return particleType; }
+	void setParticleType(ParticleType t) { particleType = t; }
+	int getBakeFPS() { return bake_fps; }
 
 protected:
 
 	/** Some baking-related state **/
-	int bake_fps = 30;
-	float spf = 1 / 30.0;
+	int bake_fps;
+	float spf;
 	float bake_start_time;
 	float bake_end_time;
+	// store the baked particles
+	std::vector< std::list<Particle>* > bakedParticles;
 
 	/** General state variables **/
 	bool simulate;						// flag for simulation mode
 	bool dirty;							// flag for updating ui (don't worry about this)
 
+	// the number of frames that a particle would survive
 	int particleLife;
+	// the number of new particles at each frame
 	int particleGenerationSpeed;
-	std::vector< std::list<Particle>* > bakedParticles;
+	// size scale of particles
+	Vec3f particleSize;
+	// color of particles
+	Vec3f particleColor;
+	// type of particles
+	ParticleType particleType;
+
 	std::default_random_engine* rnd_generator;
+
 	int bakeTimeToIndex(float t);
 	virtual Particle generateNewParticle();
+	// This function should compute forces acting on all particles
+	// and update their state (pos and vel) appropriately.
+	virtual void computeForcesAndUpdateParticles(int idx);
 };
 
 
