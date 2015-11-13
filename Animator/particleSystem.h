@@ -17,18 +17,17 @@
 #define __PARTICLE_SYSTEM_H__
 
 #include "vec.h"
-
-
+#include "particle.h"
+#include <vector>
+#include <list>
+#include <random>
 
 class ParticleSystem {
 
 public:
 
-
-
 	/** Constructor **/
 	ParticleSystem();
-
 
 	/** Destructor **/
 	virtual ~ParticleSystem();
@@ -62,33 +61,32 @@ public:
 	// of baked particles (without leaking memory).
 	virtual void clearBaked();	
 
-
-
 	// These accessor fxns are implemented for you
 	float getBakeStartTime() { return bake_start_time; }
 	float getBakeEndTime() { return bake_end_time; }
-	float getBakeFps() { return bake_fps; }
+	int getBakeFps() { return bake_fps; }
 	bool isSimulate() { return simulate; }
 	bool isDirty() { return dirty; }
 	void setDirty(bool d) { dirty = d; }
 
-
-
 protected:
-	
-
 
 	/** Some baking-related state **/
-	float bake_fps;						// frame rate at which simulation was baked
-	float bake_start_time;				// time at which baking started 
-										// These 2 variables are used by the UI for
-										// updating the grey indicator 
-	float bake_end_time;				// time at which baking ended
+	int bake_fps = 30;
+	float spf = 1 / 30.0;
+	float bake_start_time;
+	float bake_end_time;
 
 	/** General state variables **/
 	bool simulate;						// flag for simulation mode
 	bool dirty;							// flag for updating ui (don't worry about this)
 
+	int particleLife = 100;
+	int particleGenerationSpeed = 5;
+	std::vector< std::list<Particle>* > bakedParticles;
+	std::default_random_engine* rnd_generator;
+	int bakeTimeToIndex(float t);
+	virtual Particle generateNewParticle();
 };
 
 
