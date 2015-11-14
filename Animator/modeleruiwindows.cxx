@@ -161,26 +161,35 @@ ModelerUIWindows::ModelerUIWindows() {
           o->align(FL_ALIGN_TOP_LEFT);
           { Fl_Value_Input* o = m_pC2X1ValueInput = new Fl_Value_Input(615, 75, 60, 25, "X1");
             o->labelsize(12);
-            o->step(0.01);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
             o->textsize(12);
           }
           { Fl_Value_Input* o = m_pC2Y1ValueInput = new Fl_Value_Input(700, 75, 60, 25, "Y1");
             o->labelsize(12);
-            o->step(0.01);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
             o->textsize(12);
           }
           { Fl_Value_Input* o = m_pC2X2ValueInput = new Fl_Value_Input(615, 105, 60, 25, "X2");
             o->labelsize(12);
-            o->step(0.01);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
             o->textsize(12);
           }
           { Fl_Value_Input* o = m_pC2Y2ValueInput = new Fl_Value_Input(700, 105, 60, 25, "Y2");
             o->labelsize(12);
-            o->step(0.01);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
             o->textsize(12);
           }
           { Fl_Button* o = m_pbApplyC2Points = new Fl_Button(765, 75, 50, 55, "Apply");
             o->labelsize(12);
+            o->user_data((void*)(this));
           }
           o->end();
         }
