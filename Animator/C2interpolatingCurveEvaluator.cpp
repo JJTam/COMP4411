@@ -81,6 +81,11 @@ void C2interpolatingCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvC
 	else
 	{
 		D = CalculateDerivative(ctrlPts);
+		if (ModelerApplication::getPUI()->m_pbtAdaptive->value() != 0)
+		{
+			D[0] = Point(ModelerApplication::getPUI()->m_pC2X1ValueInput->value(), ModelerApplication::getPUI()->m_pC2Y1ValueInput->value());
+			D[D.size() - 1] = Point(ModelerApplication::getPUI()->m_pC2X2ValueInput->value(), ModelerApplication::getPUI()->m_pC2Y2ValueInput->value());
+		}
 		ptvEvaluatedCurvePts.push_back(Point(0, ptvCtrlPts[0].y));
 		ptvEvaluatedCurvePts.push_back(Point(fAniLength, ptvCtrlPts[ptvCtrlPts.size() - 1].y));
 		for (int i = 0; i < ctrlPts.size() - 1; ++i)
