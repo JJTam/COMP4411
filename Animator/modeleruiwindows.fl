@@ -103,7 +103,7 @@ class ModelerUIWindows {open
           } {}
         }
         Fl_Group m_pgrpCurveGroup {
-          label Curves open selected
+          label Curves open
           xywh {160 55 660 545} labelsize 12
         } {
           Fl_Group {} {
@@ -352,8 +352,8 @@ class ModelerUIWindows {open
       }
     }
     Fl_Window m_pwndModelerWnd {
-      label Model open
-      xywh {481 95 340 296} when 0 hide resizable
+      label Model open selected
+      xywh {481 95 484 449} when 0 hide resizable
     } {
       Fl_Box m_pwndModelerView {
         label ModelerView

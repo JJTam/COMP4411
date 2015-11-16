@@ -344,7 +344,7 @@ ModelerUIWindows::ModelerUIWindows() {
     }
     o->end();
   }
-  { Fl_Window* o = m_pwndModelerWnd = new Fl_Window(340, 296, "Model");
+  { Fl_Window* o = m_pwndModelerWnd = new Fl_Window(484, 449, "Model");
     w = o;
     o->user_data((void*)(this));
     o->when(FL_WHEN_NEVER);

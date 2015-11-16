@@ -2,6 +2,7 @@
 #define _PARTICLE_H_
 
 #include "vec.h"
+#include "FL/gl.h"
 
 enum class ParticleType
 {
@@ -12,7 +13,7 @@ enum class ParticleType
 class Particle
 {
 public:
-	Particle(ParticleType type, double mass, int life, const Vec3f& sizes, const Vec3f& position, const Vec3f& velocity, const Vec3f& acceleration);
+	Particle(ParticleType type, double mass, int life, const Vec3f& sizes, const Vec3f& position, const Vec3f& velocity, const Vec3f& acceleration, GLfloat* initMat);
 
 	ParticleType type;
 	int life;
@@ -20,7 +21,7 @@ public:
 	Vec3f velocity;
 	Vec3f acceleration;
 	Vec3f position;
-
+	GLfloat* initMat;
 	double mass;
 };
 
