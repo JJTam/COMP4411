@@ -19,6 +19,7 @@
 #include <FL/Fl_Light_Button.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Value_Slider.H>
+#include <FL/Fl_Value_Input.H>
 #include "indicatorwindow.h"
 #include <FL/Fl_Slider.H>
 #include <FL/Fl_Output.H>
@@ -54,10 +55,15 @@ public:
   Fl_Choice *m_pchoCurveType;
   static Fl_Menu_Item menu_m_pchoCurveType[];
   Fl_Light_Button *m_pbtWrap;
-  Fl_Light_Button *m_pbtAdaptive;
+  Fl_Button *m_pbtZoomAll;
   Fl_Value_Slider *m_pflatnessSlider;
   Fl_Value_Slider *m_ptensionSlider;
-  Fl_Button *m_pbtZoomAll;
+  Fl_Light_Button *m_pbtAdaptive;
+  Fl_Value_Input *m_pC2X1ValueInput;
+  Fl_Value_Input *m_pC2Y1ValueInput;
+  Fl_Value_Input *m_pC2X2ValueInput;
+  Fl_Value_Input *m_pC2Y2ValueInput;
+  Fl_Button *m_pbApplyC2Points;
   Fl_Button *m_pbtStepBack;
   Fl_Button *m_pbtPlay;
   Fl_Button *m_pbtStepForw;

@@ -120,17 +120,8 @@ void CatmullRomCurveEvaluator::evaluateCurve(const std::vector<Point>& ptvCtrlPt
 	}
 	else
 	{
-		float y1;
-		if ((ptvCtrlPts[0].x + fAniLength) - ptvCtrlPts[ptvCtrlPts.size() - 1].x > 0.0f)
-		{
-			y1 = (ptvCtrlPts[0].y * (fAniLength - ptvCtrlPts[ptvCtrlPts.size() - 1].x) +
-				ptvCtrlPts[ptvCtrlPts.size() - 1].y * ptvCtrlPts[0].x) /
-				(ptvCtrlPts[0].x + fAniLength - ptvCtrlPts[ptvCtrlPts.size() - 1].x);
-		}
-		else
-			y1 = ptvCtrlPts[0].y;
-		ptvEvaluatedCurvePts.push_back(Point(0, y1));
-		ptvEvaluatedCurvePts.push_back(Point(fAniLength, y1));
+		ptvEvaluatedCurvePts.push_back(Point(0, ptvCtrlPts[0].y));
+		ptvEvaluatedCurvePts.push_back(Point(fAniLength, ptvCtrlPts[ptvCtrlPts.size() - 1].y));
 
 		ctrlPts.push_back(ptvCtrlPts[0]);
 		ctrlPts.insert(ctrlPts.end(), ptvCtrlPts.begin(), ptvCtrlPts.end());

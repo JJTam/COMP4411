@@ -937,6 +937,8 @@ m_bSaveMovie(false)
 	m_poutPlayStart->value("0.00");
 	m_poutPlayEnd->value("20.00");
 
+	m_pbApplyC2Points->callback((Fl_Callback*)cb_changeEvaluatorArg);
+
 	endTime(20.0f);
 }
 

@@ -138,6 +138,11 @@ void ParticleSystem::drawParticles(float t)
 		{
 			glPushMatrix();
 			{
+				if (iter->initMat != nullptr)
+				{
+					glLoadIdentity();
+					glMultMatrixf(iter->initMat);
+				}
 				glTranslatef(iter->position[0], iter->position[1], iter->position[2]);
 				glScalef(iter->sizes[0], iter->sizes[1], iter->sizes[2]);
 				switch (iter->type)
@@ -175,7 +180,6 @@ void ParticleSystem::bakeParticles(float t)
 		bakedParticles.push_back(nullptr);
 	int lastBaked = index;
 	while (--lastBaked >= 0 && bakedParticles[lastBaked] == nullptr);
-
 
 	if (lastBaked < 0)
 	{
@@ -244,7 +248,11 @@ Particle ParticleSystem::generateNewParticle()
 	uniform_real_distribution<double> dist(-0.5, 0.5);
 	Vec3f initSpeed(0 + dist(*rnd_generator), 0.5 + dist(*rnd_generator), 3 + dist(*rnd_generator));
 	Vec3f initAcc(0, 0, 0);
-	return Particle(type, 1, particleLife, size, initPos, initSpeed, initAcc);
+
+	GLfloat* m = new GLfloat[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, m);
+
+	return Particle(type, 1, particleLife, size, initPos, initSpeed, initAcc, m);
 }
 
 
