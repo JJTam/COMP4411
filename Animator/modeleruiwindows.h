@@ -19,6 +19,7 @@
 #include <FL/Fl_Light_Button.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Value_Slider.H>
+#include <FL/Fl_Input.H>
 #include <FL/Fl_Value_Input.H>
 #include "indicatorwindow.h"
 #include <FL/Fl_Slider.H>
@@ -59,6 +60,8 @@ public:
   Fl_Value_Slider *m_pflatnessSlider;
   Fl_Value_Slider *m_ptensionSlider;
   Fl_Light_Button *m_pbtAdaptive;
+  Fl_Input *averageMask;
+  Fl_Value_Slider *m_pDepthSlider;
   Fl_Value_Input *m_pC2X1ValueInput;
   Fl_Value_Input *m_pC2Y1ValueInput;
   Fl_Value_Input *m_pC2X2ValueInput;

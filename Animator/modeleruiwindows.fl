@@ -131,15 +131,15 @@ class ModelerUIWindows {open
               class GraphWidget
             } {}
           }
-          Fl_Group {} {
-            xywh {160 470 420 130}
+          Fl_Group {} {open
+            xywh {160 470 510 130}
           } {
             Fl_Box {} {
               label {Curve Type:}
               xywh {160 470 75 20} labelsize 12 align 20
             }
             Fl_Choice m_pchoCurveType {
-              user_data this
+              user_data this open
               xywh {230 470 115 20} labeltype NO_LABEL labelsize 12 textsize 12
             } {
               menuitem {} {
@@ -160,6 +160,10 @@ class ModelerUIWindows {open
               }
               menuitem {} {
                 label {C2-Interpolating}
+                xywh {0 0 100 20} labelsize 12
+              }
+              menuitem {} {
+                label SubDivision
                 xywh {0 0 100 20} labelsize 12
               }
             }
@@ -187,6 +191,16 @@ class ModelerUIWindows {open
               label Apdative
               user_data this
               xywh {420 470 75 20} labelsize 12
+            }
+            Fl_Input averageMask {
+              label {AverageMask:}
+              user_data this
+              xywh {505 495 115 20} labelsize 10 textsize 10
+            }
+            Fl_Value_Slider m_pDepthSlider {
+              label {Depth:}
+              user_data this selected
+              xywh {475 515 185 20} type Horizontal labelsize 12 align 4 maximum 10 step 1 value 1
             }
           }
           Fl_Group {} {
@@ -352,7 +366,7 @@ class ModelerUIWindows {open
       }
     }
     Fl_Window m_pwndModelerWnd {
-      label Model open selected
+      label Model open
       xywh {481 95 484 449} when 0 hide resizable
     } {
       Fl_Box m_pwndModelerView {

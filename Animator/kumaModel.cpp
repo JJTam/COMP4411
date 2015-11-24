@@ -513,5 +513,6 @@ int main()
 	ModelerApplication::Instance()->SetParticleSystem(ps);
 
 	ModelerApplication::Instance()->Init(&createKumaModel, controls, NUMCONTROLS);
+	ModelerApplication::getPUI()->averageMask->value("0.5 0.5");
 	return ModelerApplication::Instance()->Run();
 }
