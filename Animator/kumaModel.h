@@ -3,6 +3,7 @@
 
 #include <FL/gl.h>
 #include <map>
+#include <string>
 #include "modelerview.h"
 #include "particleSystem.h"
 
@@ -21,13 +22,17 @@ public:
 	GLuint texName;
 	unsigned char * image = NULL;
 	virtual void draw();
+	virtual int handle(int ev);
 	void drawTexture(int drawWidth);
 	void getWhichPart();
 
 private:
 	GLuint fbo;
 	GLuint render_buf;
+	GLuint depth_buf;
+	GLubyte* hiddenBuffer;
 	std::map<KumaModelPart, float*> indicatingColors;
+	std::map<KumaModelPart, std::string> partNames;
 
 	void updateParameters();
 

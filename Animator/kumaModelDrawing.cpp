@@ -103,6 +103,8 @@ void KumaModel::drawLeftArm(bool useIndicatingColor)
 		drawBox(upperArmWidth, -upperArmHeight, upperArmDepth);
 
 		// lower arm
+		if (useIndicatingColor)
+			setAmbientColorv(indicatingColors[KumaModelPart::LEFT_ARM_LOWER]);
 		glPushMatrix();
 		{
 			glTranslated((upperArmWidth - lowerArmWidth) / 2, -upperArmHeight, (upperArmDepth - lowerArmDepth) / 2);
@@ -202,6 +204,9 @@ void KumaModel::drawHead(bool useIndicatingColor)
 
 void KumaModel::drawFace(bool useIndicatingColor)
 {
+	if (useIndicatingColor)
+		setAmbientColorv(indicatingColors[KumaModelPart::HEAD]);
+
 	bool useTexture = false; // handled later...
 	if (useTexture)
 	{
@@ -236,7 +241,7 @@ void KumaModel::drawFace(bool useIndicatingColor)
 			drawBox(mouthWidth, mouthHeight, 0.02);
 
 			// If particle system exists, draw it
-			if (this->particleSystem != NULL) {
+			if (!useIndicatingColor && this->particleSystem != NULL) {
 				// this should be done inside particle system
 				setDiffuseColor(0.3, 0.3, 1.0);
 				this->particleSystem->drawParticles(t);
@@ -354,7 +359,7 @@ void KumaModel::drawLeftLeg(bool useIndicatingColor)
 
 		// left lower leg
 		if (useIndicatingColor)
-			setAmbientColorv(indicatingColors[KumaModelPart::RIGHT_LEG_LOWER]);
+			setAmbientColorv(indicatingColors[KumaModelPart::LEFT_LEG_LOWER]);
 		glPushMatrix();
 		{
 			glTranslated((upperLegWidth - lowerLegWidth) / 2, -upperLegHeight, (upperLegDepth - lowerLegDepth) / 2);
@@ -384,7 +389,6 @@ void KumaModel::drawRightLeg(bool useIndicatingColor)
 		setAmbientColorv(indicatingColors[KumaModelPart::RIGHT_LEG_UPPER]);
 	else
 		setDiffuseColor(KUMA_BODY_COLOR);
-
 	glPushMatrix();
 	{
 		glTranslated(torsoWidth - upperLegWidth - upperLegOffsetX, -upperLegWaistOffset, (torsoDepth - upperLegDepth) / 2);
