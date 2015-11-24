@@ -96,6 +96,8 @@ int KumaModel::handle(int ev)
 // Override draw() to draw out Kuma
 void KumaModel::draw()
 {
+	updateParameters();
+
 	static bool glewInitialized = false;
 	static bool glewInitializationFailed = false;
 	static int prevW = -1;
