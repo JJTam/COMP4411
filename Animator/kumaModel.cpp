@@ -1,7 +1,9 @@
+#define GLEW_STATIC
+#include <GL/glew.h>
+#include <FL/gl.h>
 #include "modelerview.h"
 #include "modelerapp.h"
 #include "modelerdraw.h"
-#include <FL/gl.h>
 #include <cmath>
 #include "kumaGlobals.h"
 #include <vector>
@@ -9,6 +11,7 @@
 #include <FL/fl_ask.h>
 #include "modelerui.h"
 #include "kumaModel.h"
+
 using namespace std;
 
 extern void kumaInitControls(ModelerControl* controls);
@@ -32,18 +35,38 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	indicatingColors[KumaModelPart::RIGHT_LEG_LOWER] = new float[] { 1.0f, 0, 0 };
 
 	// TODO: prepare hidden buffer
-	
 }
 
 // Override draw() to draw out Kuma
 void KumaModel::draw()
 {
+	static bool glewInitialized = false;
+	static bool glewInitializationFailed = false;
+
 	static GLfloat lightPosition0[] = { 4, 2, -4, 0 };
 	static GLfloat lightDiffuse0[] = { 1, 1, 1, 1 };
 	static GLfloat lightPosition1[] = { -2, 1, 5, 0 };
 	static GLfloat lightDiffuse1[] = { 1, 1, 1, 1 };
 	static GLfloat lightZeros[] = { 0,0,0,0 };
 	ModelerView::draw();
+
+	if (!glewInitialized && !glewInitializationFailed)
+	{
+		GLenum err = glewInit();
+		if (err != GLEW_OK)
+		{
+			glewInitializationFailed = true;
+			printf("glewInit() failed!\n");
+			printf("Error: %s\n", glewGetErrorString(err));
+		}
+		else
+		{
+			glewInitialized = true;
+			glGenFramebuffers(1, &fbo);
+			glGenRenderbuffers(1, &render_buf);
+
+		}
+	}
 
 	/* PHRASE 1: Render to hidden buffer */
 	// TODO: render to buffer instead of screen
