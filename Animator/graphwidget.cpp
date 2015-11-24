@@ -29,6 +29,7 @@
 #include "BSplineCurveEvaluator.h"
 #include "CatmullRomCurveEvaluator.h"
 #include "C2interpolatingCurveEvaluator.h"
+#include "SubdivisionCurveEvaluator.h"
 
 #define LEFT		1
 #define MIDDLE		2
@@ -124,6 +125,7 @@ m_flcCurrCurve(FL_BLACK)
 	m_ppceCurveEvaluators[CURVE_TYPE_CATMULLROM] = new CatmullRomCurveEvaluator();
 	// Note that C2-Interpolating curve is not a requirement
 	m_ppceCurveEvaluators[CURVE_TYPE_C2INTERPOLATING] = new C2interpolatingCurveEvaluator();
+	m_ppceCurveEvaluators[CURVE_TYPE_SUBDIVISION] = new SubdivisionCurveEvaluator();
 
 }
 

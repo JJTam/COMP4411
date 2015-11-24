@@ -915,6 +915,7 @@ m_bSaveMovie(false)
 	m_pbtAdaptive->callback((Fl_Callback*)cb_changeEvaluatorArg);
 	m_pflatnessSlider->callback((Fl_Callback*)cb_changeEvaluatorArg);
 	m_ptensionSlider->callback((Fl_Callback*)cb_changeEvaluatorArg);
+	m_pDepthSlider->callback((Fl_Callback*)cb_changeEvaluatorArg);
 	m_pbtSetCamKeyFrame->callback((Fl_Callback*)cb_setCamKeyFrame);
 	m_pbtRemoveCamKeyFrame->callback((Fl_Callback*)cb_removeCamKeyFrame);
 	m_pbtRemoveAllCamKeyFrames->callback((Fl_Callback*)cb_removeAllCamKeyFrames);
