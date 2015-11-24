@@ -74,6 +74,11 @@ ModelerDrawState* ModelerDrawState::Instance()
 // ****************************************************************************
 // Set the current material properties
 
+void setAmbientColorv(const float* c)
+{
+	setAmbientColor(c[0], c[1], c[2]);
+}
+
 void setAmbientColor(float r, float g, float b)
 {
     ModelerDrawState *mds = ModelerDrawState::Instance();
@@ -85,6 +90,11 @@ void setAmbientColor(float r, float g, float b)
     
     if (mds->m_drawMode == NORMAL)
         glMaterialfv( GL_FRONT_AND_BACK, GL_AMBIENT, mds->m_ambientColor);
+}
+
+void setDiffuseColorv(const float* c)
+{
+	setDiffuseColor(c[0], c[1], c[2]);
 }
 
 void setDiffuseColor(float r, float g, float b)

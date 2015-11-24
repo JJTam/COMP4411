@@ -34,9 +34,4 @@ void kumaInitControls(ModelerControl* controls)
 	controls[WAIST_ROTATION_X] = ModelerControl("Waist rotation X", -90, 90, 0.01f, 0);
 	controls[WAIST_ROTATION_Y] = ModelerControl("Waist rotation Y", -90, 90, 0.01f, 0);
 	controls[WAIST_ROTATION_Z] = ModelerControl("Waist rotation Z", -30, 30, 0.01f, 0);
-
-	controls[ARM_ROTATION_LIMIT] = ModelerControl("Arm rotation limit", 0, 180, 1, 180);
-	controls[WAIST_LEG_ROTATION_LIMIT] = ModelerControl("Waist and Leg rotation limit", 0, 180, 1, 180);
-
-	controls[DRAW_TEXTURE] = ModelerControl("Draw Texture", 0, 1, 1, 0);
 }

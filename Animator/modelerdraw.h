@@ -56,7 +56,9 @@ private:
 
 // Set the current material properties
 void setAmbientColor(float r, float g, float b);
+void setAmbientColorv(const float* c);
 void setDiffuseColor(float r, float g, float b);
+void setDiffuseColorv(const float* c);
 void setSpecularColor(float r, float g, float b);
 void setShininess(float s);
 
