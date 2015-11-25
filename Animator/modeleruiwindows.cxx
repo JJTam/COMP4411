@@ -154,12 +154,12 @@ ModelerUIWindows::ModelerUIWindows() {
             o->labelsize(12);
             o->user_data((void*)(this));
           }
-          { Fl_Input* o = averageMask = new Fl_Input(505, 495, 115, 20, "AverageMask:");
+          { Fl_Input* o = averageMask = new Fl_Input(230, 570, 185, 25, "AverageMask:");
             o->labelsize(10);
             o->textsize(10);
             o->user_data((void*)(this));
           }
-          { Fl_Value_Slider* o = m_pDepthSlider = new Fl_Value_Slider(475, 515, 185, 20, "Depth:");
+          { Fl_Value_Slider* o = m_pDepthSlider = new Fl_Value_Slider(230, 545, 185, 20, "Depth:");
             o->type(1);
             o->labelsize(12);
             o->maximum(10);
@@ -212,7 +212,7 @@ ModelerUIWindows::ModelerUIWindows() {
       }
       o->end();
     }
-    { Fl_Group* o = new Fl_Group(5, 545, 835, 260, "Animation Controls");
+    { Fl_Group* o = new Fl_Group(5, 605, 835, 200, "Animation Controls");
       o->labeltype(FL_NO_LABEL);
       { Fl_Group* o = new Fl_Group(155, 605, 685, 145, "Playback");
         o->labeltype(FL_NO_LABEL);
@@ -314,19 +314,6 @@ ModelerUIWindows::ModelerUIWindows() {
         o->end();
         Fl_Group::current()->resizable(o);
       }
-      { Fl_Group* o = new Fl_Group(5, 545, 145, 95, "partical system");
-        o->box(FL_ENGRAVED_BOX);
-        o->labeltype(FL_NO_LABEL);
-        { Fl_Box* o = new Fl_Box(10, 545, 90, 25, "Particle System");
-          o->labelsize(12);
-          o->align(FL_ALIGN_CENTER|FL_ALIGN_INSIDE);
-        }
-        { Fl_Button* o = m_pbtClearSim = new Fl_Button(10, 570, 135, 15, "C&lear Sim.");
-          o->labelsize(12);
-          o->user_data((void*)(this));
-        }
-        o->end();
-      }
       { Fl_Group* o = new Fl_Group(5, 645, 145, 105, "Camera");
         o->box(FL_ENGRAVED_BOX);
         o->labeltype(FL_NO_LABEL);
@@ -356,6 +343,17 @@ ModelerUIWindows::ModelerUIWindows() {
       o->labelfont(1);
       o->labelsize(18);
       o->labelcolor(7);
+    }
+    { Fl_Group* o = new Fl_Group(5, 545, 145, 95, "Particle System");
+      o->box(FL_UP_BOX);
+      o->labelsize(12);
+      o->user_data((void*)(this));
+      o->align(FL_ALIGN_TOP_LEFT|FL_ALIGN_INSIDE);
+      { Fl_Button* o = m_pbtClearSim = new Fl_Button(10, 565, 135, 20, "C&lea Sim.");
+        o->labelsize(12);
+        o->user_data((void*)(this));
+      }
+      o->end();
     }
     o->end();
   }
