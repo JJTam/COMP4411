@@ -27,6 +27,7 @@ public:
 	void drawTexture(int drawWidth);
 	void getWhichPart();
 
+
 private:
 	GLuint fbo;
 	GLuint render_buf;
@@ -37,9 +38,15 @@ private:
 	std::map<KumaModelPart, std::string> partNames;
 	std::map<KumaModelPart, std::list<int>* > partControls;
 
+	bool useProjTexture;
+	unsigned char* projBitmap;
+	int projBitmapWidth;
+	int projBitmapHeight;
+
 	void updateParameters();
 
 	// hierarchical drawing functions
+	void drawScene(bool useIndicatingColor);
 	void drawTorso(bool useIndicatingColor);
 	void drawHead(bool useIndicatingColor);
 	void drawFace(bool useIndicatingColor);

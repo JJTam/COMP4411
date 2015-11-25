@@ -11,6 +11,7 @@
 #include <FL/fl_ask.h>
 #include "modelerui.h"
 #include "kumaModel.h"
+#include "mat.h"
 
 using namespace std;
 
@@ -63,6 +64,8 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	partControls[KumaModelPart::WAIST] = new list<int>{ WAIST_ROTATION_X, WAIST_ROTATION_Y, WAIST_ROTATION_Z };
 
 	hiddenBuffer = nullptr;
+	projBitmap = nullptr;
+	useProjTexture = true;
 	lastSelectedPart = KumaModelPart::NONE;
 }
 
@@ -124,6 +127,27 @@ int KumaModel::handle(int ev)
 	}
 
 	return ModelerView::handle(ev);
+}
+
+void KumaModel::drawScene(bool useIndicatingColor)
+{
+	// draw the floor
+	setDiffuseColor(.8f, .8f, .8f);
+	glPushMatrix();
+	{
+		glTranslated(-5, 0, -5);
+		drawBox(10, 0.01f, 10);
+	}
+	glPopMatrix();
+
+	// draw the model
+	glPushMatrix();
+	{
+		glTranslated(VAL(XPOS), VAL(YPOS), VAL(ZPOS));
+
+		drawTorso(false);
+	}
+	glPopMatrix();
 }
 
 // Override draw() to draw out Kuma
@@ -237,23 +261,81 @@ void KumaModel::draw()
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuse1);
 	setAmbientColor(0, 0, 0);
 
-	// draw the floor
-	setDiffuseColor(.8f, .8f, .8f);
-	glPushMatrix();
+	static GLfloat textureXform[16];
+
+	if (useProjTexture && projBitmap == nullptr)
 	{
-		glTranslated(-5, 0, -5);
-		drawBox(10, 0.01f, 10);
-	}
-	glPopMatrix();
+		projBitmap = readBMP("projected_texture.bmp", projBitmapWidth, projBitmapHeight);
+		if (projBitmap == nullptr)
+		{
+			printf("Failed loading projected texture bitmap.\n");
+			useProjTexture = false;
+		}
+		else
+		{
+			static GLfloat borderColor[4] = { 1.0, 1.0, 1.0, 1.0 };
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 
-	// draw the model
-	glPushMatrix();
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+			gluBuild2DMipmaps(GL_TEXTURE_2D, 3, projBitmapWidth, projBitmapHeight, GL_RGB, GL_UNSIGNED_BYTE, projBitmap);
+			glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+			glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+			glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+			glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+		}
+	}
+
+	if (useProjTexture && projBitmap != nullptr)
 	{
-		glTranslated(VAL(XPOS), VAL(YPOS), VAL(ZPOS));
+		auto pUI = ModelerApplication::getPUI();
+		Vec3f projPos(0.0f, 3.0f, -pUI->m_pDepthSlider->value());
+		Vec3f projAt(0.0f, 0.0f, 0.0f);
+		Vec3f projUp(0.0f, 1.0f, 0.0f);
+		projUp.normalize();
 
-		drawTorso(false);
+		GLfloat M_t[16];
+		Vec3f F(projAt - projPos); F.normalize();
+		Vec3f normalS = F^projUp; normalS.normalize();
+		Vec3f u = normalS^F; u.normalize();
+		Mat4f M(normalS[0], normalS[1], normalS[2], 0,
+			u[0], u[1], u[2], 0,
+			-F[0], -F[1], -F[2], 0,
+			0, 0, 0, 1);
+		
+		M = Mat4f::createScale(0.5, 0.5, 0.5) * M;
+		M = Mat4f::createTranslation(0.5, 0.5, 0.5) * M;
+		M.transpose();
+		M.getGLMatrix(M_t);
+
+		glTexGenfv(GL_S, GL_EYE_PLANE, M_t);
+		glTexGenfv(GL_T, GL_EYE_PLANE, M_t + 4);
+		glTexGenfv(GL_R, GL_EYE_PLANE, M_t + 8);
+		glTexGenfv(GL_Q, GL_EYE_PLANE, M_t + 12);
+
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_TEXTURE_GEN_S);
+		glEnable(GL_TEXTURE_GEN_T);
+		glEnable(GL_TEXTURE_GEN_R);
+		glEnable(GL_TEXTURE_GEN_Q);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_GEQUAL);
+		drawScene(false);
+
+		glDisable(GL_TEXTURE_2D);
+		glDisable(GL_TEXTURE_GEN_S);
+		glDisable(GL_TEXTURE_GEN_T);
+		glDisable(GL_TEXTURE_GEN_R);
+		glDisable(GL_TEXTURE_GEN_Q);
 	}
-	glPopMatrix();
-
+	else
+	{
+		drawScene(false);
+	}
 	endDraw();
 }
