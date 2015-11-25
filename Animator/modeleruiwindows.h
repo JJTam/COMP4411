@@ -80,10 +80,10 @@ public:
   Fl_Output *m_poutTime;
   Fl_Output *m_poutPlayStart;
   Fl_Output *m_poutPlayEnd;
-  Fl_Button *m_pbtClearSim;
   Fl_Button *m_pbtSetCamKeyFrame;
   Fl_Button *m_pbtRemoveCamKeyFrame;
   Fl_Button *m_pbtRemoveAllCamKeyFrames;
+  Fl_Button *m_pbtClearSim;
   Fl_Window *m_pwndModelerWnd;
   ModelerView *m_pwndModelerView;
 };
