@@ -49,18 +49,18 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	partNames[KumaModelPart::RIGHT_LEG_LOWER] = "Right lower leg";
 	partNames[KumaModelPart::WAIST] = "Waist";
 
-	partControls[KumaModelPart::NONE] = std::make_pair(0, 0);
-	partControls[KumaModelPart::TORSO] = std::make_pair(XPOS, 3);
-	partControls[KumaModelPart::HEAD] = std::make_pair(HEAD_ROTATION_X, 3);
-	partControls[KumaModelPart::LEFT_ARM_UPPER] = std::make_pair(LEFT_UPPER_ARM_ROTATION_X, 3);
-	partControls[KumaModelPart::LEFT_ARM_LOWER] = std::make_pair(LEFT_LOWER_ARM_ROTATION_X, 1);
-	partControls[KumaModelPart::RIGHT_ARM_UPPER] = std::make_pair(RIGHT_UPPER_ARM_ROTATION_X, 3);
-	partControls[KumaModelPart::RIGHT_ARM_LOWER] = std::make_pair(RIGHT_LOWER_ARM_ROTATION_X, 1);
-	partControls[KumaModelPart::LEFT_LEG_UPPER] = std::make_pair(LEFT_UPPER_LEG_ROTATION_X, 3);
-	partControls[KumaModelPart::LEFT_LEG_LOWER] = std::make_pair(LEFT_LOWER_LEG_ROTATION_X, 1);
-	partControls[KumaModelPart::RIGHT_LEG_UPPER] = std::make_pair(RIGHT_UPPER_LEG_ROTATION_X, 3);
-	partControls[KumaModelPart::RIGHT_LEG_LOWER] = std::make_pair(RIGHT_LOWER_LEG_ROTATION_X, 1);
-	partControls[KumaModelPart::WAIST] = std::make_pair(WAIST_ROTATION_X, 3);
+	partControls[KumaModelPart::NONE] = new list<int>{ 0 };
+	partControls[KumaModelPart::TORSO] = new list<int>{ XPOS, YPOS, ZPOS };
+	partControls[KumaModelPart::HEAD] = new list<int>{ HEAD_ROTATION_X, HEAD_ROTATION_Y, HEAD_ROTATION_Z };
+	partControls[KumaModelPart::LEFT_ARM_UPPER] = new list<int>{ LEFT_UPPER_ARM_ROTATION_X, LEFT_UPPER_ARM_ROTATION_Y, LEFT_UPPER_ARM_ROTATION_Z };
+	partControls[KumaModelPart::LEFT_ARM_LOWER] = new list<int>{ LEFT_LOWER_ARM_ROTATION_X };
+	partControls[KumaModelPart::RIGHT_ARM_UPPER] = new list<int>{ RIGHT_UPPER_ARM_ROTATION_X, RIGHT_UPPER_ARM_ROTATION_Y, RIGHT_UPPER_ARM_ROTATION_Z };
+	partControls[KumaModelPart::RIGHT_ARM_LOWER] = new list<int>{ RIGHT_LOWER_ARM_ROTATION_X };
+	partControls[KumaModelPart::LEFT_LEG_UPPER] = new list<int>{ LEFT_UPPER_LEG_ROTATION_X, LEFT_UPPER_LEG_ROTATION_Y, LEFT_UPPER_LEG_ROTATION_Z };
+	partControls[KumaModelPart::LEFT_LEG_LOWER] = new list<int>{ LEFT_LOWER_LEG_ROTATION_X };
+	partControls[KumaModelPart::RIGHT_LEG_UPPER] = new list<int>{ RIGHT_UPPER_LEG_ROTATION_X, RIGHT_UPPER_LEG_ROTATION_Y, RIGHT_UPPER_LEG_ROTATION_Z };
+	partControls[KumaModelPart::RIGHT_LEG_LOWER] = new list<int>{ RIGHT_LOWER_LEG_ROTATION_X };
+	partControls[KumaModelPart::WAIST] = new list<int>{ WAIST_ROTATION_X, WAIST_ROTATION_Y, WAIST_ROTATION_Z };
 
 	hiddenBuffer = nullptr;
 }
@@ -104,13 +104,16 @@ int KumaModel::handle(int ev)
 				if (part != KumaModelPart::NONE)
 				{
 					auto pUI = ModelerApplication::getPUI();
-					pUI->m_pbrsBrowser->select(partControls[part].first, partControls[part].second);
+					pUI->m_pbrsBrowser->deselect();
+					for (int ctrl : (*partControls[part]))
+					{
+						pUI->m_pbrsBrowser->select(ctrl + 1);
+					}
+					pUI->m_pbrsBrowser->do_callback();
 				}
 
 				// printf("val = %.2f, ref = %d, mindiff = %.2f, you clicked on %s.\n", val, refIndex, mindiff, partNames[part].c_str());
-				printf("You clicked on %s.\n", partNames[part].c_str());
-
-				
+				// printf("You clicked on %s.\n", partNames[part].c_str());
 			}
 			break;
 		default:

@@ -34,7 +34,7 @@ private:
 	GLubyte* hiddenBuffer;
 	std::map<KumaModelPart, float*> indicatingColors;
 	std::map<KumaModelPart, std::string> partNames;
-	std::map<KumaModelPart, std::pair<int, int> > partControls;
+	std::map<KumaModelPart, std::list<int>* > partControls;
 
 	void updateParameters();
 
