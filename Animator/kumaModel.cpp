@@ -63,6 +63,7 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	partControls[KumaModelPart::WAIST] = new list<int>{ WAIST_ROTATION_X, WAIST_ROTATION_Y, WAIST_ROTATION_Z };
 
 	hiddenBuffer = nullptr;
+	lastSelectedPart = KumaModelPart::NONE;
 }
 
 int KumaModel::handle(int ev)
@@ -111,6 +112,8 @@ int KumaModel::handle(int ev)
 					}
 					pUI->m_pbrsBrowser->do_callback();
 				}
+
+				lastSelectedPart = part;
 
 				// printf("val = %.2f, ref = %d, mindiff = %.2f, you clicked on %s.\n", val, refIndex, mindiff, partNames[part].c_str());
 				// printf("You clicked on %s.\n", partNames[part].c_str());

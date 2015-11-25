@@ -11,6 +11,8 @@
 #define KUMA_CLOTH_COLOR 1.0f, 1.0f, 1.0f
 #define KUMA_CLOTH_PART2_COLOR 0.310f, 0.596f, 0.624f
 #define KUMA_TIE_COLOR 1.0f, 0.01f, 0.01f
+#define KUMA_SELECTION_AMBIENT 0.3f, 0.3f, 0.7f
+#define RESET_AMBIENT setAmbientColor(0, 0, 0)
 
 #define ANGLE2RAIDUS_FACTOR 3.141592654 / 180
 
@@ -51,6 +53,7 @@ void KumaModel::drawClothes(double clothHeight, double innerWidth, double innerH
 void KumaModel::drawTorso(bool useIndicatingColor)
 {
 	// torso
+	RESET_AMBIENT;
 	if (useIndicatingColor)
 		setAmbientColorv(indicatingColors[KumaModelPart::TORSO]);
 	else
@@ -58,10 +61,11 @@ void KumaModel::drawTorso(bool useIndicatingColor)
 	glPushMatrix();
 	{
 		glTranslated(-torsoWidth / 2, lowerLegHeight + upperLegHeight + waistHeight + waistTorsoOffset + upperLegWaistOffset, -torsoDepth / 2);
+		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::TORSO)
+		{
+			setAmbientColor(KUMA_SELECTION_AMBIENT);
+		}
 		drawBox(torsoWidth, torsoHeight, torsoDepth);
-
-		drawHead(useIndicatingColor);
-		drawWaist(useIndicatingColor);
 
 		// torso clothes
 		glPushMatrix();
@@ -79,6 +83,8 @@ void KumaModel::drawTorso(bool useIndicatingColor)
 		}
 		glPopMatrix(); // torso clothes
 
+		drawHead(useIndicatingColor);
+		drawWaist(useIndicatingColor);
 		drawLeftArm(useIndicatingColor);
 		drawRightArm(useIndicatingColor);
 	}
@@ -88,10 +94,15 @@ void KumaModel::drawTorso(bool useIndicatingColor)
 void KumaModel::drawLeftArm(bool useIndicatingColor)
 {
 	// left arm
+	RESET_AMBIENT;
 	if (useIndicatingColor)
 		setAmbientColorv(indicatingColors[KumaModelPart::LEFT_ARM_UPPER]);
 	else
 		setDiffuseColor(KUMA_BODY_COLOR);
+	if (!useIndicatingColor && lastSelectedPart == KumaModelPart::LEFT_ARM_UPPER)
+	{
+		setAmbientColor(KUMA_SELECTION_AMBIENT);
+	}
 	glPushMatrix();
 	{
 		glTranslated(-(upperArmWidth + upperArmBodyOffsetX), (torsoHeight - upperArmBodyOffsetY), (torsoDepth - upperArmDepth) / 2);
@@ -101,17 +112,6 @@ void KumaModel::drawLeftArm(bool useIndicatingColor)
 		glRotated(leftUpperArmRotationY, 0, 1, 0);
 		glTranslated(-upperArmWidth / 2, 0, -upperArmDepth / 2);
 		drawBox(upperArmWidth, -upperArmHeight, upperArmDepth);
-
-		// lower arm
-		if (useIndicatingColor)
-			setAmbientColorv(indicatingColors[KumaModelPart::LEFT_ARM_LOWER]);
-		glPushMatrix();
-		{
-			glTranslated((upperArmWidth - lowerArmWidth) / 2, -upperArmHeight, (upperArmDepth - lowerArmDepth) / 2);
-			glRotated(leftLowerArmRotationX, 1, 0, 0);
-			drawBox(lowerArmWidth, -lowerArmHeight, lowerArmDepth);
-		}
-		glPopMatrix();
 
 		// clothes (upper arm)
 		glPushMatrix();
@@ -128,6 +128,22 @@ void KumaModel::drawLeftArm(bool useIndicatingColor)
 			drawClothes(upperArmClothHeight, upperArmWidth, 0, upperArmDepth, false, useIndicatingColor, indicatingColors[KumaModelPart::LEFT_ARM_UPPER]);
 		}
 		glPopMatrix();
+
+		// lower arm
+		RESET_AMBIENT;
+		if (useIndicatingColor)
+			setAmbientColorv(indicatingColors[KumaModelPart::LEFT_ARM_LOWER]);
+		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::LEFT_ARM_LOWER)
+		{
+			setAmbientColor(0.3, 0.3, 0.3);
+		}
+		glPushMatrix();
+		{
+			glTranslated((upperArmWidth - lowerArmWidth) / 2, -upperArmHeight, (upperArmDepth - lowerArmDepth) / 2);
+			glRotated(leftLowerArmRotationX, 1, 0, 0);
+			drawBox(lowerArmWidth, -lowerArmHeight, lowerArmDepth);
+		}
+		glPopMatrix();
 	}
 	glPopMatrix(); // left arm
 }
@@ -135,10 +151,15 @@ void KumaModel::drawLeftArm(bool useIndicatingColor)
 void KumaModel::drawRightArm(bool useIndicatingColor)
 {
 	// right arm
+	RESET_AMBIENT;
 	if (useIndicatingColor)
 		setAmbientColorv(indicatingColors[KumaModelPart::RIGHT_ARM_UPPER]);
 	else
 		setDiffuseColor(KUMA_BODY_COLOR);
+	if (!useIndicatingColor && lastSelectedPart == KumaModelPart::RIGHT_ARM_UPPER)
+	{
+		setAmbientColor(KUMA_SELECTION_AMBIENT);
+	}
 	glPushMatrix();
 	{
 		glTranslated((torsoWidth + upperArmBodyOffsetX), (torsoHeight - upperArmBodyOffsetY), (torsoDepth - upperArmDepth) / 2);
@@ -148,17 +169,6 @@ void KumaModel::drawRightArm(bool useIndicatingColor)
 		glRotated(rightUpperArmRotationY, 0, 1, 0);
 		glTranslated(-upperArmWidth / 2, 0, -upperArmDepth / 2);
 		drawBox(upperArmWidth, -upperArmHeight, upperArmDepth);
-
-		// lower arm
-		if (useIndicatingColor)
-			setAmbientColorv(indicatingColors[KumaModelPart::RIGHT_ARM_LOWER]);
-		glPushMatrix();
-		{
-			glTranslated((upperArmWidth - lowerArmWidth) / 2, -upperArmHeight, (upperArmDepth - lowerArmDepth) / 2);
-			glRotated(rightLowerArmRotationX, 1, 0, 0);
-			drawBox(lowerArmWidth, -lowerArmHeight, lowerArmDepth);
-		}
-		glPopMatrix();
 
 		// clothes (upper arm)
 		glPushMatrix();
@@ -175,6 +185,22 @@ void KumaModel::drawRightArm(bool useIndicatingColor)
 			drawClothes(upperArmClothHeight, upperArmWidth, 0, upperArmDepth, false, useIndicatingColor, indicatingColors[KumaModelPart::RIGHT_ARM_UPPER]);
 		}
 		glPopMatrix();
+
+		// lower arm
+		RESET_AMBIENT;
+		if (useIndicatingColor)
+			setAmbientColorv(indicatingColors[KumaModelPart::RIGHT_ARM_LOWER]);
+		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::RIGHT_ARM_LOWER)
+		{
+			setAmbientColor(KUMA_SELECTION_AMBIENT);
+		}
+		glPushMatrix();
+		{
+			glTranslated((upperArmWidth - lowerArmWidth) / 2, -upperArmHeight, (upperArmDepth - lowerArmDepth) / 2);
+			glRotated(rightLowerArmRotationX, 1, 0, 0);
+			drawBox(lowerArmWidth, -lowerArmHeight, lowerArmDepth);
+		}
+		glPopMatrix();
 	}
 	glPopMatrix();
 }
@@ -182,10 +208,15 @@ void KumaModel::drawRightArm(bool useIndicatingColor)
 void KumaModel::drawHead(bool useIndicatingColor)
 {
 	// head
+	RESET_AMBIENT;
 	if (useIndicatingColor)
 		setAmbientColorv(indicatingColors[KumaModelPart::HEAD]);
 	else
 		setDiffuseColor(KUMA_BODY_COLOR);
+	if (!useIndicatingColor && lastSelectedPart == KumaModelPart::HEAD)
+	{
+		setAmbientColor(KUMA_SELECTION_AMBIENT);
+	}
 	glPushMatrix();
 	{
 		glTranslated((torsoWidth - headWidth) / 2, torsoHeight, -(headDepth - torsoDepth) / 2.0);
@@ -313,10 +344,15 @@ void KumaModel::drawHair(bool useIndicatingColor)
 void KumaModel::drawWaist(bool useIndicatingColor)
 {
 	// waist
+	RESET_AMBIENT;
 	if (useIndicatingColor)
 		setAmbientColorv(indicatingColors[KumaModelPart::NONE]);
 	else
 		setDiffuseColor(KUMA_BODY_COLOR);
+	if (!useIndicatingColor && lastSelectedPart == KumaModelPart::WAIST)
+	{
+		setAmbientColor(KUMA_SELECTION_AMBIENT);
+	}
 	glPushMatrix();
 	{
 		glTranslated(0, -(waistHeight + waistTorsoOffset), 0);
@@ -327,15 +363,15 @@ void KumaModel::drawWaist(bool useIndicatingColor)
 		glTranslated(-torsoWidth / 2, -waistHeight, -torsoDepth / 2);
 		drawBox(torsoWidth, waistHeight, torsoDepth);
 
-		drawLeftLeg(useIndicatingColor);
-		drawRightLeg(useIndicatingColor);
-
 		// clothes (waist)
 		glPushMatrix();
 		{
 			drawClothes(waistClothHeight, torsoWidth, waistHeight, torsoDepth, false, useIndicatingColor, indicatingColors[KumaModelPart::NONE]);
 		}
 		glPopMatrix();
+
+		drawLeftLeg(useIndicatingColor);
+		drawRightLeg(useIndicatingColor);
 	}
 	glPopMatrix(); // waist
 }
@@ -343,10 +379,15 @@ void KumaModel::drawWaist(bool useIndicatingColor)
 void KumaModel::drawLeftLeg(bool useIndicatingColor)
 {
 	// left upper leg
+	RESET_AMBIENT;
 	if (useIndicatingColor)
 		setAmbientColorv(indicatingColors[KumaModelPart::LEFT_LEG_UPPER]);
 	else
 		setDiffuseColor(KUMA_BODY_COLOR);
+	if (!useIndicatingColor && lastSelectedPart == KumaModelPart::LEFT_LEG_UPPER)
+	{
+		setAmbientColor(KUMA_SELECTION_AMBIENT);
+	}
 	glPushMatrix();
 	{
 		glTranslated(upperLegOffsetX, -upperLegWaistOffset, (torsoDepth - upperLegDepth) / 2);
@@ -357,9 +398,23 @@ void KumaModel::drawLeftLeg(bool useIndicatingColor)
 		glTranslated(-upperLegWidth / 2, 0, -upperLegDepth / 2);
 		drawBox(upperLegWidth, -upperLegHeight, upperLegDepth);
 
+		// clothes (upper leg)
+		glPushMatrix();
+		{
+			glRotated(180, 0, 0, 1);
+			glTranslated(-upperLegWidth, upperLegClothHeight, 0);
+			drawClothes(upperLegClothHeight, upperLegWidth, 0, upperLegDepth, false, useIndicatingColor, indicatingColors[KumaModelPart::LEFT_LEG_UPPER]);
+		}
+		glPopMatrix();
+
 		// left lower leg
+		RESET_AMBIENT;
 		if (useIndicatingColor)
 			setAmbientColorv(indicatingColors[KumaModelPart::LEFT_LEG_LOWER]);
+		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::LEFT_LEG_LOWER)
+		{
+			setAmbientColor(KUMA_SELECTION_AMBIENT);
+		}
 		glPushMatrix();
 		{
 			glTranslated((upperLegWidth - lowerLegWidth) / 2, -upperLegHeight, (upperLegDepth - lowerLegDepth) / 2);
@@ -370,14 +425,6 @@ void KumaModel::drawLeftLeg(bool useIndicatingColor)
 		}
 		glPopMatrix();
 
-		// clothes (upper leg)
-		glPushMatrix();
-		{
-			glRotated(180, 0, 0, 1);
-			glTranslated(-upperLegWidth, upperLegClothHeight, 0);
-			drawClothes(upperLegClothHeight, upperLegWidth, 0, upperLegDepth, false, useIndicatingColor, indicatingColors[KumaModelPart::LEFT_LEG_UPPER]);
-		}
-		glPopMatrix();
 	}
 	glPopMatrix(); // left upper leg
 }
@@ -385,10 +432,15 @@ void KumaModel::drawLeftLeg(bool useIndicatingColor)
 void KumaModel::drawRightLeg(bool useIndicatingColor)
 {
 	// right upper leg
+	RESET_AMBIENT;
 	if (useIndicatingColor)
 		setAmbientColorv(indicatingColors[KumaModelPart::RIGHT_LEG_UPPER]);
 	else
 		setDiffuseColor(KUMA_BODY_COLOR);
+	if (!useIndicatingColor && lastSelectedPart == KumaModelPart::RIGHT_LEG_UPPER)
+	{
+		setAmbientColor(KUMA_SELECTION_AMBIENT);
+	}
 	glPushMatrix();
 	{
 		glTranslated(torsoWidth - upperLegWidth - upperLegOffsetX, -upperLegWaistOffset, (torsoDepth - upperLegDepth) / 2);
@@ -399,9 +451,23 @@ void KumaModel::drawRightLeg(bool useIndicatingColor)
 		glTranslated(-upperLegWidth / 2, 0, -upperLegDepth / 2);
 		drawBox(upperLegWidth, -upperLegHeight, upperLegDepth);
 
+		// clothes (upper leg)
+		glPushMatrix();
+		{
+			glRotated(180, 0, 0, 1);
+			glTranslated(-upperLegWidth, upperLegClothHeight, 0);
+			drawClothes(upperLegClothHeight, upperLegWidth, 0, upperLegDepth, false, useIndicatingColor, indicatingColors[KumaModelPart::RIGHT_LEG_UPPER]);
+		}
+		glPopMatrix();
+
 		// right lower leg
+		RESET_AMBIENT;
 		if (useIndicatingColor)
 			setAmbientColorv(indicatingColors[KumaModelPart::RIGHT_LEG_LOWER]);
+		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::RIGHT_LEG_LOWER)
+		{
+			setAmbientColor(KUMA_SELECTION_AMBIENT);
+		}
 		glPushMatrix();
 		{
 			glTranslated((upperLegWidth - lowerLegWidth) / 2, -upperLegHeight, (upperLegDepth - lowerLegDepth) / 2);
@@ -409,15 +475,6 @@ void KumaModel::drawRightLeg(bool useIndicatingColor)
 			glRotated(rightLowerLegRotationX, 1, 0, 0);
 			glTranslated(0, 0, -lowerLegDepth);
 			drawBox(lowerLegWidth, -lowerLegHeight, lowerLegDepth);
-		}
-		glPopMatrix();
-
-		// clothes (upper leg)
-		glPushMatrix();
-		{
-			glRotated(180, 0, 0, 1);
-			glTranslated(-upperLegWidth, upperLegClothHeight, 0);
-			drawClothes(upperLegClothHeight, upperLegWidth, 0, upperLegDepth, false, useIndicatingColor, indicatingColors[KumaModelPart::RIGHT_LEG_UPPER]);
 		}
 		glPopMatrix();
 	}

@@ -32,6 +32,7 @@ private:
 	GLuint render_buf;
 	GLuint depth_buf;
 	GLubyte* hiddenBuffer;
+	KumaModelPart lastSelectedPart;
 	std::map<KumaModelPart, float*> indicatingColors;
 	std::map<KumaModelPart, std::string> partNames;
 	std::map<KumaModelPart, std::list<int>* > partControls;
