@@ -34,6 +34,7 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	indicatingColors[KumaModelPart::LEFT_LEG_LOWER] = new float[] { 1.0f, 0.24f, 0 };
 	indicatingColors[KumaModelPart::RIGHT_LEG_UPPER] = new float[] { 1.0f, 0.36f, 0 };
 	indicatingColors[KumaModelPart::RIGHT_LEG_LOWER] = new float[] { 1.0f, 0.48f, 0 };
+	indicatingColors[KumaModelPart::WAIST] = new float[] {1.0f, 0.58f, 0};
 
 	partNames[KumaModelPart::NONE] = "Air";
 	partNames[KumaModelPart::TORSO] = "Torso";
@@ -46,6 +47,21 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	partNames[KumaModelPart::LEFT_LEG_LOWER] = "Left lower leg";
 	partNames[KumaModelPart::RIGHT_LEG_UPPER] = "Right upper leg";
 	partNames[KumaModelPart::RIGHT_LEG_LOWER] = "Right lower leg";
+	partNames[KumaModelPart::WAIST] = "Waist";
+
+	partControls[KumaModelPart::NONE] = std::make_pair(0, 0);
+	partControls[KumaModelPart::TORSO] = std::make_pair(XPOS, 3);
+	partControls[KumaModelPart::HEAD] = std::make_pair(HEAD_ROTATION_X, 3);
+	partControls[KumaModelPart::LEFT_ARM_UPPER] = std::make_pair(LEFT_UPPER_ARM_ROTATION_X, 3);
+	partControls[KumaModelPart::LEFT_ARM_LOWER] = std::make_pair(LEFT_LOWER_ARM_ROTATION_X, 1);
+	partControls[KumaModelPart::RIGHT_ARM_UPPER] = std::make_pair(RIGHT_UPPER_ARM_ROTATION_X, 3);
+	partControls[KumaModelPart::RIGHT_ARM_LOWER] = std::make_pair(RIGHT_LOWER_ARM_ROTATION_X, 1);
+	partControls[KumaModelPart::LEFT_LEG_UPPER] = std::make_pair(LEFT_UPPER_LEG_ROTATION_X, 3);
+	partControls[KumaModelPart::LEFT_LEG_LOWER] = std::make_pair(LEFT_LOWER_LEG_ROTATION_X, 1);
+	partControls[KumaModelPart::RIGHT_LEG_UPPER] = std::make_pair(RIGHT_UPPER_LEG_ROTATION_X, 3);
+	partControls[KumaModelPart::RIGHT_LEG_LOWER] = std::make_pair(RIGHT_LOWER_LEG_ROTATION_X, 1);
+	partControls[KumaModelPart::WAIST] = std::make_pair(WAIST_ROTATION_X, 3);
+
 	hiddenBuffer = nullptr;
 }
 
@@ -61,6 +77,8 @@ int KumaModel::handle(int ev)
 		case FL_PUSH:
 			if (eventButton == FL_LEFT_MOUSE && hiddenBuffer != nullptr)
 			{
+				// determine which part of the model is clicked
+
 				int offset = (eventCoordX + (h() - eventCoordY) * w()) * 3;
 				double val = hiddenBuffer[offset] / 255.0;
 				int refIndex = 0;
@@ -82,8 +100,17 @@ int KumaModel::handle(int ev)
 					}
 				}
 
+				// activate the coresponding curves
+				if (part != KumaModelPart::NONE)
+				{
+					auto pUI = ModelerApplication::getPUI();
+					pUI->m_pbrsBrowser->select(partControls[part].first, partControls[part].second);
+				}
+
 				// printf("val = %.2f, ref = %d, mindiff = %.2f, you clicked on %s.\n", val, refIndex, mindiff, partNames[part].c_str());
 				printf("You clicked on %s.\n", partNames[part].c_str());
+
+				
 			}
 			break;
 		default:

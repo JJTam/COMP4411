@@ -4,12 +4,13 @@
 #include <FL/gl.h>
 #include <map>
 #include <string>
+#include <list>
 #include "modelerview.h"
 #include "particleSystem.h"
 
 enum class KumaModelPart
 {
-	TORSO, HEAD, 
+	TORSO, HEAD, WAIST,
 	LEFT_ARM_UPPER, LEFT_ARM_LOWER, RIGHT_ARM_UPPER, RIGHT_ARM_LOWER,
 	LEFT_LEG_UPPER, LEFT_LEG_LOWER, RIGHT_LEG_UPPER, RIGHT_LEG_LOWER,
 	NONE
@@ -33,6 +34,7 @@ private:
 	GLubyte* hiddenBuffer;
 	std::map<KumaModelPart, float*> indicatingColors;
 	std::map<KumaModelPart, std::string> partNames;
+	std::map<KumaModelPart, std::pair<int, int> > partControls;
 
 	void updateParameters();
 
