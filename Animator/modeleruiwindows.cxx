@@ -168,6 +168,10 @@ ModelerUIWindows::ModelerUIWindows() {
             o->user_data((void*)(this));
             o->align(FL_ALIGN_LEFT);
           }
+          { Fl_Light_Button* o = m_pbtBSsurface = new Fl_Light_Button(420, 495, 75, 20, "BSsurface");
+            o->labelsize(12);
+            o->user_data((void*)(this));
+          }
           o->end();
         }
         { Fl_Group* o = new Fl_Group(590, 70, 230, 65, "C2 Points");
@@ -207,6 +211,10 @@ ModelerUIWindows::ModelerUIWindows() {
             o->user_data((void*)(this));
           }
           o->end();
+        }
+        { Fl_Light_Button* o = m_pbtReadfile = new Fl_Light_Button(505, 495, 75, 20, "readFile");
+          o->labelsize(12);
+          o->user_data((void*)(this));
         }
         o->end();
       }

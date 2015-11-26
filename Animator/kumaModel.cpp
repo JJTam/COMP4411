@@ -11,7 +11,7 @@
 #include <FL/fl_ask.h>
 #include "modelerui.h"
 #include "kumaModel.h"
-
+#include "mat.h"
 using namespace std;
 
 extern void kumaInitControls(ModelerControl* controls);
@@ -237,23 +237,7 @@ void KumaModel::draw()
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuse1);
 	setAmbientColor(0, 0, 0);
 
-	// draw the floor
-	setDiffuseColor(.8f, .8f, .8f);
-	glPushMatrix();
-	{
-		glTranslated(-5, 0, -5);
-		drawBox(10, 0.01f, 10);
-	}
-	glPopMatrix();
-
-	// draw the model
-	glPushMatrix();
-	{
-		glTranslated(VAL(XPOS), VAL(YPOS), VAL(ZPOS));
-
-		drawTorso(false);
-	}
-	glPopMatrix();
+	drawModel(false);
 
 	endDraw();
 }

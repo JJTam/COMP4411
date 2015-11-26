@@ -40,6 +40,7 @@ private:
 	void updateParameters();
 
 	// hierarchical drawing functions
+	void drawModel(bool useIndicatingColor);
 	void drawTorso(bool useIndicatingColor);
 	void drawHead(bool useIndicatingColor);
 	void drawFace(bool useIndicatingColor);

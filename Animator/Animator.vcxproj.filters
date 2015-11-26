@@ -132,6 +132,9 @@
     <ClCompile Include="glew.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="kumaHelper.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="curve.h">

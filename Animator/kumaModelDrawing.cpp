@@ -2,7 +2,9 @@
 #include <FL/gl.h>
 #include "modelerdraw.h"
 #include "modelerapp.h"
+#include "modelerui.h"
 #include "kumaGlobals.h"
+#include <fstream>
 
 #define KUMA_BODY_COLOR 1.0f, 0.945f, 0.9098f
 #define KUMA_HAIR_COLOR 0.588f, 0.337f, 0.302f
@@ -15,6 +17,16 @@
 #define RESET_AMBIENT setAmbientColor(0, 0, 0)
 
 #define ANGLE2RAIDUS_FACTOR 3.141592654 / 180
+
+
+extern Vec3f calculateBSplineSurfacePoint(double u, double v, const vector<Vec3f>& ctrlpts);
+
+vector<Vec3f> ctrlpts = { Vec3f(1.0, 1.0, 3.0), Vec3f(2.0, 1.0, 3.0), Vec3f(3.0, 1.0, 3.0), Vec3f(4.0, 1.0, 3.0),
+Vec3f(1.0, 2.0, 3.0), Vec3f(2.0, 2.0, 5.0), Vec3f(3.0, 2.0, 5.0), Vec3f(4.0, 2.0, 3.0),
+Vec3f(1.0, 3.0, 3.0), Vec3f(2.0, 3.0, 5.0), Vec3f(3.0, 3.0, 5.0), Vec3f(4.0, 3.0, 3.0),
+Vec3f(1.0, 4.0, 3.0), Vec3f(2.0, 4.0, 3.0), Vec3f(3.0, 4.0, 3.0), Vec3f(4.0, 4.0, 3.0),
+};
+
 
 void KumaModel::drawClothes(double clothHeight, double innerWidth, double innerHeight, double innerDepth, bool usePart2LargeHeight, bool useIndicatingColor, const float* indicatingColor)
 {
@@ -48,6 +60,89 @@ void KumaModel::drawClothes(double clothHeight, double innerWidth, double innerH
 	glTranslated(0, -part2Height, 0);
 	drawBox(-(clothThickness * 2 + clothBodyOffset * 2 + innerWidth), -clothHeight, clothThickness);
 	drawBox(-clothThickness, -clothHeight, -(innerDepth + clothThickness * 2 + clothBodyOffset));
+}
+
+void KumaModel::drawModel(bool useIndicatingColor)
+{
+	// draw the floor
+	setDiffuseColor(.8f, .8f, .8f);
+	glPushMatrix();
+	{
+		glTranslated(-5, 0, -5);
+		drawBox(10, 0.01f, 10);
+	}
+	glPopMatrix();
+
+	if (ModelerApplication::getPUI()->m_pbtBSsurface->value() > 0)
+	{
+		if (ModelerApplication::getPUI()->m_pbtReadfile->value() > 0)
+		{
+			ModelerApplication::getPUI()->m_pbtReadfile->value(0);
+			ifstream pointfile("points.txt");
+			if (!pointfile.is_open())
+			{
+				cout << "FILE doesn't exist!" << endl;
+			}
+			vector<double> tmpvector;
+			double tmp;
+			for (int i = 0; i < 48; ++i)
+			{
+				pointfile >> tmp;
+				if (pointfile.bad())
+				{
+					cout << "exception!" << endl;
+					break;
+				}
+				tmpvector.push_back(tmp);
+			}
+			if (tmpvector.size() == 48)
+			{
+				cout << "using points from file" << endl;
+				ctrlpts.clear();
+				for (int i = 0; i < 16; ++i)
+				{
+					ctrlpts.push_back(Vec3f(tmpvector[3 * i], tmpvector[3 * i + 1], tmpvector[3 * i + 2]));
+				}
+			}
+			pointfile.close();
+		}
+		setDiffuseColor(1.0f, 0.0f, 0.0f);
+		int sampleRate = 20;
+		for (int v = 0; v < sampleRate; ++v)
+		{
+			glBegin(GL_QUAD_STRIP);
+			for (int u = 0; u <= sampleRate; ++u)
+			{
+				Vec3f tmp1 = calculateBSplineSurfacePoint((double)u / sampleRate, (double)v / sampleRate, ctrlpts);
+				Vec3f tmp2 = calculateBSplineSurfacePoint((double)u / sampleRate, (double)(v + 1) / sampleRate, ctrlpts);
+				if (u != sampleRate)
+				{
+					Vec3f tmp3 = calculateBSplineSurfacePoint((double)(u + 1) / sampleRate, (double)v / sampleRate, ctrlpts);
+					Vec3f tmpN = (tmp2 - tmp1) ^ (tmp3 - tmp1);
+					tmpN.normalize();
+					glNormal3d(tmpN[0], tmpN[1], tmpN[2]);
+				}
+				else
+				{
+					Vec3f tmp3 = calculateBSplineSurfacePoint((double)(u - 1) / sampleRate, (double)v / sampleRate, ctrlpts);
+					Vec3f tmpN = (tmp2 - tmp1) ^ (tmp1 - tmp3);
+					tmpN.normalize();
+					glNormal3d(tmpN[0], tmpN[1], tmpN[2]);
+				}
+				glVertex3f(tmp1[0], tmp1[1], tmp1[2]);
+				glVertex3f(tmp2[0], tmp2[1], tmp2[2]);
+			}
+			glEnd();
+		}
+	}
+	// draw the model
+	glPushMatrix();
+	{
+		glTranslated(VAL(XPOS), VAL(YPOS), VAL(ZPOS));
+
+		drawTorso(false);
+	}
+	glPopMatrix();
 }
 
 void KumaModel::drawTorso(bool useIndicatingColor)
@@ -133,6 +228,8 @@ void KumaModel::drawLeftArm(bool useIndicatingColor)
 		RESET_AMBIENT;
 		if (useIndicatingColor)
 			setAmbientColorv(indicatingColors[KumaModelPart::LEFT_ARM_LOWER]);
+		else
+			setDiffuseColor(KUMA_BODY_COLOR);
 		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::LEFT_ARM_LOWER)
 		{
 			setAmbientColor(0.3, 0.3, 0.3);
@@ -190,6 +287,8 @@ void KumaModel::drawRightArm(bool useIndicatingColor)
 		RESET_AMBIENT;
 		if (useIndicatingColor)
 			setAmbientColorv(indicatingColors[KumaModelPart::RIGHT_ARM_LOWER]);
+		else
+			setDiffuseColor(KUMA_BODY_COLOR);
 		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::RIGHT_ARM_LOWER)
 		{
 			setAmbientColor(KUMA_SELECTION_AMBIENT);
@@ -411,6 +510,8 @@ void KumaModel::drawLeftLeg(bool useIndicatingColor)
 		RESET_AMBIENT;
 		if (useIndicatingColor)
 			setAmbientColorv(indicatingColors[KumaModelPart::LEFT_LEG_LOWER]);
+		else
+			setDiffuseColor(KUMA_BODY_COLOR);
 		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::LEFT_LEG_LOWER)
 		{
 			setAmbientColor(KUMA_SELECTION_AMBIENT);
@@ -464,6 +565,8 @@ void KumaModel::drawRightLeg(bool useIndicatingColor)
 		RESET_AMBIENT;
 		if (useIndicatingColor)
 			setAmbientColorv(indicatingColors[KumaModelPart::RIGHT_LEG_LOWER]);
+		else
+			setDiffuseColor(KUMA_BODY_COLOR);
 		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::RIGHT_LEG_LOWER)
 		{
 			setAmbientColor(KUMA_SELECTION_AMBIENT);
