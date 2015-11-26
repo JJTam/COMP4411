@@ -75,9 +75,9 @@ void KumaModel::drawModel(bool useIndicatingColor)
 
 	if (ModelerApplication::getPUI()->m_pbtBSsurface->value() > 0)
 	{
-		if (ModelerApplication::getPUI()->m_pbtReadfile->value() > 0)
+		if (ModelerApplication::getPUI()->m_pbtReadBSSfile->value() > 0)
 		{
-			ModelerApplication::getPUI()->m_pbtReadfile->value(0);
+			ModelerApplication::getPUI()->m_pbtReadBSSfile->value(0);
 			ifstream pointfile("points.txt");
 			if (!pointfile.is_open())
 			{

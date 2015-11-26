@@ -68,7 +68,10 @@ public:
   Fl_Value_Input *m_pC2X2ValueInput;
   Fl_Value_Input *m_pC2Y2ValueInput;
   Fl_Button *m_pbApplyC2Points;
-  Fl_Light_Button *m_pbtReadfile;
+  Fl_Light_Button *m_pbtReadBSSfile;
+  Fl_Choice *m_pchoShading;
+  static Fl_Menu_Item menu_m_pchoShading[];
+  Fl_Light_Button *m_pbtnTeapot;
   Fl_Button *m_pbtStepBack;
   Fl_Button *m_pbtPlay;
   Fl_Button *m_pbtStepForw;
