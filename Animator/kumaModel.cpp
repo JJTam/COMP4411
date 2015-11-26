@@ -21,6 +21,13 @@ using namespace std;
 
 extern void kumaInitControls(ModelerControl* controls);
 
+enum KUMA_BUILTIN_SHADERS
+{
+	KUMA_PHONG_SHADER = 0,
+	KUMA_CEL_SHADER,
+	KUMA_BUILTIN_SHADER_NUM
+};
+
 KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	: ModelerView(x, y, w, h, label)
 {
@@ -261,31 +268,53 @@ void KumaModel::draw()
 	glLightfv(GL_LIGHT1, GL_SPECULAR, lightSpecular);
 	setAmbientColor(0, 0, 0);
 
-	static bool celShaderLoaded = false;
-	static bool celShaderFailed = false;
-	static GLhandleARB celShaderProgram;
+	static bool shaderStaticInitialized = false;
+	static bool shaderLoaded[KUMA_BUILTIN_SHADER_NUM];
+	static bool shaderFailed[KUMA_BUILTIN_SHADER_NUM];
+	static const char* shaderVertFilenames[KUMA_BUILTIN_SHADER_NUM];
+	static const char* shaderFragFilenames[KUMA_BUILTIN_SHADER_NUM];
+	static GLhandleARB shaderPrograms[KUMA_BUILTIN_SHADER_NUM];
 
-	if (!celShaderLoaded && !celShaderFailed)
+	if (!shaderStaticInitialized)
 	{
-		if (!createProgramWithTwoShaders("celshader.vert", "celshader.frag", celShaderProgram))
+		for (int i = 0; i < KUMA_BUILTIN_SHADER_NUM; ++i)
 		{
-			celShaderFailed = true;
+			shaderLoaded[i] = false;
+			shaderFailed[i] = false;
 		}
+		shaderVertFilenames[KUMA_PHONG_SHADER] = "phongshader.vert";
+		shaderVertFilenames[KUMA_CEL_SHADER] = "celshader.vert";
+		shaderFragFilenames[KUMA_PHONG_SHADER] = "phongshader.frag";
+		shaderFragFilenames[KUMA_CEL_SHADER] = "celshader.frag";
 	}
 
-	if (!celShaderFailed)
+	int shaderSelection = ModelerApplication::getPUI()->m_pchoShading->value();
+	--shaderSelection; // 0 is default, so minus one
+
+	if (shaderSelection >= 0)
 	{
-		glUseProgram(celShaderProgram);
+		if (!shaderLoaded[shaderSelection] && !shaderFailed[shaderSelection] &&
+			!createProgramWithTwoShaders(shaderVertFilenames[shaderSelection], shaderFragFilenames[shaderSelection], shaderPrograms[shaderSelection]))
+		{
+			shaderFailed[shaderSelection] = true;
+		}
+		shaderLoaded[shaderSelection] = true;
 
-		drawTeapot();
-		drawModel(false);
+		if (!shaderFailed[shaderSelection])
+		{
+			glUseProgram(shaderPrograms[shaderSelection]);
 
-		glUseProgram(0);
-		glDepthMask(GL_TRUE);
+			if (ModelerApplication::getPUI()->m_pbtnTeapot->value() > 0)
+				drawTeapot();
+			drawModel(false);
+
+			glUseProgram(0);
+		}
 	}
 	else
 	{
 		drawModel(false);
 	}
+
 	endDraw();
 }
