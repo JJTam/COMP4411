@@ -103,7 +103,7 @@ class ModelerUIWindows {open
           } {}
         }
         Fl_Group m_pgrpCurveGroup {
-          label Curves open selected
+          label Curves open
           xywh {160 55 660 545} labelsize 12
         } {
           Fl_Group {} {
@@ -202,6 +202,11 @@ class ModelerUIWindows {open
               user_data this
               xywh {230 545 185 20} type Horizontal labelsize 12 align 4 maximum 10 step 1 value 1
             }
+            Fl_Light_Button m_pbtBSsurface {
+              label BSsurface
+              user_data this
+              xywh {420 495 75 20} labelsize 12
+            }
           }
           Fl_Group {} {
             label {C2 Points} open
@@ -228,6 +233,11 @@ class ModelerUIWindows {open
               user_data this
               xywh {765 75 50 55} labelsize 12
             }
+          }
+          Fl_Light_Button m_pbtReadfile {
+            label readFile
+            user_data this selected
+            xywh {505 495 75 20} labelsize 12
           }
         }
       }

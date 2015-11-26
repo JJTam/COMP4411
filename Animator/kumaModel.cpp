@@ -15,6 +15,7 @@
 #include "kumaModel.h"
 #include "bitmap.h"
 #include "shaderHelper.h"
+#include "mat.h"
 
 using namespace std;
 

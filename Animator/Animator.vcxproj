@@ -190,6 +190,7 @@ copy /Y "$(ProjectDir)Shaders\*.frag" "$(TargetDir)"</Command>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="glew.c" />
+    <ClCompile Include="kumaHelper.cpp" />
     <ClCompile Include="kumaInitControls.cpp" />
     <ClCompile Include="kumaModel.cpp" />
     <ClCompile Include="kumaModelDrawing.cpp" />
