@@ -293,6 +293,7 @@ copy /Y "$(ProjectDir)Shaders\*.frag" "$(TargetDir)"</Command>
     </ClCompile>
     <ClCompile Include="shaderHelper.cpp" />
     <ClCompile Include="SubdivisionCurveEvaluator.cpp" />
+    <ClCompile Include="teapotHelper.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>

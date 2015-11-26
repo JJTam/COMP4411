@@ -105,3 +105,18 @@ bool createProgramLinked(const std::vector<GLhandleARB>& shaders, GLhandleARB& p
 
 	return true;
 }
+
+bool createProgramWithTwoShaders(const char* vertShader, const char* fragShader, GLhandleARB& programID)
+{
+	GLhandleARB vertID;
+	GLhandleARB fragID;
+
+	if (!createShaderCompiled(vertShader, GL_VERTEX_SHADER, vertID) ||
+		!createShaderCompiled(fragShader, GL_FRAGMENT_SHADER, fragID) ||
+		!createProgramLinked(vector<GLhandleARB> { vertID, fragID }, programID))
+	{
+		return false;
+	}
+	
+	return true;
+}

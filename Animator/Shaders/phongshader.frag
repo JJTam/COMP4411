@@ -22,11 +22,5 @@ void main (void)
         color = color + NdotL * gl_FrontMaterial.diffuse * gl_LightSource[i].diffuse * distAtten + Ispec;
     }
     
-    color = color + gl_FrontMaterial.ambient;
-    float col0ref = color[0];
-    color[0] = ((int)(color[0] * 100)) / 20 / 5.0;
-    color[1] = color[1] * color[0] / col0ref;
-    color[2] = color[2] * color[0] / col0ref;
-    
-    gl_FragColor = color;
+    gl_FragColor = color + gl_FrontMaterial.ambient;
 }

@@ -1,16 +1,19 @@
 #define GLEW_STATIC
+
 #include <GL/glew.h>
 #include <FL/gl.h>
+#include <FL/glut.h>
+
+#include <cmath>
+#include <vector>
+
 #include "modelerview.h"
 #include "modelerapp.h"
 #include "modelerdraw.h"
-#include <cmath>
-#include "kumaGlobals.h"
-#include <vector>
-#include "bitmap.h"
-#include <FL/fl_ask.h>
 #include "modelerui.h"
+#include "kumaGlobals.h"
 #include "kumaModel.h"
+#include "bitmap.h"
 #include "shaderHelper.h"
 
 using namespace std;
@@ -127,7 +130,20 @@ int KumaModel::handle(int ev)
 	return ModelerView::handle(ev);
 }
 
-
+void drawTeapot()
+{
+	glPushMatrix();
+	{
+		setSpecularColor(1, 1, 1);
+		setDiffuseColor(0.8, 0.4, 0.4);
+		setShininess(80);
+		glTranslated(-2, 1, -2);
+		glRotated(50, 0, -1, 0);
+		glutSolidTeapot(1);
+		setSpecularColor(0, 0, 0);
+	}
+	glPopMatrix();
+}
 
 // Override draw() to draw out Kuma
 void KumaModel::draw()
@@ -145,7 +161,8 @@ void KumaModel::draw()
 	static GLfloat lightPosition1[] = { -2, 1, 5, 0 };
 	static GLfloat lightDiffuse1[] = { 1, 1, 1, 1 };
 	static GLfloat lightZeros[] = { 0, 0, 0, 0 };
-	static GLfloat lightAmbient[] = { 0.9, 0.9, 0.9, 0.9 };
+	static GLfloat lightAmbient[] = { 0.9, 0.9, 0.9, 1 };
+	static GLfloat lightSpecular[] = { 0.1, 0.1, 0.1, 1 };
 	ModelerView::draw();
 
 	int drawWidth = w();
@@ -236,35 +253,34 @@ void KumaModel::draw()
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightZeros);
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition0);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse0);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
 	glLightfv(GL_LIGHT1, GL_AMBIENT, lightZeros);
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition1);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuse1);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, lightSpecular);
 	setAmbientColor(0, 0, 0);
 
 	static bool celShaderLoaded = false;
 	static bool celShaderFailed = false;
-	static GLhandleARB celVS;
-	static GLhandleARB celFS;
 	static GLhandleARB celShaderProgram;
+
 	if (!celShaderLoaded && !celShaderFailed)
 	{
-		if (!createShaderCompiled("celshader.vert", GL_VERTEX_SHADER, celVS)||
-			!createShaderCompiled("celshader.frag", GL_FRAGMENT_SHADER, celFS) ||
-			!createProgramLinked(vector<GLhandleARB> { celVS, celFS }, celShaderProgram))
+		if (!createProgramWithTwoShaders("celshader.vert", "celshader.frag", celShaderProgram))
 		{
 			celShaderFailed = true;
 		}
-		else
-		{
-			celShaderLoaded = true;
-		}
 	}
 
-	if (celShaderLoaded)
+	if (!celShaderFailed)
 	{
 		glUseProgram(celShaderProgram);
+
+		drawTeapot();
 		drawModel(false);
+
 		glUseProgram(0);
+		glDepthMask(GL_TRUE);
 	}
 	else
 	{

@@ -5,6 +5,7 @@
 #include "FL/gl.h"
 #include <vector>
 
-bool createShaderCompiled(const char* file, GLenum shaderType, GLuint& shaderID);
-bool createProgramLinked(const std::vector<GLuint>& shaders, GLuint& programID);
+bool createShaderCompiled(const char* file, GLenum shaderType, GLhandleARB& shaderID);
+bool createProgramLinked(const std::vector<GLhandleARB>& shaders, GLhandleARB& programID);
+bool createProgramWithTwoShaders(const char* vertShader, const char* fragShader, GLhandleARB& programID);
 #endif // _SHADER_HELPER_H
