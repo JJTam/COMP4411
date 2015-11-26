@@ -12,6 +12,7 @@
 #include "modelerui.h"
 #include "kumaModel.h"
 #include "mat.h"
+#include "camera.h"
 
 using namespace std;
 
@@ -293,9 +294,9 @@ void KumaModel::draw()
 	if (useProjTexture && projBitmap != nullptr)
 	{
 		auto pUI = ModelerApplication::getPUI();
-		Vec3f projPos(0.0f, 3.0f, -pUI->m_pDepthSlider->value());
-		Vec3f projAt(0.0f, 0.0f, 0.0f);
-		Vec3f projUp(0.0f, 1.0f, 0.0f);
+		Vec3f projPos(m_camera->getPosition() / 2);
+		Vec3f projAt(m_camera->getLookAt() / 2);
+		Vec3f projUp(m_camera->getUpVector());
 		projUp.normalize();
 
 		GLfloat M_t[16];
@@ -306,11 +307,19 @@ void KumaModel::draw()
 			u[0], u[1], u[2], 0,
 			-F[0], -F[1], -F[2], 0,
 			0, 0, 0, 1);
-		
+		glGetFloatv(GL_MODELVIEW, M_t);
+
 		M = Mat4f::createScale(0.5, 0.5, 0.5) * M;
 		M = Mat4f::createTranslation(0.5, 0.5, 0.5) * M;
-		M.transpose();
+		M = M.transpose();
 		M.getGLMatrix(M_t);
+
+		glMatrixMode(GL_TEXTURE);
+		glPushMatrix();
+		glRotated(M_PI, 0, 1, 0);
+		glTranslatef(projAt[0] , -projAt[1] , projAt[2]);
+		
+		glMatrixMode(GL_MODELVIEW);
 
 		glTexGenfv(GL_S, GL_EYE_PLANE, M_t);
 		glTexGenfv(GL_T, GL_EYE_PLANE, M_t + 4);
@@ -332,6 +341,10 @@ void KumaModel::draw()
 		glDisable(GL_TEXTURE_GEN_T);
 		glDisable(GL_TEXTURE_GEN_R);
 		glDisable(GL_TEXTURE_GEN_Q);
+
+		glMatrixMode(GL_TEXTURE);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
 	}
 	else
 	{

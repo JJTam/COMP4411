@@ -391,14 +391,18 @@ inline Mat4<T> Mat4<T>::createRotation( T angle, float x, float y, float z ) {
 template <class T>
 inline Mat4<T> Mat4<T>::createTranslation( T x, T y, T z ) {
 	Mat4<T> trans;
-
+	trans[0][3] = x;
+	trans[1][3] = y;
+	trans[2][3] = z;
 	return trans;
 }
 
 template <class T>
 inline Mat4<T> Mat4<T>::createScale( T sx, T sy, T sz ) {
 	Mat4<T> scale;
-
+	scale[0][0] = sx;
+	scale[1][1] = sy;
+	scale[2][2] = sz;
 	return scale;
 }
 
