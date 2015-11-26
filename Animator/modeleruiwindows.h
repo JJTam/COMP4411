@@ -62,11 +62,13 @@ public:
   Fl_Light_Button *m_pbtAdaptive;
   Fl_Input *averageMask;
   Fl_Value_Slider *m_pDepthSlider;
+  Fl_Light_Button *m_pbtBSsurface;
   Fl_Value_Input *m_pC2X1ValueInput;
   Fl_Value_Input *m_pC2Y1ValueInput;
   Fl_Value_Input *m_pC2X2ValueInput;
   Fl_Value_Input *m_pC2Y2ValueInput;
   Fl_Button *m_pbApplyC2Points;
+  Fl_Light_Button *m_pbtReadfile;
   Fl_Button *m_pbtStepBack;
   Fl_Button *m_pbtPlay;
   Fl_Button *m_pbtStepForw;
