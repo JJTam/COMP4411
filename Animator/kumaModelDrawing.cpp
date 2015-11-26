@@ -133,6 +133,8 @@ void KumaModel::drawLeftArm(bool useIndicatingColor)
 		RESET_AMBIENT;
 		if (useIndicatingColor)
 			setAmbientColorv(indicatingColors[KumaModelPart::LEFT_ARM_LOWER]);
+		else
+			setDiffuseColor(KUMA_BODY_COLOR);
 		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::LEFT_ARM_LOWER)
 		{
 			setAmbientColor(0.3, 0.3, 0.3);
@@ -190,6 +192,8 @@ void KumaModel::drawRightArm(bool useIndicatingColor)
 		RESET_AMBIENT;
 		if (useIndicatingColor)
 			setAmbientColorv(indicatingColors[KumaModelPart::RIGHT_ARM_LOWER]);
+		else
+			setDiffuseColor(KUMA_BODY_COLOR);
 		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::RIGHT_ARM_LOWER)
 		{
 			setAmbientColor(KUMA_SELECTION_AMBIENT);
@@ -411,6 +415,8 @@ void KumaModel::drawLeftLeg(bool useIndicatingColor)
 		RESET_AMBIENT;
 		if (useIndicatingColor)
 			setAmbientColorv(indicatingColors[KumaModelPart::LEFT_LEG_LOWER]);
+		else
+			setDiffuseColor(KUMA_BODY_COLOR);
 		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::LEFT_LEG_LOWER)
 		{
 			setAmbientColor(KUMA_SELECTION_AMBIENT);
@@ -464,6 +470,8 @@ void KumaModel::drawRightLeg(bool useIndicatingColor)
 		RESET_AMBIENT;
 		if (useIndicatingColor)
 			setAmbientColorv(indicatingColors[KumaModelPart::RIGHT_LEG_LOWER]);
+		else
+			setDiffuseColor(KUMA_BODY_COLOR);
 		if (!useIndicatingColor && lastSelectedPart == KumaModelPart::RIGHT_LEG_LOWER)
 		{
 			setAmbientColor(KUMA_SELECTION_AMBIENT);
