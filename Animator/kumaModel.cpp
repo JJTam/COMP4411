@@ -241,35 +241,28 @@ void KumaModel::draw()
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuse1);
 	setAmbientColor(0, 0, 0);
 
-	static bool shaderLoaded = false;
-	static bool shaderFailed = false;
-	static GLhandleARB vertexShader;
-	static GLhandleARB fragmentShader;
-	static GLhandleARB shaderProgram;
-	if (!shaderLoaded && !shaderFailed)
+	static bool celShaderLoaded = false;
+	static bool celShaderFailed = false;
+	static GLhandleARB celVS;
+	static GLhandleARB celFS;
+	static GLhandleARB celShaderProgram;
+	if (!celShaderLoaded && !celShaderFailed)
 	{
-		if (!createShaderCompiled("vertex_shader.c", GL_VERTEX_SHADER, vertexShader))
+		if (!createShaderCompiled("celshader.vert", GL_VERTEX_SHADER, celVS)||
+			!createShaderCompiled("celshader.frag", GL_FRAGMENT_SHADER, celFS) ||
+			!createProgramLinked(vector<GLhandleARB> { celVS, celFS }, celShaderProgram))
 		{
-			shaderFailed = true;
-			goto endShaderLoading;
+			celShaderFailed = true;
 		}
-		if (!createShaderCompiled("fragment_shader.c", GL_FRAGMENT_SHADER, fragmentShader))
+		else
 		{
-			shaderFailed = true;
-			goto endShaderLoading;
+			celShaderLoaded = true;
 		}
-		if (!createProgramLinked(vector<GLhandleARB> { vertexShader, fragmentShader}, shaderProgram))
-		{
-			shaderFailed = true;
-			goto endShaderLoading;
-		}
-		shaderLoaded = true;
 	}
-endShaderLoading:
 
-	if (shaderLoaded)
+	if (celShaderLoaded)
 	{
-		glUseProgram(shaderProgram);
+		glUseProgram(celShaderProgram);
 		drawModel(false);
 		glUseProgram(0);
 	}

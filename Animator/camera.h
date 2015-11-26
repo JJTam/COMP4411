@@ -82,6 +82,9 @@ public:
     inline Vec3f getLookAt() const
     { return mLookAt; }
     
+	Vec3f getPosition() const { return mPosition; }
+	Vec3f getUpVector() const { return mUpVector; }
+
     //---[ Interactive Adjustment ]------------------------
     // these should be used from a mouse event handling routine that calls
     // the startX method on a mouse down, updateX on mouse move and finally
