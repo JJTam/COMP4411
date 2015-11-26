@@ -136,6 +136,8 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="teapotHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="kumaHelper.cpp">
       <Filter>Source Files\Model</Filter>
     </ClCompile>
