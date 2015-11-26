@@ -257,6 +257,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="shaderHelper.cpp" />
     <ClCompile Include="SubdivisionCurveEvaluator.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
@@ -286,6 +287,7 @@
     <ClInclude Include="rect.h" />
     <ClInclude Include="rulerwindow.h" />
     <ClInclude Include="mat.h" />
+    <ClInclude Include="shaderHelper.h" />
     <ClInclude Include="SubdivisionCurveEvaluator.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="vec.h" />

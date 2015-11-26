@@ -11,6 +11,7 @@
 #include <FL/fl_ask.h>
 #include "modelerui.h"
 #include "kumaModel.h"
+#include "shaderHelper.h"
 
 using namespace std;
 
@@ -126,9 +127,12 @@ int KumaModel::handle(int ev)
 	return ModelerView::handle(ev);
 }
 
+
+
 // Override draw() to draw out Kuma
 void KumaModel::draw()
 {
+	
 	updateParameters();
 
 	static bool glewInitialized = false;
@@ -237,7 +241,41 @@ void KumaModel::draw()
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuse1);
 	setAmbientColor(0, 0, 0);
 
-	drawModel(false);
+	static bool shaderLoaded = false;
+	static bool shaderFailed = false;
+	static GLhandleARB vertexShader;
+	static GLhandleARB fragmentShader;
+	static GLhandleARB shaderProgram;
+	if (!shaderLoaded && !shaderFailed)
+	{
+		if (!createShaderCompiled("vertex_shader.c", GL_VERTEX_SHADER, vertexShader))
+		{
+			shaderFailed = true;
+			goto endShaderLoading;
+		}
+		if (!createShaderCompiled("fragment_shader.c", GL_FRAGMENT_SHADER, fragmentShader))
+		{
+			shaderFailed = true;
+			goto endShaderLoading;
+		}
+		if (!createProgramLinked(vector<GLhandleARB> { vertexShader, fragmentShader}, shaderProgram))
+		{
+			shaderFailed = true;
+			goto endShaderLoading;
+		}
+		shaderLoaded = true;
+	}
+endShaderLoading:
 
+	if (shaderLoaded)
+	{
+		glUseProgram(shaderProgram);
+		drawModel(false);
+		glUseProgram(0);
+	}
+	else
+	{
+		drawModel(false);
+	}
 	endDraw();
 }
