@@ -237,5 +237,7 @@ void KumaModel::draw()
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuse1);
 	setAmbientColor(0, 0, 0);
 
+	drawModel(false);
+
 	endDraw();
 }
