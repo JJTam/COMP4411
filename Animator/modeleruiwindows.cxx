@@ -95,7 +95,6 @@ ModelerUIWindows::ModelerUIWindows() {
       }
       { Fl_Group* o = m_pgrpCurveGroup = new Fl_Group(160, 55, 665, 545, "Curves");
         o->labelsize(12);
-        o->hide();
         { Fl_Group* o = new Fl_Group(160, 55, 420, 410);
           { Fl_Box* o = new Fl_Box(160, 55, 40, 20, "Useless Box");
             o->box(FL_ENGRAVED_BOX);
@@ -248,6 +247,7 @@ ModelerUIWindows::ModelerUIWindows() {
       }
       { Fl_Group* o = new Fl_Group(175, 55, 665, 550, "Texture");
         o->labelsize(12);
+        o->hide();
         { Fl_Group* o = new Fl_Group(175, 80, 75, 250, "Position");
           o->labelsize(12);
           o->align(FL_ALIGN_BOTTOM);

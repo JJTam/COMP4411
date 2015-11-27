@@ -40,6 +40,9 @@ private:
 	int projBitmapWidth;
 	int projBitmapHeight;
 	bool projBitmapFailed;
+	bool hasMouseDelta;
+	Vec3f lastMouseDelta;
+	std::map<KumaModelPart, GLfloat*> partModelMat;
 
 	void updateParameters();
 

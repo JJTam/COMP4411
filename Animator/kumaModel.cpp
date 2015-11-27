@@ -48,7 +48,7 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	indicatingColors[KumaModelPart::LEFT_LEG_LOWER] = new float[] { 1.0f, 0.24f, 0 };
 	indicatingColors[KumaModelPart::RIGHT_LEG_UPPER] = new float[] { 1.0f, 0.36f, 0 };
 	indicatingColors[KumaModelPart::RIGHT_LEG_LOWER] = new float[] { 1.0f, 0.48f, 0 };
-	indicatingColors[KumaModelPart::WAIST] = new float[] {1.0f, 0.58f, 0};
+	indicatingColors[KumaModelPart::WAIST] = new float[] {1.0f, 0.62f, 0};
 
 	partNames[KumaModelPart::NONE] = "Air";
 	partNames[KumaModelPart::TORSO] = "Torso";
@@ -79,6 +79,7 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	hiddenBuffer = nullptr;
 	projBitmap = nullptr;
 	projBitmapFailed = false;
+	hasMouseDelta = false;
 	lastSelectedPart = KumaModelPart::NONE;
 }
 
@@ -90,6 +91,7 @@ int KumaModel::handle(int ev)
 	unsigned eventButton = Fl::event_button();
 	unsigned eventState = Fl::event_state();
 	KumaModelPart part = KumaModelPart::NONE;
+	auto pUI = ModelerApplication::getPUI();
 
 	switch (ev)
 	{
@@ -122,7 +124,6 @@ int KumaModel::handle(int ev)
 				// activate the coresponding curves
 				if (part != KumaModelPart::NONE)
 				{
-					auto pUI = ModelerApplication::getPUI();
 					pUI->m_pbrsBrowser->deselect();
 					for (int ctrl : (*partControls[part]))
 					{
@@ -140,11 +141,11 @@ int KumaModel::handle(int ev)
 		case FL_DRAG:
 			if (lastSelectedPart != KumaModelPart::NONE && eventButton == FL_LEFT_MOUSE)
 			{
-				Vec3f mouseDelta = Vec3f(eventCoordX, eventCoordY, 0.0f) - prevMousePos;
+				lastMouseDelta = Vec3f(eventCoordX, eventCoordY, 0.0f) - prevMousePos;
 				prevMousePos[0] = eventCoordX;
 				prevMousePos[1] = eventCoordY;
 
-				printf("%2f, %2f\n", mouseDelta[0], mouseDelta[1]);
+				hasMouseDelta = true;
 			}
 			break;
 		default:

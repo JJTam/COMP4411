@@ -103,8 +103,8 @@ class ModelerUIWindows {open
           } {}
         }
         Fl_Group m_pgrpCurveGroup {
-          label Curves
-          xywh {160 55 665 545} labelsize 12 hide
+          label Curves selected
+          xywh {160 55 665 545} labelsize 12
         } {
           Fl_Group {} {
             private xywh {160 55 420 410} resizable
@@ -276,8 +276,8 @@ class ModelerUIWindows {open
           }
         }
         Fl_Group {} {
-          label Texture open selected
-          xywh {175 55 665 550} labelsize 12
+          label Texture open
+          xywh {175 55 665 550} labelsize 12 hide
         } {
           Fl_Group {} {
             label Position open

@@ -5,6 +5,7 @@
 #include "modelerui.h"
 #include "kumaGlobals.h"
 #include <fstream>
+#include "camera.h"
 
 #define KUMA_BODY_COLOR 1.0f, 0.945f, 0.9098f
 #define KUMA_HAIR_COLOR 0.588f, 0.337f, 0.302f
@@ -19,6 +20,7 @@
 #define ANGLE2RAIDUS_FACTOR 3.141592654 / 180
 
 
+extern Mat4f getViewMat(Vec3f pos, Vec3f lookat, Vec3f up);
 extern Vec3f calculateBSplineSurfacePoint(double u, double v, const vector<Vec3f>& ctrlpts);
 
 vector<Vec3f> ctrlpts = { Vec3f(1.0, 1.0, 3.0), Vec3f(2.0, 1.0, 3.0), Vec3f(3.0, 1.0, 3.0), Vec3f(4.0, 1.0, 3.0),
@@ -139,7 +141,6 @@ void KumaModel::drawModel(bool useIndicatingColor)
 	glPushMatrix();
 	{
 		glTranslated(VAL(XPOS), VAL(YPOS), VAL(ZPOS));
-
 		drawTorso(false);
 	}
 	glPopMatrix();
@@ -445,7 +446,7 @@ void KumaModel::drawWaist(bool useIndicatingColor)
 	// waist
 	RESET_AMBIENT;
 	if (useIndicatingColor)
-		setAmbientColorv(indicatingColors[KumaModelPart::NONE]);
+		setAmbientColorv(indicatingColors[KumaModelPart::WAIST]);
 	else
 		setDiffuseColor(KUMA_BODY_COLOR);
 	if (!useIndicatingColor && lastSelectedPart == KumaModelPart::WAIST)
@@ -465,7 +466,7 @@ void KumaModel::drawWaist(bool useIndicatingColor)
 		// clothes (waist)
 		glPushMatrix();
 		{
-			drawClothes(waistClothHeight, torsoWidth, waistHeight, torsoDepth, false, useIndicatingColor, indicatingColors[KumaModelPart::NONE]);
+			drawClothes(waistClothHeight, torsoWidth, waistHeight, torsoDepth, false, useIndicatingColor, indicatingColors[KumaModelPart::WAIST]);
 		}
 		glPopMatrix();
 
