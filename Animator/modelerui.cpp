@@ -940,7 +940,7 @@ m_bSaveMovie(false)
 	m_pbtnTeapot->callback((Fl_Callback*)cb_redraw);
 	m_pbtnEnableIK->callback((Fl_Callback*)cb_redraw);
 	m_pbtnDrawIKTarg->callback((Fl_Callback*)cb_redraw);
-
+	m_pbtBSsurface->callback((Fl_Callback*)cb_redraw);
 	m_pwndMainWnd->callback((Fl_Callback*)cb_hide);
 	m_pwndMainWnd->when(FL_HIDE);
 
