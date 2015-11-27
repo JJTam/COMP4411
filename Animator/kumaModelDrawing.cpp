@@ -19,8 +19,18 @@
 
 #define ANGLE2RAIDUS_FACTOR 3.141592654 / 180
 
+const double ik_upperArmWidth = 0.22;
+const double ik_upperArmHeight = 0.7;
+const double ik_upperArmDepth = 0.22;
+const double ik_upperArmBodyOffsetX = 0.03;
+const double ik_upperArmBodyOffsetY = 0.40;
+
+const double ik_lowerArmWidth = 0.2;
+const double ik_lowerArmHeight = 0.7;
+const double ik_lowerArmDepth = 0.2;
 
 extern Mat4f getViewMat(Vec3f pos, Vec3f lookat, Vec3f up);
+extern void solveIK(int maxIter, double step, Vec3f target, int numVals, double* vals, double* constrains, void transform(const double* in, Vec3f& out));
 extern Vec3f calculateBSplineSurfacePoint(double u, double v, const vector<Vec3f>& ctrlpts);
 
 vector<Vec3f> ctrlpts = { Vec3f(1.0, 1.0, 3.0), Vec3f(2.0, 1.0, 3.0), Vec3f(3.0, 1.0, 3.0), Vec3f(4.0, 1.0, 3.0),
@@ -29,6 +39,7 @@ Vec3f(1.0, 3.0, 3.0), Vec3f(2.0, 3.0, 5.0), Vec3f(3.0, 3.0, 5.0), Vec3f(4.0, 3.0
 Vec3f(1.0, 4.0, 3.0), Vec3f(2.0, 4.0, 3.0), Vec3f(3.0, 4.0, 3.0), Vec3f(4.0, 4.0, 3.0),
 };
 
+Mat4f currViewInv;
 
 void KumaModel::drawClothes(double clothHeight, double innerWidth, double innerHeight, double innerDepth, bool usePart2LargeHeight, bool useIndicatingColor, const float* indicatingColor)
 {
@@ -137,6 +148,10 @@ void KumaModel::drawModel(bool useIndicatingColor)
 			glEnd();
 		}
 	}
+
+	// setup vars
+	currViewInv = getViewMat(m_camera->getPosition(), m_camera->getLookAt(), m_camera->getUpVector()).inverse();
+
 	// draw the model
 	glPushMatrix();
 	{
@@ -187,6 +202,30 @@ void KumaModel::drawTorso(bool useIndicatingColor)
 	glPopMatrix(); // torso
 }
 
+GLfloat leftArmPrev[16];
+void leftArmIKfunc(const double* invars, Vec3f& out)
+{
+	glPushMatrix();
+	{
+		glLoadMatrixf(leftArmPrev);
+		glRotated(invars[0], 1, 0, 0);
+		glRotated(invars[1], 0, 0, 1);
+		glRotated(invars[2], 0, 1, 0);
+		glTranslated(-ik_upperArmWidth / 2, 0, -ik_upperArmDepth / 2);
+		glTranslated((ik_upperArmWidth - ik_lowerArmWidth) / 2, -ik_upperArmHeight, (ik_upperArmDepth - ik_lowerArmDepth) / 2);
+		glRotated(invars[3], 1, 0, 0);
+		glTranslated(ik_lowerArmWidth / 2, -ik_lowerArmHeight, ik_lowerArmDepth / 2);
+		GLfloat Mtmp[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, Mtmp);
+		Mat4f MM(Mtmp[0], Mtmp[4], Mtmp[8], Mtmp[12], Mtmp[1], Mtmp[5], Mtmp[9], Mtmp[13], Mtmp[2], Mtmp[6], Mtmp[10], Mtmp[14], Mtmp[3], Mtmp[7], Mtmp[11], Mtmp[15]);
+		Mat4f MV1M = currViewInv * MM;
+		out[0] = MV1M[0][3] / MV1M[3][3];
+		out[1] = MV1M[1][3] / MV1M[3][3];
+		out[2] = MV1M[2][3] / MV1M[3][3];
+	}
+	glPopMatrix();
+}
+
 void KumaModel::drawLeftArm(bool useIndicatingColor)
 {
 	// left arm
@@ -203,6 +242,7 @@ void KumaModel::drawLeftArm(bool useIndicatingColor)
 	{
 		glTranslated(-(upperArmWidth + upperArmBodyOffsetX), (torsoHeight - upperArmBodyOffsetY), (torsoDepth - upperArmDepth) / 2);
 		glTranslated(upperArmWidth / 2, 0, upperArmDepth / 2);
+		glGetFloatv(GL_MODELVIEW_MATRIX, leftArmPrev);
 		glRotated(leftUpperArmRotationX, 1, 0, 0);
 		glRotated(leftUpperArmRotationZ, 0, 0, 1);
 		glRotated(leftUpperArmRotationY, 0, 1, 0);
@@ -240,6 +280,45 @@ void KumaModel::drawLeftArm(bool useIndicatingColor)
 			glTranslated((upperArmWidth - lowerArmWidth) / 2, -upperArmHeight, (upperArmDepth - lowerArmDepth) / 2);
 			glRotated(leftLowerArmRotationX, 1, 0, 0);
 			drawBox(lowerArmWidth, -lowerArmHeight, lowerArmDepth);
+			glTranslated(lowerArmWidth / 2, -lowerArmHeight, lowerArmDepth / 2);
+
+			if (hasMouseDelta && lastSelectedPart == KumaModelPart::LEFT_ARM_LOWER)
+			{
+				Vec3f& targ = ikTarget[KumaModelPart::LEFT_ARM_LOWER];
+				GLfloat Mtmp[16];
+				glGetFloatv(GL_MODELVIEW_MATRIX, Mtmp);
+				Mat4f MM(Mtmp[0], Mtmp[4], Mtmp[8], Mtmp[12], Mtmp[1], Mtmp[5], Mtmp[9], Mtmp[13], Mtmp[2], Mtmp[6], Mtmp[10], Mtmp[14], Mtmp[3], Mtmp[7], Mtmp[11], Mtmp[15]);
+				Mat4f MV1M = currViewInv * MM;
+				targ[0] = MV1M[0][3] / MV1M[3][3];
+				targ[1] = MV1M[1][3] / MV1M[3][3];
+				targ[2] = MV1M[2][3] / MV1M[3][3];
+				
+				MM = MM.inverse();
+				Vec4f delta(lastMouseDelta[0], lastMouseDelta[1], 0, 0);
+				delta = MM * delta;
+				delta = delta * abs(MM[3][3]) * 0.01f;
+				targ[0] += delta[0];
+				targ[1] -= delta[1];
+				targ[2] += delta[2];
+
+				double vars[4];
+				double constrains[8];
+				vars[0] = VAL(LEFT_UPPER_ARM_ROTATION_X);
+				constrains[0] = -180; constrains[1] = 50;
+				vars[1] = VAL(LEFT_UPPER_ARM_ROTATION_Y);
+				constrains[2] = -90; constrains[3] = 90;
+				vars[2] = VAL(LEFT_UPPER_ARM_ROTATION_Z);
+				constrains[4] = -180; constrains[5] = 30;
+				vars[3] = VAL(LEFT_LOWER_ARM_ROTATION_X);
+				constrains[6] = -120; constrains[7] = 0;
+				solveIK(100, 0.02, targ, 4, vars, constrains, leftArmIKfunc);
+
+				SETVAL(LEFT_UPPER_ARM_ROTATION_X, vars[0]);
+				SETVAL(LEFT_UPPER_ARM_ROTATION_Y, vars[1]);
+				SETVAL(LEFT_UPPER_ARM_ROTATION_Z, vars[2]);
+				SETVAL(LEFT_LOWER_ARM_ROTATION_X, vars[3]);
+				hasMouseDelta = false;
+			}
 		}
 		glPopMatrix();
 	}

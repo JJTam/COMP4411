@@ -76,6 +76,11 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	partControls[KumaModelPart::RIGHT_LEG_LOWER] = new list<int>{ RIGHT_LOWER_LEG_ROTATION_X };
 	partControls[KumaModelPart::WAIST] = new list<int>{ WAIST_ROTATION_X, WAIST_ROTATION_Y, WAIST_ROTATION_Z };
 
+	ikTarget[KumaModelPart::LEFT_ARM_LOWER] = Vec3f(0, 0, 0);
+	ikTarget[KumaModelPart::RIGHT_ARM_LOWER] = Vec3f(0, 0, 0);
+	ikTarget[KumaModelPart::LEFT_LEG_LOWER] = Vec3f(0, 0, 0);
+	ikTarget[KumaModelPart::RIGHT_LEG_LOWER] = Vec3f(0, 0, 0);
+	
 	hiddenBuffer = nullptr;
 	projBitmap = nullptr;
 	projBitmapFailed = false;

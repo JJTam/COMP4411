@@ -42,8 +42,8 @@ private:
 	bool projBitmapFailed;
 	bool hasMouseDelta;
 	Vec3f lastMouseDelta;
-	std::map<KumaModelPart, GLfloat*> partModelMat;
-
+	std::map<KumaModelPart, Vec3f> ikTarget;
+	// std::map<KumaModelPart, GLfloat*> ikPrevMat;
 	void updateParameters();
 
 	// hierarchical drawing functions
