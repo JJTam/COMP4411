@@ -157,6 +157,43 @@ void drawTeapot()
 	glPopMatrix();
 }
 
+void printMat(const GLfloat * m)
+{
+	for (int x = 0; x < 4; ++x)
+	{
+		for (int y = 0; y < 4; ++y)
+		{
+			printf("%.2f  ", m[4 * y + x]);
+		}
+		printf("\n");
+	}
+	printf("[");
+	for (int x = 0; x < 4; ++x)
+	{
+		
+		for (int y = 0; y < 4; ++y)
+		{
+			printf("%.2f", m[4 * y + x]);
+			if (y != 3)printf(",");
+		}
+		if (x != 3)printf(";");
+	}
+	printf("]");
+	printf("\n\n");
+}
+
+Mat4f getViewMat(Vec3f pos, Vec3f lookat, Vec3f up)
+{
+	Vec3f F(lookat - pos); F.normalize();
+	Vec3f normalS = F^up; normalS.normalize();
+	Vec3f u = normalS^F; u.normalize();
+	Mat4f M(normalS[0], normalS[1], normalS[2], 0,
+		u[0], u[1], u[2], 0,
+		-F[0], -F[1], -F[2], 0,
+		0, 0, 0, 1);
+	return M * Mat4f::createTranslation(-pos[0], -pos[1], -pos[2]);
+}
+
 // Override draw() to draw out Kuma
 void KumaModel::draw()
 {
@@ -312,7 +349,7 @@ void KumaModel::draw()
 		{
 			glUseProgram(shaderPrograms[shaderSelection]);
 
-			if (shaderSelection == KUMA_PHONG_PROJECTIVE_SHADER && projBitmap == nullptr)
+			if (!projBitmapFailed && shaderSelection == KUMA_PHONG_PROJECTIVE_SHADER && projBitmap == nullptr)
 			{
 				projBitmap = readBMP("projected_texture.bmp", projBitmapWidth, projBitmapHeight);
 				if (projBitmap == NULL)
@@ -326,8 +363,6 @@ void KumaModel::draw()
 					glActiveTexture(GL_TEXTURE0);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 					glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
@@ -338,74 +373,56 @@ void KumaModel::draw()
 
 			if (shaderSelection == KUMA_PHONG_PROJECTIVE_SHADER && !projBitmapFailed)
 			{
-				Vec3f projPos(lightPosition0[0], lightPosition0[1], lightPosition0[2]);
+				Vec3f projPos(4, 3, -4);
 				Vec3f projAt(0, 0, 0);
 				Vec3f projUp(0, 1, 0);
 				projUp.normalize();
 				GLfloat M_t[16];
-				Vec3f F(projAt - projPos); F.normalize();
-				Vec3f normalS = F^projUp; normalS.normalize();
-				Vec3f u = normalS^F; u.normalize();
-				Mat4f M(normalS[0], normalS[1], normalS[2], 0,
-					u[0], u[1], u[2], 0,
-					-F[0], -F[1], -F[2], 0,
-					0, 0, 0, 1);
-				glPushMatrix();
-				{
-					glLoadIdentity();
-					M.getGLMatrix(M_t);
-					glMultMatrixf(M_t);
-					glTranslated(-projPos[0], -projPos[1], -projPos[2]);
-					glGetFloatv(GL_MODELVIEW, M_t);
-				}
-				glPopMatrix();
+				// proj view mat
+				Mat4f M = getViewMat(projPos, projAt, projUp);
+				M.getGLMatrix(M_t);
 				Mat4f MProjView(M_t[0], M_t[4], M_t[8], M_t[12], M_t[1], M_t[5], M_t[9], M_t[13], M_t[2], M_t[6], M_t[10], M_t[14], M_t[3], M_t[7], M_t[11], M_t[15]);
-
+				// proj proj mat
 				glPushMatrix();
 				{
 					glLoadIdentity();
-					gluPerspective(30.0f, 1.0f, 1.0f, 1000.0f);
-					glGetFloatv(GL_MODELVIEW, M_t);
+					gluPerspective(15.0f, 1.0f, 1.0f, 100.0f);
+					glGetFloatv(GL_MODELVIEW_MATRIX, M_t);
 				}
 				glPopMatrix();
 				Mat4f MProj(M_t[0], M_t[4], M_t[8], M_t[12], M_t[1], M_t[5], M_t[9], M_t[13], M_t[2], M_t[6], M_t[10], M_t[14], M_t[3], M_t[7], M_t[11], M_t[15]);
-
+				// proj bias mat
 				Mat4f MSB = Mat4f::createTranslation(0.5, 0.5, 0.5) * Mat4f::createScale(0.5, 0.5, 0.5);
 
 				(MSB * MProj * MProjView).getGLMatrix(M_t);
 
+				// compute view inverse
 				GLfloat M_viewinv[16];
-				glPushMatrix();
-				{
-					glLoadIdentity();
-					m_camera->applyViewingTransform();
-					glGetFloatv(GL_MODELVIEW, M_viewinv);
-				}
-				glPopMatrix();
-
-				//for (int i = 0; i < 4; ++i)
+				Mat4f MView = getViewMat(m_camera->getPosition(), m_camera->getLookAt(), m_camera->getUpVector());
+				//glPushMatrix();
 				//{
-				//	for (int j = 0; j < 4; ++j)
-				//	{
-				//		printf("%.2f ", MProj[i][j]);
-				//	}
-				//	printf("\n");
+				//	glLoadIdentity();
+				//	m_camera->applyViewingTransform();
+				//	glGetFloatv(GL_MODELVIEW_MATRIX, M_viewinv);
 				//}
-				//printf("\n");
-				Mat4f MView(M_viewinv[0], M_viewinv[4], M_viewinv[8], M_viewinv[12], M_viewinv[1], M_viewinv[5], M_viewinv[9], M_viewinv[13], M_viewinv[2], M_viewinv[6], M_viewinv[10], M_viewinv[14], M_viewinv[3], M_viewinv[7], M_viewinv[11], M_viewinv[15]);
+				//glPopMatrix();
+				//Mat4f MView(M_viewinv[0], M_viewinv[4], M_viewinv[8], M_viewinv[12], M_viewinv[1], M_viewinv[5], M_viewinv[9], M_viewinv[13], M_viewinv[2], M_viewinv[6], M_viewinv[10], M_viewinv[14], M_viewinv[3], M_viewinv[7], M_viewinv[11], M_viewinv[15]);
+
 				MView = MView.inverse();
 				MView.getGLMatrix(M_viewinv);
-				
+
 				glEnable(GL_TEXTURE_2D);
+
 				glUniformMatrix4fvARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "projMatrix"), 1, GL_FALSE, M_t);
 				glUniformMatrix4fvARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "viewInv"), 1, GL_FALSE, M_viewinv);
 				glUniform1iARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "textureSampler"), 0);
-
+				glUniform4fARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "projPos"), projPos[0], projPos[1], projPos[2], 1);
 			}
 
 			if (ModelerApplication::getPUI()->m_pbtnTeapot->value() > 0)
 				drawTeapot();
 			drawModel(false);
+
 			glDisable(GL_TEXTURE_2D);
 
 			glUseProgram(0);

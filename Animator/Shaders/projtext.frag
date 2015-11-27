@@ -3,6 +3,7 @@ uniform sampler2D textureSampler;
 varying vec3 normal;
 varying vec3 pos;
 varying vec4 projTexCoord;
+varying vec4 projPosW;
 
 void main (void)  
 {  
@@ -26,9 +27,16 @@ void main (void)
     }
     
     vec4 projTexColor = vec4(0.0);
-    if (projTexCoord.q > 0 && projTexCoord.x > 0 && projTexCoord.y > 0 && projTexCoord.x < 1 && projTexCoord.y < 1)
+    vec3 projDir = normalize(projPosW - pos);
+    float projDot = max(dot(normal, projDir), 0.0);
+    projTexCoord = projTexCoord / projTexCoord.q;
+    if (projDot > 0 && projTexCoord.q > 0 && projTexCoord.x > 0 && projTexCoord.y > 0 && projTexCoord.x < 1 && projTexCoord.y < 1)
     {
         projTexColor = texture2DProj(textureSampler, projTexCoord);
     }
-    gl_FragColor = (color + gl_FrontMaterial.ambient) + projTexColor * 0.3;
+    else
+    {
+        projTexColor = vec4(1.0, 1.0, 1.0, 1.0);
+    }
+    gl_FragColor = (color + gl_FrontMaterial.ambient) * projTexColor;
 }
