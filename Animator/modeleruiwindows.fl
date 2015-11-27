@@ -11,7 +11,7 @@ class ModelerUIWindows {open
   } {
     Fl_Window m_pwndMainWnd {
       label {CS 341 Animator (Sp02)} open
-      xywh {433 64 832 754} color 185 labeltype NORMAL_LABEL when 0 visible
+      xywh {643 130 832 754} color 185 labeltype NORMAL_LABEL when 0 visible
     } {
       Fl_Menu_Bar m_pmbMenuBar {
         xywh {0 0 840 25} selection_color 137 labelsize 12 textsize 12
@@ -89,11 +89,11 @@ class ModelerUIWindows {open
         xywh {5 55 145 485} type Multi selection_color 29 labeltype NO_LABEL textsize 10
       }
       Fl_Tabs m_ptabTab {
-        user_data this
+        user_data this open
         xywh {155 30 685 575} color 185 align 0
       } {
         Fl_Scroll m_pscrlScroll {
-          label Modeler open
+          label Modeler
           xywh {155 50 430 490} type VERTICAL_ALWAYS labelsize 12 when 1 hide resizable
         } {
           Fl_Pack m_ppckPack {
@@ -103,8 +103,8 @@ class ModelerUIWindows {open
           } {}
         }
         Fl_Group m_pgrpCurveGroup {
-          label Curves open
-          xywh {160 55 660 545} labelsize 12
+          label Curves
+          xywh {160 55 665 545} labelsize 12 hide
         } {
           Fl_Group {} {
             private xywh {160 55 420 410} resizable
@@ -130,16 +130,19 @@ class ModelerUIWindows {open
               code0 {\#include "graphwidget.h"}
               class GraphWidget
             } {}
+            Fl_Group {} {open
+              xywh {185 80 395 385}
+            } {}
           }
-          Fl_Group {} {open
-            xywh {160 470 510 130}
+          Fl_Group {} {
+            xywh {160 470 420 130}
           } {
             Fl_Box {} {
               label {Curve Type:}
               xywh {160 470 75 20} labelsize 12 align 20
             }
             Fl_Choice m_pchoCurveType {
-              user_data this open
+              user_data this
               xywh {230 470 115 20} labeltype NO_LABEL labelsize 12 textsize 12
             } {
               menuitem {} {
@@ -190,7 +193,7 @@ class ModelerUIWindows {open
             Fl_Light_Button m_pbtAdaptive {
               label Apdative
               user_data this
-              xywh {420 470 75 20} labelsize 12
+              xywh {420 470 80 20} labelsize 12
             }
             Fl_Input averageMask {
               label {AverageMask:}
@@ -205,44 +208,121 @@ class ModelerUIWindows {open
             Fl_Light_Button m_pbtBSsurface {
               label BSsurface
               user_data this
-              xywh {420 495 75 20} labelsize 12
+              xywh {420 495 80 20} labelsize 12
             }
           }
           Fl_Group {} {
-            label {C2 Points} open
-            xywh {590 70 230 65} labelfont 1 labelsize 12 align 5
+            label {C2 Points}
+            xywh {420 535 160 65} labelfont 1 labelsize 12 align 5
           } {
             Fl_Value_Input m_pC2X1ValueInput {
               label X1
-              xywh {615 75 60 25} labelsize 12 minimum -10 maximum 10 step 0.1 textsize 12
+              xywh {445 540 30 25} labelsize 12 minimum -10 maximum 10 step 0.1 textsize 12
             }
             Fl_Value_Input m_pC2Y1ValueInput {
               label Y1
-              xywh {700 75 60 25} labelsize 12 minimum -10 maximum 10 step 0.1 textsize 12
+              xywh {495 540 30 25} labelsize 12 minimum -10 maximum 10 step 0.1 textsize 12
             }
             Fl_Value_Input m_pC2X2ValueInput {
               label X2
-              xywh {615 105 60 25} labelsize 12 minimum -10 maximum 10 step 0.1 textsize 12
+              xywh {445 570 30 25} labelsize 12 minimum -10 maximum 10 step 0.1 textsize 12
             }
             Fl_Value_Input m_pC2Y2ValueInput {
               label Y2
-              xywh {700 105 60 25} labelsize 12 minimum -10 maximum 10 step 0.1 textsize 12
+              xywh {495 570 30 25} labelsize 12 minimum -10 maximum 10 step 0.1 textsize 12
             }
             Fl_Button m_pbApplyC2Points {
               label Apply
               user_data this
-              xywh {765 75 50 55} labelsize 12
+              xywh {530 540 50 55} labelsize 12
             }
           }
-          Fl_Light_Button m_pbtReadfile {
-            label readFile
-            user_data this selected
+          Fl_Light_Button m_pbtReadBSSfile {
+            label ReadFile
+            user_data this
             xywh {505 495 75 20} labelsize 12
+          }
+          Fl_Group {} {
+            label {Render Option}
+            xywh {585 55 240 135} labelfont 1 labelsize 12 align 21
+          } {
+            Fl_Choice m_pchoShading {
+              label {Shader:}
+              user_data this open
+              xywh {635 80 110 20} labelsize 12 textsize 12
+            } {
+              menuitem {} {
+                label Default
+                xywh {0 0 100 20} labelsize 12
+              }
+              menuitem {} {
+                label Phong
+                xywh {0 0 100 20} value 1 labelsize 12
+              }
+              menuitem {} {
+                label Cel
+                xywh {0 0 100 20} value 1 labelsize 12
+              }
+              menuitem {} {
+                label {Proj Texture}
+                xywh {0 0 100 20} labelsize 12
+              }
+            }
+            Fl_Light_Button m_pbtnTeapot {
+              label Teapot
+              user_data this
+              xywh {745 80 75 20} labelsize 12
+            }
+          }
+        }
+        Fl_Group {} {
+          label Texture open selected
+          xywh {175 55 665 550} labelsize 12
+        } {
+          Fl_Group {} {
+            label Position open
+            xywh {175 80 75 250} labelsize 12 align 2
+          } {
+            Fl_Slider m_projTextPosZ {
+              label Z
+              user_data this
+              xywh {225 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1 value 4
+            }
+            Fl_Slider m_projTextPosX {
+              label X
+              user_data this
+              xywh {175 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1 value 4
+            }
+            Fl_Slider m_projTextPosY {
+              label Y
+              user_data this
+              xywh {200 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 0 step 0.1 value -4
+            }
+          }
+          Fl_Group {} {
+            label {Look At} open
+            xywh {275 80 75 250} labelsize 12 align 2
+          } {
+            Fl_Slider m_projTextAtZ {
+              label Z
+              user_data this
+              xywh {325 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1
+            }
+            Fl_Slider m_projTextAtX {
+              label X
+              user_data this
+              xywh {275 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1
+            }
+            Fl_Slider m_projTextAtY {
+              label Y
+              user_data this
+              xywh {300 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 0 step 0.1
+            }
           }
         }
       }
       Fl_Group {} {
-        label {Animation Controls} open
+        label {Animation Controls}
         xywh {5 605 835 200} labeltype NO_LABEL
       } {
         Fl_Group {} {

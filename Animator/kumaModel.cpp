@@ -1,20 +1,34 @@
 #define GLEW_STATIC
+
 #include <GL/glew.h>
 #include <FL/gl.h>
+#include <FL/glut.h>
+
+#include <cmath>
+#include <vector>
+
 #include "modelerview.h"
 #include "modelerapp.h"
 #include "modelerdraw.h"
-#include <cmath>
-#include "kumaGlobals.h"
-#include <vector>
-#include "bitmap.h"
-#include <FL/fl_ask.h>
 #include "modelerui.h"
+#include "kumaGlobals.h"
 #include "kumaModel.h"
+#include "bitmap.h"
+#include "shaderHelper.h"
 #include "mat.h"
+#include "camera.h"
+
 using namespace std;
 
 extern void kumaInitControls(ModelerControl* controls);
+
+enum KUMA_BUILTIN_SHADERS
+{
+	KUMA_PHONG_SHADER = 0,
+	KUMA_CEL_SHADER,
+	KUMA_PHONG_PROJECTIVE_SHADER,
+	KUMA_BUILTIN_SHADER_NUM
+};
 
 KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	: ModelerView(x, y, w, h, label)
@@ -63,6 +77,8 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	partControls[KumaModelPart::WAIST] = new list<int>{ WAIST_ROTATION_X, WAIST_ROTATION_Y, WAIST_ROTATION_Z };
 
 	hiddenBuffer = nullptr;
+	projBitmap = nullptr;
+	projBitmapFailed = false;
 	lastSelectedPart = KumaModelPart::NONE;
 }
 
@@ -126,9 +142,62 @@ int KumaModel::handle(int ev)
 	return ModelerView::handle(ev);
 }
 
+void drawTeapot()
+{
+	glPushMatrix();
+	{
+		setSpecularColor(1, 1, 1);
+		setDiffuseColor(0.8, 0.4, 0.4);
+		setShininess(80);
+		glTranslated(-2, 1, -2);
+		glRotated(50, 0, -1, 0);
+		glutSolidTeapot(1);
+		setSpecularColor(0, 0, 0);
+	}
+	glPopMatrix();
+}
+
+void printMat(const GLfloat * m)
+{
+	for (int x = 0; x < 4; ++x)
+	{
+		for (int y = 0; y < 4; ++y)
+		{
+			printf("%.2f  ", m[4 * y + x]);
+		}
+		printf("\n");
+	}
+	printf("[");
+	for (int x = 0; x < 4; ++x)
+	{
+		
+		for (int y = 0; y < 4; ++y)
+		{
+			printf("%.2f", m[4 * y + x]);
+			if (y != 3)printf(",");
+		}
+		if (x != 3)printf(";");
+	}
+	printf("]");
+	printf("\n\n");
+}
+
+Mat4f getViewMat(Vec3f pos, Vec3f lookat, Vec3f up)
+{
+	Vec3f F(lookat - pos); F.normalize();
+	Vec3f normalS = F^up; normalS.normalize();
+	Vec3f u = normalS^F; u.normalize();
+	Mat4f M(normalS[0], normalS[1], normalS[2], 0,
+		u[0], u[1], u[2], 0,
+		-F[0], -F[1], -F[2], 0,
+		0, 0, 0, 1);
+	return M * Mat4f::createTranslation(-pos[0], -pos[1], -pos[2]);
+}
+
 // Override draw() to draw out Kuma
 void KumaModel::draw()
 {
+	
 	updateParameters();
 
 	static bool glewInitialized = false;
@@ -141,7 +210,8 @@ void KumaModel::draw()
 	static GLfloat lightPosition1[] = { -2, 1, 5, 0 };
 	static GLfloat lightDiffuse1[] = { 1, 1, 1, 1 };
 	static GLfloat lightZeros[] = { 0, 0, 0, 0 };
-	static GLfloat lightAmbient[] = { 0.9, 0.9, 0.9, 0.9 };
+	static GLfloat lightAmbient[] = { 0.9, 0.9, 0.9, 1 };
+	static GLfloat lightSpecular[] = { 0.1, 0.1, 0.1, 1 };
 	ModelerView::draw();
 
 	int drawWidth = w();
@@ -232,12 +302,130 @@ void KumaModel::draw()
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightZeros);
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition0);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse0);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
 	glLightfv(GL_LIGHT1, GL_AMBIENT, lightZeros);
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition1);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuse1);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, lightSpecular);
 	setAmbientColor(0, 0, 0);
 
-	drawModel(false);
+	static bool shaderStaticInitialized = false;
+	static bool shaderLoaded[KUMA_BUILTIN_SHADER_NUM];
+	static bool shaderFailed[KUMA_BUILTIN_SHADER_NUM];
+	static const char* shaderVertFilenames[KUMA_BUILTIN_SHADER_NUM];
+	static const char* shaderFragFilenames[KUMA_BUILTIN_SHADER_NUM];
+	static GLhandleARB shaderPrograms[KUMA_BUILTIN_SHADER_NUM];
+
+	if (!shaderStaticInitialized)
+	{
+		for (int i = 0; i < KUMA_BUILTIN_SHADER_NUM; ++i)
+		{
+			shaderLoaded[i] = false;
+			shaderFailed[i] = false;
+		}
+		shaderVertFilenames[KUMA_PHONG_SHADER] = "phongshader.vert";
+		shaderVertFilenames[KUMA_CEL_SHADER] = "celshader.vert";
+		shaderVertFilenames[KUMA_PHONG_PROJECTIVE_SHADER] = "projtext.vert";
+		shaderFragFilenames[KUMA_PHONG_SHADER] = "phongshader.frag";
+		shaderFragFilenames[KUMA_CEL_SHADER] = "celshader.frag";
+		shaderFragFilenames[KUMA_PHONG_PROJECTIVE_SHADER] = "projtext.frag";
+
+		shaderStaticInitialized = true;
+	}
+
+	int shaderSelection = ModelerApplication::getPUI()->m_pchoShading->value();
+	--shaderSelection; // 0 is default, so minus one
+
+	if (shaderSelection >= 0)
+	{
+		if (!shaderLoaded[shaderSelection] && !shaderFailed[shaderSelection] &&
+			!createProgramWithTwoShaders(shaderVertFilenames[shaderSelection], shaderFragFilenames[shaderSelection], shaderPrograms[shaderSelection]))
+		{
+			shaderFailed[shaderSelection] = true;
+		}
+		shaderLoaded[shaderSelection] = true;
+
+		if (!shaderFailed[shaderSelection])
+		{
+			glUseProgram(shaderPrograms[shaderSelection]);
+
+			if (!projBitmapFailed && shaderSelection == KUMA_PHONG_PROJECTIVE_SHADER && projBitmap == nullptr)
+			{
+				projBitmap = readBMP("projected_texture.bmp", projBitmapWidth, projBitmapHeight);
+				if (projBitmap == NULL)
+				{
+					printf("Failed loading projected texture bitmap.\n");
+					projBitmapFailed = true;
+				}
+				else
+				{
+					static GLfloat borderColor[4] = { 1.0, 1.0, 1.0, 1.0 };
+					glActiveTexture(GL_TEXTURE0);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+					glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+					// gluBuild2DMipmaps(GL_TEXTURE_2D, 3, projBitmapWidth, projBitmapHeight, GL_RGB, GL_UNSIGNED_BYTE, projBitmap);
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, projBitmapWidth, projBitmapHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, projBitmap);
+				}
+			}
+
+			if (shaderSelection == KUMA_PHONG_PROJECTIVE_SHADER && !projBitmapFailed)
+			{
+				auto pUI = ModelerApplication::Instance()->getPUI();
+				Vec3f projPos(-pUI->m_projTextPosX->value(), -pUI->m_projTextPosY->value(), -pUI->m_projTextPosZ->value());
+				Vec3f projAt(-pUI->m_projTextAtX->value(), -pUI->m_projTextAtY->value(), -pUI->m_projTextAtZ->value());
+				Vec3f projUp(0, 1, 0);
+				projUp.normalize();
+				GLfloat M_t[16];
+				// proj view mat
+				Mat4f M = getViewMat(projPos, projAt, projUp);
+				M.getGLMatrix(M_t);
+				Mat4f MProjView(M_t[0], M_t[4], M_t[8], M_t[12], M_t[1], M_t[5], M_t[9], M_t[13], M_t[2], M_t[6], M_t[10], M_t[14], M_t[3], M_t[7], M_t[11], M_t[15]);
+				// proj proj mat
+				glPushMatrix();
+				{
+					glLoadIdentity();
+					gluPerspective(15.0f, 1.0f, 1.0f, 100.0f);
+					glGetFloatv(GL_MODELVIEW_MATRIX, M_t);
+				}
+				glPopMatrix();
+				Mat4f MProj(M_t[0], M_t[4], M_t[8], M_t[12], M_t[1], M_t[5], M_t[9], M_t[13], M_t[2], M_t[6], M_t[10], M_t[14], M_t[3], M_t[7], M_t[11], M_t[15]);
+				// proj bias mat
+				Mat4f MSB = Mat4f::createTranslation(0.5, 0.5, 0.5) * Mat4f::createScale(0.5, 0.5, 0.5);
+
+				(MSB * MProj * MProjView).getGLMatrix(M_t);
+
+				// compute view inverse
+				GLfloat M_viewinv[16];
+				Mat4f MView = getViewMat(m_camera->getPosition(), m_camera->getLookAt(), m_camera->getUpVector());
+				MView = MView.inverse();
+				MView.getGLMatrix(M_viewinv);
+
+				glEnable(GL_TEXTURE_2D);
+
+				glUniformMatrix4fvARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "projMatrix"), 1, GL_FALSE, M_t);
+				glUniformMatrix4fvARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "viewInv"), 1, GL_FALSE, M_viewinv);
+				glUniform1iARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "textureSampler"), 0);
+				glUniform4fARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "projPos"), projPos[0], projPos[1], projPos[2], 1);
+			}
+
+			if (ModelerApplication::getPUI()->m_pbtnTeapot->value() > 0)
+				drawTeapot();
+			drawModel(false);
+
+			glDisable(GL_TEXTURE_2D);
+
+			glUseProgram(0);
+		}
+	}
+	else
+	{
+		if (ModelerApplication::getPUI()->m_pbtnTeapot->value() > 0)
+			drawTeapot();
+		drawModel(false);
+	}
 
 	endDraw();
 }

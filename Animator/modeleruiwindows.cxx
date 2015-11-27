@@ -48,6 +48,14 @@ Fl_Menu_Item ModelerUIWindows::menu_m_pchoCurveType[] = {
  {0}
 };
 
+Fl_Menu_Item ModelerUIWindows::menu_m_pchoShading[] = {
+ {"Default", 0,  0, 0, 0, 0, 0, 12, 0},
+ {"Phong", 0,  0, 0, 4, 0, 0, 12, 0},
+ {"Cel", 0,  0, 0, 4, 0, 0, 12, 0},
+ {"Proj Texture", 0,  0, 0, 0, 0, 0, 12, 0},
+ {0}
+};
+
 ModelerUIWindows::ModelerUIWindows() {
   Fl_Window* w;
   { Fl_Window* o = m_pwndMainWnd = new Fl_Window(832, 754, "CS 341 Animator (Sp02)");
@@ -85,8 +93,9 @@ ModelerUIWindows::ModelerUIWindows() {
         o->end();
         Fl_Group::current()->resizable(o);
       }
-      { Fl_Group* o = m_pgrpCurveGroup = new Fl_Group(160, 55, 660, 545, "Curves");
+      { Fl_Group* o = m_pgrpCurveGroup = new Fl_Group(160, 55, 665, 545, "Curves");
         o->labelsize(12);
+        o->hide();
         { Fl_Group* o = new Fl_Group(160, 55, 420, 410);
           { Fl_Box* o = new Fl_Box(160, 55, 40, 20, "Useless Box");
             o->box(FL_ENGRAVED_BOX);
@@ -107,10 +116,13 @@ ModelerUIWindows::ModelerUIWindows() {
             o->end();
             Fl_Group::current()->resizable(o);
           }
+          { Fl_Group* o = new Fl_Group(185, 80, 395, 385);
+            o->end();
+          }
           o->end();
           Fl_Group::current()->resizable(o);
         }
-        { Fl_Group* o = new Fl_Group(160, 470, 510, 130);
+        { Fl_Group* o = new Fl_Group(160, 470, 420, 130);
           { Fl_Box* o = new Fl_Box(160, 470, 75, 20, "Curve Type:");
             o->labelsize(12);
             o->align(FL_ALIGN_LEFT|FL_ALIGN_INSIDE);
@@ -150,7 +162,7 @@ ModelerUIWindows::ModelerUIWindows() {
             o->user_data((void*)(this));
             o->align(FL_ALIGN_LEFT);
           }
-          { Fl_Light_Button* o = m_pbtAdaptive = new Fl_Light_Button(420, 470, 75, 20, "Apdative");
+          { Fl_Light_Button* o = m_pbtAdaptive = new Fl_Light_Button(420, 470, 80, 20, "Apdative");
             o->labelsize(12);
             o->user_data((void*)(this));
           }
@@ -168,53 +180,140 @@ ModelerUIWindows::ModelerUIWindows() {
             o->user_data((void*)(this));
             o->align(FL_ALIGN_LEFT);
           }
-          { Fl_Light_Button* o = m_pbtBSsurface = new Fl_Light_Button(420, 495, 75, 20, "BSsurface");
+          { Fl_Light_Button* o = m_pbtBSsurface = new Fl_Light_Button(420, 495, 80, 20, "BSsurface");
             o->labelsize(12);
             o->user_data((void*)(this));
           }
           o->end();
         }
-        { Fl_Group* o = new Fl_Group(590, 70, 230, 65, "C2 Points");
+        { Fl_Group* o = new Fl_Group(420, 535, 160, 65, "C2 Points");
           o->labelfont(1);
           o->labelsize(12);
           o->align(FL_ALIGN_TOP_LEFT);
-          { Fl_Value_Input* o = m_pC2X1ValueInput = new Fl_Value_Input(615, 75, 60, 25, "X1");
+          { Fl_Value_Input* o = m_pC2X1ValueInput = new Fl_Value_Input(445, 540, 30, 25, "X1");
             o->labelsize(12);
             o->minimum(-10);
             o->maximum(10);
             o->step(0.1);
             o->textsize(12);
           }
-          { Fl_Value_Input* o = m_pC2Y1ValueInput = new Fl_Value_Input(700, 75, 60, 25, "Y1");
+          { Fl_Value_Input* o = m_pC2Y1ValueInput = new Fl_Value_Input(495, 540, 30, 25, "Y1");
             o->labelsize(12);
             o->minimum(-10);
             o->maximum(10);
             o->step(0.1);
             o->textsize(12);
           }
-          { Fl_Value_Input* o = m_pC2X2ValueInput = new Fl_Value_Input(615, 105, 60, 25, "X2");
+          { Fl_Value_Input* o = m_pC2X2ValueInput = new Fl_Value_Input(445, 570, 30, 25, "X2");
             o->labelsize(12);
             o->minimum(-10);
             o->maximum(10);
             o->step(0.1);
             o->textsize(12);
           }
-          { Fl_Value_Input* o = m_pC2Y2ValueInput = new Fl_Value_Input(700, 105, 60, 25, "Y2");
+          { Fl_Value_Input* o = m_pC2Y2ValueInput = new Fl_Value_Input(495, 570, 30, 25, "Y2");
             o->labelsize(12);
             o->minimum(-10);
             o->maximum(10);
             o->step(0.1);
             o->textsize(12);
           }
-          { Fl_Button* o = m_pbApplyC2Points = new Fl_Button(765, 75, 50, 55, "Apply");
+          { Fl_Button* o = m_pbApplyC2Points = new Fl_Button(530, 540, 50, 55, "Apply");
             o->labelsize(12);
             o->user_data((void*)(this));
           }
           o->end();
         }
-        { Fl_Light_Button* o = m_pbtReadfile = new Fl_Light_Button(505, 495, 75, 20, "readFile");
+        { Fl_Light_Button* o = m_pbtReadBSSfile = new Fl_Light_Button(505, 495, 75, 20, "ReadFile");
           o->labelsize(12);
           o->user_data((void*)(this));
+        }
+        { Fl_Group* o = new Fl_Group(585, 55, 240, 135, "Render Option");
+          o->labelfont(1);
+          o->labelsize(12);
+          o->align(FL_ALIGN_TOP_LEFT|FL_ALIGN_INSIDE);
+          { Fl_Choice* o = m_pchoShading = new Fl_Choice(635, 80, 110, 20, "Shader:");
+            o->labelsize(12);
+            o->textsize(12);
+            o->user_data((void*)(this));
+            o->menu(menu_m_pchoShading);
+          }
+          { Fl_Light_Button* o = m_pbtnTeapot = new Fl_Light_Button(745, 80, 75, 20, "Teapot");
+            o->labelsize(12);
+            o->user_data((void*)(this));
+          }
+          o->end();
+        }
+        o->end();
+      }
+      { Fl_Group* o = new Fl_Group(175, 55, 665, 550, "Texture");
+        o->labelsize(12);
+        { Fl_Group* o = new Fl_Group(175, 80, 75, 250, "Position");
+          o->labelsize(12);
+          o->align(FL_ALIGN_BOTTOM);
+          { Fl_Slider* o = m_projTextPosZ = new Fl_Slider(225, 80, 25, 250, "Z");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
+            o->value(4);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
+          }
+          { Fl_Slider* o = m_projTextPosX = new Fl_Slider(175, 80, 25, 250, "X");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
+            o->value(4);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
+          }
+          { Fl_Slider* o = m_projTextPosY = new Fl_Slider(200, 80, 25, 250, "Y");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(0);
+            o->step(0.1);
+            o->value(-4);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
+          }
+          o->end();
+        }
+        { Fl_Group* o = new Fl_Group(275, 80, 75, 250, "Look At");
+          o->labelsize(12);
+          o->align(FL_ALIGN_BOTTOM);
+          { Fl_Slider* o = m_projTextAtZ = new Fl_Slider(325, 80, 25, 250, "Z");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
+          }
+          { Fl_Slider* o = m_projTextAtX = new Fl_Slider(275, 80, 25, 250, "X");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
+          }
+          { Fl_Slider* o = m_projTextAtY = new Fl_Slider(300, 80, 25, 250, "Y");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(0);
+            o->step(0.1);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
+          }
+          o->end();
         }
         o->end();
       }

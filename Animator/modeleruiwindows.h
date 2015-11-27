@@ -21,8 +21,8 @@
 #include <FL/Fl_Value_Slider.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Value_Input.H>
-#include "indicatorwindow.h"
 #include <FL/Fl_Slider.H>
+#include "indicatorwindow.h"
 #include <FL/Fl_Output.H>
 #include "modelerview.h"
 
@@ -68,7 +68,16 @@ public:
   Fl_Value_Input *m_pC2X2ValueInput;
   Fl_Value_Input *m_pC2Y2ValueInput;
   Fl_Button *m_pbApplyC2Points;
-  Fl_Light_Button *m_pbtReadfile;
+  Fl_Light_Button *m_pbtReadBSSfile;
+  Fl_Choice *m_pchoShading;
+  static Fl_Menu_Item menu_m_pchoShading[];
+  Fl_Light_Button *m_pbtnTeapot;
+  Fl_Slider *m_projTextPosZ;
+  Fl_Slider *m_projTextPosX;
+  Fl_Slider *m_projTextPosY;
+  Fl_Slider *m_projTextAtZ;
+  Fl_Slider *m_projTextAtX;
+  Fl_Slider *m_projTextAtY;
   Fl_Button *m_pbtStepBack;
   Fl_Button *m_pbtPlay;
   Fl_Button *m_pbtStepForw;
