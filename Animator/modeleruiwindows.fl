@@ -103,8 +103,8 @@ class ModelerUIWindows {open
           } {}
         }
         Fl_Group m_pgrpCurveGroup {
-          label Curves
-          xywh {160 55 665 545} labelsize 12 hide
+          label Curves open selected
+          xywh {160 55 665 545} labelsize 12
         } {
           Fl_Group {} {
             private xywh {160 55 420 410} resizable
@@ -244,7 +244,7 @@ class ModelerUIWindows {open
           }
           Fl_Group {} {
             label {Render Option}
-            xywh {585 55 240 135} labelfont 1 labelsize 12 align 21
+            xywh {585 55 240 55} labelfont 1 labelsize 12 align 21
           } {
             Fl_Choice m_pchoShading {
               label {Shader:}
@@ -274,50 +274,60 @@ class ModelerUIWindows {open
               xywh {745 80 75 20} labelsize 12
             }
           }
-        }
-        Fl_Group {} {
-          label Texture open selected
-          xywh {175 55 665 550} labelsize 12
-        } {
           Fl_Group {} {
-            label Position open
-            xywh {175 80 75 250} labelsize 12 align 2
+            label {Projective Texture} open
+            xywh {585 125 160 240} labelfont 1 labelsize 12 align 5
           } {
-            Fl_Slider m_projTextPosZ {
-              label Z
-              user_data this
-              xywh {225 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1 value 4
+            Fl_Group {} {
+              label Position open
+              xywh {585 125 80 240} labelsize 12 align 2
+            } {
+              Fl_Slider m_projTextPosZ {
+                label Z
+                user_data this
+                xywh {640 140 25 225} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1 value 4
+              }
+              Fl_Slider m_projTextPosX {
+                label X
+                user_data this
+                xywh {590 140 25 225} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1 value 4
+              }
+              Fl_Slider m_projTextPosY {
+                label Y
+                user_data this
+                xywh {615 140 25 225} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 0 step 0.1 value -4
+              }
             }
-            Fl_Slider m_projTextPosX {
-              label X
-              user_data this
-              xywh {175 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1 value 4
-            }
-            Fl_Slider m_projTextPosY {
-              label Y
-              user_data this
-              xywh {200 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 0 step 0.1 value -4
+            Fl_Group {} {
+              label {Look At} open
+              xywh {670 125 75 240} labelsize 12 align 2
+            } {
+              Fl_Slider m_projTextAtZ {
+                label Z
+                user_data this
+                xywh {720 140 25 225} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1
+              }
+              Fl_Slider m_projTextAtX {
+                label X
+                user_data this
+                xywh {670 140 25 225} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1
+              }
+              Fl_Slider m_projTextAtY {
+                label Y
+                user_data this
+                xywh {695 140 25 225} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 0 step 0.1
+              }
             }
           }
-          Fl_Group {} {
-            label {Look At} open
-            xywh {275 80 75 250} labelsize 12 align 2
-          } {
-            Fl_Slider m_projTextAtZ {
-              label Z
-              user_data this
-              xywh {325 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1
-            }
-            Fl_Slider m_projTextAtX {
-              label X
-              user_data this
-              xywh {275 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1
-            }
-            Fl_Slider m_projTextAtY {
-              label Y
-              user_data this
-              xywh {300 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 0 step 0.1
-            }
+          Fl_Light_Button m_pbtnEnableIK {
+            label {Inverse Kinematics}
+            user_data this
+            xywh {590 385 155 20} labelsize 12
+          }
+          Fl_Light_Button m_pbtnDrawIKTarg {
+            label {Draw IK Target}
+            user_data this
+            xywh {590 410 155 20} labelsize 12
           }
         }
       }

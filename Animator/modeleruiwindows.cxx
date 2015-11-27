@@ -95,7 +95,6 @@ ModelerUIWindows::ModelerUIWindows() {
       }
       { Fl_Group* o = m_pgrpCurveGroup = new Fl_Group(160, 55, 665, 545, "Curves");
         o->labelsize(12);
-        o->hide();
         { Fl_Group* o = new Fl_Group(160, 55, 420, 410);
           { Fl_Box* o = new Fl_Box(160, 55, 40, 20, "Useless Box");
             o->box(FL_ENGRAVED_BOX);
@@ -228,7 +227,7 @@ ModelerUIWindows::ModelerUIWindows() {
           o->labelsize(12);
           o->user_data((void*)(this));
         }
-        { Fl_Group* o = new Fl_Group(585, 55, 240, 135, "Render Option");
+        { Fl_Group* o = new Fl_Group(585, 55, 240, 55, "Render Option");
           o->labelfont(1);
           o->labelsize(12);
           o->align(FL_ALIGN_TOP_LEFT|FL_ALIGN_INSIDE);
@@ -244,76 +243,86 @@ ModelerUIWindows::ModelerUIWindows() {
           }
           o->end();
         }
-        o->end();
-      }
-      { Fl_Group* o = new Fl_Group(175, 55, 665, 550, "Texture");
-        o->labelsize(12);
-        { Fl_Group* o = new Fl_Group(175, 80, 75, 250, "Position");
+        { Fl_Group* o = new Fl_Group(585, 125, 160, 240, "Projective Texture");
+          o->labelfont(1);
           o->labelsize(12);
-          o->align(FL_ALIGN_BOTTOM);
-          { Fl_Slider* o = m_projTextPosZ = new Fl_Slider(225, 80, 25, 250, "Z");
-            o->type(4);
+          o->align(FL_ALIGN_TOP_LEFT);
+          { Fl_Group* o = new Fl_Group(585, 125, 80, 240, "Position");
             o->labelsize(12);
-            o->minimum(-10);
-            o->maximum(10);
-            o->step(0.1);
-            o->value(4);
-            o->user_data((void*)(this));
-            o->align(FL_ALIGN_TOP);
+            o->align(FL_ALIGN_BOTTOM);
+            { Fl_Slider* o = m_projTextPosZ = new Fl_Slider(640, 140, 25, 225, "Z");
+              o->type(4);
+              o->labelsize(12);
+              o->minimum(-10);
+              o->maximum(10);
+              o->step(0.1);
+              o->value(4);
+              o->user_data((void*)(this));
+              o->align(FL_ALIGN_TOP);
+            }
+            { Fl_Slider* o = m_projTextPosX = new Fl_Slider(590, 140, 25, 225, "X");
+              o->type(4);
+              o->labelsize(12);
+              o->minimum(-10);
+              o->maximum(10);
+              o->step(0.1);
+              o->value(4);
+              o->user_data((void*)(this));
+              o->align(FL_ALIGN_TOP);
+            }
+            { Fl_Slider* o = m_projTextPosY = new Fl_Slider(615, 140, 25, 225, "Y");
+              o->type(4);
+              o->labelsize(12);
+              o->minimum(-10);
+              o->maximum(0);
+              o->step(0.1);
+              o->value(-4);
+              o->user_data((void*)(this));
+              o->align(FL_ALIGN_TOP);
+            }
+            o->end();
           }
-          { Fl_Slider* o = m_projTextPosX = new Fl_Slider(175, 80, 25, 250, "X");
-            o->type(4);
+          { Fl_Group* o = new Fl_Group(670, 125, 75, 240, "Look At");
             o->labelsize(12);
-            o->minimum(-10);
-            o->maximum(10);
-            o->step(0.1);
-            o->value(4);
-            o->user_data((void*)(this));
-            o->align(FL_ALIGN_TOP);
-          }
-          { Fl_Slider* o = m_projTextPosY = new Fl_Slider(200, 80, 25, 250, "Y");
-            o->type(4);
-            o->labelsize(12);
-            o->minimum(-10);
-            o->maximum(0);
-            o->step(0.1);
-            o->value(-4);
-            o->user_data((void*)(this));
-            o->align(FL_ALIGN_TOP);
+            o->align(FL_ALIGN_BOTTOM);
+            { Fl_Slider* o = m_projTextAtZ = new Fl_Slider(720, 140, 25, 225, "Z");
+              o->type(4);
+              o->labelsize(12);
+              o->minimum(-10);
+              o->maximum(10);
+              o->step(0.1);
+              o->user_data((void*)(this));
+              o->align(FL_ALIGN_TOP);
+            }
+            { Fl_Slider* o = m_projTextAtX = new Fl_Slider(670, 140, 25, 225, "X");
+              o->type(4);
+              o->labelsize(12);
+              o->minimum(-10);
+              o->maximum(10);
+              o->step(0.1);
+              o->user_data((void*)(this));
+              o->align(FL_ALIGN_TOP);
+            }
+            { Fl_Slider* o = m_projTextAtY = new Fl_Slider(695, 140, 25, 225, "Y");
+              o->type(4);
+              o->labelsize(12);
+              o->minimum(-10);
+              o->maximum(0);
+              o->step(0.1);
+              o->user_data((void*)(this));
+              o->align(FL_ALIGN_TOP);
+            }
+            o->end();
           }
           o->end();
         }
-        { Fl_Group* o = new Fl_Group(275, 80, 75, 250, "Look At");
+        { Fl_Light_Button* o = m_pbtnEnableIK = new Fl_Light_Button(590, 385, 155, 20, "Inverse Kinematics");
           o->labelsize(12);
-          o->align(FL_ALIGN_BOTTOM);
-          { Fl_Slider* o = m_projTextAtZ = new Fl_Slider(325, 80, 25, 250, "Z");
-            o->type(4);
-            o->labelsize(12);
-            o->minimum(-10);
-            o->maximum(10);
-            o->step(0.1);
-            o->user_data((void*)(this));
-            o->align(FL_ALIGN_TOP);
-          }
-          { Fl_Slider* o = m_projTextAtX = new Fl_Slider(275, 80, 25, 250, "X");
-            o->type(4);
-            o->labelsize(12);
-            o->minimum(-10);
-            o->maximum(10);
-            o->step(0.1);
-            o->user_data((void*)(this));
-            o->align(FL_ALIGN_TOP);
-          }
-          { Fl_Slider* o = m_projTextAtY = new Fl_Slider(300, 80, 25, 250, "Y");
-            o->type(4);
-            o->labelsize(12);
-            o->minimum(-10);
-            o->maximum(0);
-            o->step(0.1);
-            o->user_data((void*)(this));
-            o->align(FL_ALIGN_TOP);
-          }
-          o->end();
+          o->user_data((void*)(this));
+        }
+        { Fl_Light_Button* o = m_pbtnDrawIKTarg = new Fl_Light_Button(590, 410, 155, 20, "Draw IK Target");
+          o->labelsize(12);
+          o->user_data((void*)(this));
         }
         o->end();
       }

@@ -78,6 +78,8 @@ public:
   Fl_Slider *m_projTextAtZ;
   Fl_Slider *m_projTextAtX;
   Fl_Slider *m_projTextAtY;
+  Fl_Light_Button *m_pbtnEnableIK;
+  Fl_Light_Button *m_pbtnDrawIKTarg;
   Fl_Button *m_pbtStepBack;
   Fl_Button *m_pbtPlay;
   Fl_Button *m_pbtStepForw;

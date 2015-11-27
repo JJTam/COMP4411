@@ -48,7 +48,7 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	indicatingColors[KumaModelPart::LEFT_LEG_LOWER] = new float[] { 1.0f, 0.24f, 0 };
 	indicatingColors[KumaModelPart::RIGHT_LEG_UPPER] = new float[] { 1.0f, 0.36f, 0 };
 	indicatingColors[KumaModelPart::RIGHT_LEG_LOWER] = new float[] { 1.0f, 0.48f, 0 };
-	indicatingColors[KumaModelPart::WAIST] = new float[] {1.0f, 0.58f, 0};
+	indicatingColors[KumaModelPart::WAIST] = new float[] {1.0f, 0.62f, 0};
 
 	partNames[KumaModelPart::NONE] = "Air";
 	partNames[KumaModelPart::TORSO] = "Torso";
@@ -76,18 +76,25 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 	partControls[KumaModelPart::RIGHT_LEG_LOWER] = new list<int>{ RIGHT_LOWER_LEG_ROTATION_X };
 	partControls[KumaModelPart::WAIST] = new list<int>{ WAIST_ROTATION_X, WAIST_ROTATION_Y, WAIST_ROTATION_Z };
 
+	ikTarget[KumaModelPart::LEFT_ARM_LOWER] = Vec3f(0, 0, 0);
+	ikTarget[KumaModelPart::RIGHT_ARM_LOWER] = Vec3f(0, 0, 0);
+	
 	hiddenBuffer = nullptr;
 	projBitmap = nullptr;
 	projBitmapFailed = false;
+	hasMouseDelta = false;
 	lastSelectedPart = KumaModelPart::NONE;
 }
 
 int KumaModel::handle(int ev)
 {
+	static Vec3f prevMousePos(0, 0, 0);
 	unsigned eventCoordX = Fl::event_x();
 	unsigned eventCoordY = Fl::event_y();
 	unsigned eventButton = Fl::event_button();
 	unsigned eventState = Fl::event_state();
+	KumaModelPart part = KumaModelPart::NONE;
+	auto pUI = ModelerApplication::getPUI();
 
 	switch (ev)
 	{
@@ -106,7 +113,7 @@ int KumaModel::handle(int ev)
 				}
 
 				double mindiff = 100;
-				KumaModelPart part = KumaModelPart::NONE;
+				
 				for (auto pair : indicatingColors)
 				{
 					double diff = val - pair.second[refIndex];
@@ -120,26 +127,53 @@ int KumaModel::handle(int ev)
 				// activate the coresponding curves
 				if (part != KumaModelPart::NONE)
 				{
-					auto pUI = ModelerApplication::getPUI();
 					pUI->m_pbrsBrowser->deselect();
 					for (int ctrl : (*partControls[part]))
 					{
 						pUI->m_pbrsBrowser->select(ctrl + 1);
 					}
 					pUI->m_pbrsBrowser->do_callback();
+
+					prevMousePos[0] = eventCoordX;
+					prevMousePos[1] = eventCoordY;
 				}
 
 				lastSelectedPart = part;
+			}
+			break;
+		case FL_DRAG:
+			if (lastSelectedPart != KumaModelPart::NONE && eventButton == FL_LEFT_MOUSE)
+			{
+				lastMouseDelta = Vec3f(eventCoordX, eventCoordY, 0.0f) - prevMousePos;
+				prevMousePos[0] = eventCoordX;
+				prevMousePos[1] = eventCoordY;
 
-				// printf("val = %.2f, ref = %d, mindiff = %.2f, you clicked on %s.\n", val, refIndex, mindiff, partNames[part].c_str());
-				// printf("You clicked on %s.\n", partNames[part].c_str());
+				GLfloat Mtmp[16];
+				glGetFloatv(GL_MODELVIEW_MATRIX, Mtmp);
+				Mat4f MM(Mtmp[0], Mtmp[4], Mtmp[8], Mtmp[12], Mtmp[1], Mtmp[5], Mtmp[9], Mtmp[13], Mtmp[2], Mtmp[6], Mtmp[10], Mtmp[14], Mtmp[3], Mtmp[7], Mtmp[11], Mtmp[15]);
+				MM = MM.inverse();
+
+				lastMouseDeltaInWorld[0] = lastMouseDelta[0];
+				lastMouseDeltaInWorld[1] = lastMouseDelta[1];
+				lastMouseDeltaInWorld[2] = lastMouseDeltaInWorld[3] = 0;
+				lastMouseDeltaInWorld = MM * lastMouseDeltaInWorld;
+				lastMouseDeltaInWorld = lastMouseDeltaInWorld * abs(MM[3][3]) * 0.05f;
+
+				hasMouseDelta = true;
 			}
 			break;
 		default:
 			break;
 	}
 
-	return ModelerView::handle(ev);
+	if (part != KumaModelPart::NONE)
+	{
+		return 1;
+	}
+	else
+	{
+		return ModelerView::handle(ev);
+	}
 }
 
 void drawTeapot()
