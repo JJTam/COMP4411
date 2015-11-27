@@ -248,7 +248,7 @@ void ParticleSystem::clearBaked()
 	}
 
 	bakedParticles.clear();
-	// this->resetSimulation(0);
+	this->resetSimulation(0);
 }
 
 
