@@ -14,6 +14,8 @@
 
 #include "Curve.h"
 #include "CurveEvaluator.h"
+#include "modelerapp.h"
+#include "particleSystem.h"
 
 float Curve::s_fCtrlPtXEpsilon = 0.0001f;
 
@@ -413,6 +415,11 @@ void Curve::sortControlPoints() const
 void Curve::reevaluate() const
 {
 	if (m_bDirty) {
+
+		auto ps = ModelerApplication::Instance()->GetParticleSystem();
+		if (ps != nullptr)
+			ps->clearBaked();
+
 		if (m_pceEvaluator) {
 			m_pceEvaluator->evaluateCurve(m_ptvCtrlPts, 
 				m_ptvEvaluatedCurvePts, 

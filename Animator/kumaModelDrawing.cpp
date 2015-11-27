@@ -40,6 +40,7 @@ Vec3f(1.0, 4.0, 3.0), Vec3f(2.0, 4.0, 3.0), Vec3f(3.0, 4.0, 3.0), Vec3f(4.0, 4.0
 };
 
 /* Variables for IK */
+GLfloat currViewMat[16];
 Mat4f currViewInv;
 double leftArmConstrains[8] = { -180, 50, -90, 90, -180, 30, -120, 0 };
 double rightArmConstrains[8] = { -180, 50, -90, 90, -30, 180, -120, 0 };
@@ -162,7 +163,9 @@ void KumaModel::drawModel(bool useIndicatingColor)
 	}
 
 	// setup vars
-	currViewInv = getViewMat(m_camera->getPosition(), m_camera->getLookAt(), m_camera->getUpVector()).inverse();
+	currViewInv = getViewMat(m_camera->getPosition(), m_camera->getLookAt(), m_camera->getUpVector());
+	currViewInv.getGLMatrix(currViewMat);
+	currViewInv = currViewInv.inverse();
 
 	// draw the model
 	glPushMatrix();
@@ -538,7 +541,7 @@ void KumaModel::drawFace(bool useIndicatingColor)
 			drawBox(mouthWidth, mouthHeight, 0.02);
 
 			// If particle system exists, draw it
-			if (!useIndicatingColor && this->particleSystem != NULL) {
+			if (!useIndicatingColor && this->particleSystem != NULL && t > 0) {
 				// this should be done inside particle system
 				setDiffuseColor(0.3, 0.3, 1.0);
 				this->particleSystem->drawParticles(t);
