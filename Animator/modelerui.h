@@ -64,6 +64,7 @@ private:
 	std::string m_strMovieFileName;
 	int m_iMovieFrameNum;
 
+	static void cb_redraw(Fl_Widget*, void*);
 	inline void cb_openAniScript_i(Fl_Menu_*, void*);
 	static void cb_openAniScript(Fl_Menu_*, void*);
 	inline void cb_saveAniScript_i(Fl_Menu_*, void*);

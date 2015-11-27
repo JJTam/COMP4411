@@ -95,6 +95,7 @@ ModelerUIWindows::ModelerUIWindows() {
       }
       { Fl_Group* o = m_pgrpCurveGroup = new Fl_Group(160, 55, 665, 545, "Curves");
         o->labelsize(12);
+        o->hide();
         { Fl_Group* o = new Fl_Group(160, 55, 420, 410);
           { Fl_Box* o = new Fl_Box(160, 55, 40, 20, "Useless Box");
             o->box(FL_ENGRAVED_BOX);
@@ -240,6 +241,77 @@ ModelerUIWindows::ModelerUIWindows() {
           { Fl_Light_Button* o = m_pbtnTeapot = new Fl_Light_Button(745, 80, 75, 20, "Teapot");
             o->labelsize(12);
             o->user_data((void*)(this));
+          }
+          o->end();
+        }
+        o->end();
+      }
+      { Fl_Group* o = new Fl_Group(175, 55, 665, 550, "Texture");
+        o->labelsize(12);
+        { Fl_Group* o = new Fl_Group(175, 80, 75, 250, "Position");
+          o->labelsize(12);
+          o->align(FL_ALIGN_BOTTOM);
+          { Fl_Slider* o = m_projTextPosZ = new Fl_Slider(225, 80, 25, 250, "Z");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
+            o->value(4);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
+          }
+          { Fl_Slider* o = m_projTextPosX = new Fl_Slider(175, 80, 25, 250, "X");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
+            o->value(4);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
+          }
+          { Fl_Slider* o = m_projTextPosY = new Fl_Slider(200, 80, 25, 250, "Y");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(0);
+            o->step(0.1);
+            o->value(-4);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
+          }
+          o->end();
+        }
+        { Fl_Group* o = new Fl_Group(275, 80, 75, 250, "Look At");
+          o->labelsize(12);
+          o->align(FL_ALIGN_BOTTOM);
+          { Fl_Slider* o = m_projTextAtZ = new Fl_Slider(325, 80, 25, 250, "Z");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
+          }
+          { Fl_Slider* o = m_projTextAtX = new Fl_Slider(275, 80, 25, 250, "X");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(10);
+            o->step(0.1);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
+          }
+          { Fl_Slider* o = m_projTextAtY = new Fl_Slider(300, 80, 25, 250, "Y");
+            o->type(4);
+            o->labelsize(12);
+            o->minimum(-10);
+            o->maximum(0);
+            o->step(0.1);
+            o->user_data((void*)(this));
+            o->align(FL_ALIGN_TOP);
           }
           o->end();
         }

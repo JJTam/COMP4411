@@ -930,6 +930,14 @@ m_bSaveMovie(false)
 	m_pbtLoop->callback((Fl_Callback*)cb_loop);
 	m_pbtSimulate->callback((Fl_Callback*)cb_simulate);
 	m_psldrFPS->callback((Fl_Callback*)cb_fps);
+	m_projTextAtX->callback((Fl_Callback*)cb_redraw);
+	m_projTextAtY->callback((Fl_Callback*)cb_redraw);
+	m_projTextAtZ->callback((Fl_Callback*)cb_redraw);
+	m_projTextPosX->callback((Fl_Callback*)cb_redraw);
+	m_projTextPosY->callback((Fl_Callback*)cb_redraw);
+	m_projTextPosZ->callback((Fl_Callback*)cb_redraw);
+	m_pchoShading->callback((Fl_Callback*)cb_redraw);
+	m_pbtnTeapot->callback((Fl_Callback*)cb_redraw);
 
 	m_pwndMainWnd->callback((Fl_Callback*)cb_hide);
 	m_pwndMainWnd->when(FL_HIDE);
@@ -941,6 +949,11 @@ m_bSaveMovie(false)
 	m_pbApplyC2Points->callback((Fl_Callback*)cb_changeEvaluatorArg);
 
 	endTime(20.0f);
+}
+
+void ModelerUI::cb_redraw(Fl_Widget* o, void* v)
+{
+	((ModelerUI*)(o->user_data()))->m_pwndModelerView->redraw();
 }
 
 void ModelerUI::show() 

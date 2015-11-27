@@ -93,7 +93,7 @@ class ModelerUIWindows {open
         xywh {155 30 685 575} color 185 align 0
       } {
         Fl_Scroll m_pscrlScroll {
-          label Modeler open
+          label Modeler
           xywh {155 50 430 490} type VERTICAL_ALWAYS labelsize 12 when 1 hide resizable
         } {
           Fl_Pack m_ppckPack {
@@ -103,8 +103,8 @@ class ModelerUIWindows {open
           } {}
         }
         Fl_Group m_pgrpCurveGroup {
-          label Curves open
-          xywh {160 55 665 545} labelsize 12
+          label Curves
+          xywh {160 55 665 545} labelsize 12 hide
         } {
           Fl_Group {} {
             private xywh {160 55 420 410} resizable
@@ -243,7 +243,7 @@ class ModelerUIWindows {open
             xywh {505 495 75 20} labelsize 12
           }
           Fl_Group {} {
-            label {Render Option} open
+            label {Render Option}
             xywh {585 55 240 135} labelfont 1 labelsize 12 align 21
           } {
             Fl_Choice m_pchoShading {
@@ -264,7 +264,7 @@ class ModelerUIWindows {open
                 xywh {0 0 100 20} value 1 labelsize 12
               }
               menuitem {} {
-                label {Proj Texture} selected
+                label {Proj Texture}
                 xywh {0 0 100 20} labelsize 12
               }
             }
@@ -272,6 +272,51 @@ class ModelerUIWindows {open
               label Teapot
               user_data this
               xywh {745 80 75 20} labelsize 12
+            }
+          }
+        }
+        Fl_Group {} {
+          label Texture open selected
+          xywh {175 55 665 550} labelsize 12
+        } {
+          Fl_Group {} {
+            label Position open
+            xywh {175 80 75 250} labelsize 12 align 2
+          } {
+            Fl_Slider m_projTextPosZ {
+              label Z
+              user_data this
+              xywh {225 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1 value 4
+            }
+            Fl_Slider m_projTextPosX {
+              label X
+              user_data this
+              xywh {175 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1 value 4
+            }
+            Fl_Slider m_projTextPosY {
+              label Y
+              user_data this
+              xywh {200 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 0 step 0.1 value -4
+            }
+          }
+          Fl_Group {} {
+            label {Look At} open
+            xywh {275 80 75 250} labelsize 12 align 2
+          } {
+            Fl_Slider m_projTextAtZ {
+              label Z
+              user_data this
+              xywh {325 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1
+            }
+            Fl_Slider m_projTextAtX {
+              label X
+              user_data this
+              xywh {275 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 10 step 0.1
+            }
+            Fl_Slider m_projTextAtY {
+              label Y
+              user_data this
+              xywh {300 80 25 250} type {Vert Knob} labelsize 12 align 1 minimum -10 maximum 0 step 0.1
             }
           }
         }

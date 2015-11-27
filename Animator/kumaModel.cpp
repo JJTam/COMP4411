@@ -373,8 +373,9 @@ void KumaModel::draw()
 
 			if (shaderSelection == KUMA_PHONG_PROJECTIVE_SHADER && !projBitmapFailed)
 			{
-				Vec3f projPos(4, 3, -4);
-				Vec3f projAt(0, 0, 0);
+				auto pUI = ModelerApplication::Instance()->getPUI();
+				Vec3f projPos(-pUI->m_projTextPosX->value(), -pUI->m_projTextPosY->value(), -pUI->m_projTextPosZ->value());
+				Vec3f projAt(-pUI->m_projTextAtX->value(), -pUI->m_projTextAtY->value(), -pUI->m_projTextAtZ->value());
 				Vec3f projUp(0, 1, 0);
 				projUp.normalize();
 				GLfloat M_t[16];
@@ -399,15 +400,6 @@ void KumaModel::draw()
 				// compute view inverse
 				GLfloat M_viewinv[16];
 				Mat4f MView = getViewMat(m_camera->getPosition(), m_camera->getLookAt(), m_camera->getUpVector());
-				//glPushMatrix();
-				//{
-				//	glLoadIdentity();
-				//	m_camera->applyViewingTransform();
-				//	glGetFloatv(GL_MODELVIEW_MATRIX, M_viewinv);
-				//}
-				//glPopMatrix();
-				//Mat4f MView(M_viewinv[0], M_viewinv[4], M_viewinv[8], M_viewinv[12], M_viewinv[1], M_viewinv[5], M_viewinv[9], M_viewinv[13], M_viewinv[2], M_viewinv[6], M_viewinv[10], M_viewinv[14], M_viewinv[3], M_viewinv[7], M_viewinv[11], M_viewinv[15]);
-
 				MView = MView.inverse();
 				MView.getGLMatrix(M_viewinv);
 
@@ -430,6 +422,8 @@ void KumaModel::draw()
 	}
 	else
 	{
+		if (ModelerApplication::getPUI()->m_pbtnTeapot->value() > 0)
+			drawTeapot();
 		drawModel(false);
 	}
 
