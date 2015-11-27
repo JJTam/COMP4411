@@ -33,10 +33,10 @@ extern Mat4f getViewMat(Vec3f pos, Vec3f lookat, Vec3f up);
 extern void solveIK(int maxIter, double step, Vec3f target, int numVals, double* vals, double* constrains, void transform(const double* in, Vec3f& out));
 extern Vec3f calculateBSplineSurfacePoint(double u, double v, const vector<Vec3f>& ctrlpts);
 
-vector<Vec3f> ctrlpts = { Vec3f(1.0, 1.0, 3.0), Vec3f(2.0, 1.0, 3.0), Vec3f(3.0, 1.0, 3.0), Vec3f(4.0, 1.0, 3.0),
-Vec3f(1.0, 2.0, 3.0), Vec3f(2.0, 2.0, 5.0), Vec3f(3.0, 2.0, 5.0), Vec3f(4.0, 2.0, 3.0),
-Vec3f(1.0, 3.0, 3.0), Vec3f(2.0, 3.0, 5.0), Vec3f(3.0, 3.0, 5.0), Vec3f(4.0, 3.0, 3.0),
-Vec3f(1.0, 4.0, 3.0), Vec3f(2.0, 4.0, 3.0), Vec3f(3.0, 4.0, 3.0), Vec3f(4.0, 4.0, 3.0),
+vector<Vec3f> ctrlpts = { Vec3f(0.0, 0.0, 0.0), Vec3f(0.33, 0.0, 0.0), Vec3f(0.67, 0.0, 0.0), Vec3f(1.0, 0.0, 0.0),
+Vec3f(0.0, 0.0, 0.33), Vec3f(0.33, 1.0, 0.33), Vec3f(0.67, 1.0, 0.33), Vec3f(1.0, 0.0, 0.33),
+Vec3f(0.0, 0.0, 0.67), Vec3f(0.33, 1.0, 0.67), Vec3f(0.67, 1.0, 0.67), Vec3f(1.0, 0.0, 0.67),
+Vec3f(0.0, 0.0, 1.0), Vec3f(0.33, 0.0, 1.0), Vec3f(0.67, 0.0, 1.0), Vec3f(1.0, 0.0, 1.0),
 };
 
 /* Variables for IK */
@@ -86,18 +86,9 @@ void KumaModel::drawClothes(double clothHeight, double innerWidth, double innerH
 	drawBox(-clothThickness, -clothHeight, -(innerDepth + clothThickness * 2 + clothBodyOffset));
 }
 
-void KumaModel::drawModel(bool useIndicatingColor)
+void drawBSsurface()
 {
 	auto pUI = ModelerApplication::Instance()->getPUI();
-
-	// draw the floor
-	setDiffuseColor(.8f, .8f, .8f);
-	glPushMatrix();
-	{
-		glTranslated(-5, 0, -5);
-		drawBox(10, 0.01f, 10);
-	}
-	glPopMatrix();
 
 	if (pUI->m_pbtBSsurface->value() > 0)
 	{
@@ -107,7 +98,7 @@ void KumaModel::drawModel(bool useIndicatingColor)
 			ifstream pointfile("points.txt");
 			if (!pointfile.is_open())
 			{
-				cout << "FILE doesn't exist!" << endl;
+				cout << "points.txt doesn't exist!" << endl;
 			}
 			vector<double> tmpvector;
 			double tmp;
@@ -132,8 +123,8 @@ void KumaModel::drawModel(bool useIndicatingColor)
 			}
 			pointfile.close();
 		}
-		setDiffuseColor(1.0f, 0.0f, 0.0f);
-		int sampleRate = 20;
+		
+		int sampleRate = 80;
 		for (int v = 0; v < sampleRate; ++v)
 		{
 			glBegin(GL_QUAD_STRIP);
@@ -146,14 +137,14 @@ void KumaModel::drawModel(bool useIndicatingColor)
 					Vec3f tmp3 = calculateBSplineSurfacePoint((double)(u + 1) / sampleRate, (double)v / sampleRate, ctrlpts);
 					Vec3f tmpN = (tmp2 - tmp1) ^ (tmp3 - tmp1);
 					tmpN.normalize();
-					glNormal3d(tmpN[0], tmpN[1], tmpN[2]);
+					glNormal3d(-tmpN[0], tmpN[1], -tmpN[2]);
 				}
 				else
 				{
 					Vec3f tmp3 = calculateBSplineSurfacePoint((double)(u - 1) / sampleRate, (double)v / sampleRate, ctrlpts);
 					Vec3f tmpN = (tmp2 - tmp1) ^ (tmp1 - tmp3);
 					tmpN.normalize();
-					glNormal3d(tmpN[0], tmpN[1], tmpN[2]);
+					glNormal3d(-tmpN[0], tmpN[1], -tmpN[2]);
 				}
 				glVertex3f(tmp1[0], tmp1[1], tmp1[2]);
 				glVertex3f(tmp2[0], tmp2[1], tmp2[2]);
@@ -161,6 +152,34 @@ void KumaModel::drawModel(bool useIndicatingColor)
 			glEnd();
 		}
 	}
+}
+
+void KumaModel::drawModel(bool useIndicatingColor)
+{
+	auto pUI = ModelerApplication::Instance()->getPUI();
+
+	// draw the floor
+	setDiffuseColor(.8f, .8f, .8f);
+	glPushMatrix();
+	{
+		glTranslated(-5, 0, -5);
+		drawBox(10, 0.01f, 10);
+	}
+	glPopMatrix();
+
+	glPushMatrix();
+	{
+		glTranslated(-2, -2, 1);
+		glScaled(4, 3, 4);
+		setDiffuseColor(0.0f, 0.5f, 1.0f);
+		setAmbientColor(0.0f, 0.05, 0.1f);
+		setSpecularColor(1.0, 1.0, 1.0);
+		setShininess(200);
+		drawBSsurface();
+		setSpecularColor(0, 0, 0);
+		setShininess(0);
+	}
+	glPopMatrix();
 
 	// setup vars
 	currViewInv = getViewMat(m_camera->getPosition(), m_camera->getLookAt(), m_camera->getUpVector());
