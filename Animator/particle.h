@@ -14,6 +14,8 @@ class Particle
 {
 public:
 	Particle(ParticleType type, double mass, int life, const Vec3f& sizes, const Vec3f& position, const Vec3f& velocity, const Vec3f& acceleration, GLfloat* initMat);
+	Particle::Particle(const Particle& other);
+	~Particle();
 
 	ParticleType type;
 	int life;

@@ -9,8 +9,15 @@
 #include <list>
 #include <random>
 #include <chrono>
+#include "mat.h"
+#include "modelerapp.h"
+#include "modelerui.h"
 
 using namespace std;
+
+extern GLfloat currViewMat[16];
+extern Mat4f currViewInv;
+extern Mat4f getCurrentModelViewMatrix();
 
 /***************
  * Constructors
@@ -58,7 +65,9 @@ int ParticleSystem::bakeTimeToIndex(float t)
 /** Start the simulation */
 void ParticleSystem::startSimulation(float t)
 {
-    
+	if (t < bake_start_time)
+		clearBaked();
+
 	bake_start_time = t;
 
 	// These values are used by the UI ...
@@ -76,7 +85,6 @@ void ParticleSystem::startSimulation(float t)
 /** Stop the simulation */
 void ParticleSystem::stopSimulation(float t)
 {
-    
 	bake_end_time = t;
 
 	// These values are used by the UI
@@ -94,7 +102,6 @@ void ParticleSystem::resetSimulation(float t)
 	// These values are used by the UI
 	simulate = false;
 	dirty = true;
-
 }
 
 /** Compute forces and update particles **/
@@ -117,11 +124,12 @@ void ParticleSystem::computeForcesAndUpdateParticles(int idx)
 /** Render particles */
 void ParticleSystem::drawParticles(float t)
 {
+
 	if (t < bake_start_time || (bake_end_time >= bake_start_time && t > bake_end_time))
 	{
 		return;
 	}
-
+	
 	bakeParticles(t);
 	const list<Particle>* lst = bakedParticles[bakeTimeToIndex(t)];
 
@@ -140,7 +148,7 @@ void ParticleSystem::drawParticles(float t)
 			{
 				if (iter->initMat != nullptr)
 				{
-					glLoadIdentity();
+					glLoadMatrixf(currViewMat);
 					glMultMatrixf(iter->initMat);
 				}
 				glTranslatef(iter->position[0], iter->position[1], iter->position[2]);
@@ -166,10 +174,10 @@ void ParticleSystem::drawParticles(float t)
   * your data structure for storing baked particles **/
 void ParticleSystem::bakeParticles(float t) 
 {
-	// printf("Baking time %.2f, start time %.2f, index %d.\n", t, bake_start_time, bakeTimeToIndex(t));
+	//printf("Baking time %.2f, start time %.2f, index %d.\n", t, bake_start_time, bakeTimeToIndex(t));
 	int index = bakeTimeToIndex(t);
 	int size = bakedParticles.size();
-	
+	//printf("Index = %d, size = %d\n", index, size);
 	// check if the time is already baked
 	if (index < size && bakedParticles[index] != nullptr)
 		return;
@@ -196,7 +204,7 @@ void ParticleSystem::bakeParticles(float t)
 		if (index == 0)
 			return;
 	}
-
+	// printf("lastbaked = %d\n", lastBaked);
 	// now construct a new list of particles based on the last frame
 	const list<Particle>* lastLst = bakedParticles[lastBaked];
 	list<Particle>* currLst = new list<Particle>;
@@ -233,10 +241,14 @@ void ParticleSystem::clearBaked()
 	for (auto iter = bakedParticles.begin(); iter != bakedParticles.end(); ++iter)
 	{
 		if (*iter)
+		{
+			(*iter)->clear();
 			delete *iter;
+		}
 	}
 
 	bakedParticles.clear();
+	// this->resetSimulation(0);
 }
 
 
@@ -249,8 +261,10 @@ Particle ParticleSystem::generateNewParticle()
 	Vec3f initSpeed(0 + dist(*rnd_generator), 0.5 + dist(*rnd_generator), 3 + dist(*rnd_generator));
 	Vec3f initAcc(0, 0, 0);
 
+	Mat4f M = getCurrentModelViewMatrix();
+	M = currViewInv * M;
 	GLfloat* m = new GLfloat[16];
-	glGetFloatv(GL_MODELVIEW_MATRIX, m);
+	M.getGLMatrix(m);
 
 	return Particle(type, 1, particleLife, size, initPos, initSpeed, initAcc, m);
 }

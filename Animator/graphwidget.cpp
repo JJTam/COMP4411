@@ -1144,6 +1144,7 @@ Point GraphWidget::gridToWindow( Point p ) {
 
 void GraphWidget::setCurrCurveDirty()
 {
-	this->m_pcrvvCurves[m_iCurrCurve]->m_bDirty = true;
+	if (m_iCurrCurve >= 0 && m_iCurrCurve < m_pcrvvCurves.size())
+		this->m_pcrvvCurves[m_iCurrCurve]->m_bDirty = true;
 }
 
