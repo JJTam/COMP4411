@@ -36,6 +36,10 @@ private:
 	std::map<KumaModelPart, float*> indicatingColors;
 	std::map<KumaModelPart, std::string> partNames;
 	std::map<KumaModelPart, std::list<int>* > partControls;
+	unsigned char* projBitmap;
+	int projBitmapWidth;
+	int projBitmapHeight;
+	bool projBitmapFailed;
 
 	void updateParameters();
 

@@ -52,6 +52,7 @@ Fl_Menu_Item ModelerUIWindows::menu_m_pchoShading[] = {
  {"Default", 0,  0, 0, 0, 0, 0, 12, 0},
  {"Phong", 0,  0, 0, 4, 0, 0, 12, 0},
  {"Cel", 0,  0, 0, 4, 0, 0, 12, 0},
+ {"Proj Texture", 0,  0, 0, 0, 0, 0, 12, 0},
  {0}
 };
 
