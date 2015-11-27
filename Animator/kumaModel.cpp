@@ -78,8 +78,6 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 
 	ikTarget[KumaModelPart::LEFT_ARM_LOWER] = Vec3f(0, 0, 0);
 	ikTarget[KumaModelPart::RIGHT_ARM_LOWER] = Vec3f(0, 0, 0);
-	ikTarget[KumaModelPart::LEFT_LEG_LOWER] = Vec3f(0, 0, 0);
-	ikTarget[KumaModelPart::RIGHT_LEG_LOWER] = Vec3f(0, 0, 0);
 	
 	hiddenBuffer = nullptr;
 	projBitmap = nullptr;
@@ -149,6 +147,17 @@ int KumaModel::handle(int ev)
 				lastMouseDelta = Vec3f(eventCoordX, eventCoordY, 0.0f) - prevMousePos;
 				prevMousePos[0] = eventCoordX;
 				prevMousePos[1] = eventCoordY;
+
+				GLfloat Mtmp[16];
+				glGetFloatv(GL_MODELVIEW_MATRIX, Mtmp);
+				Mat4f MM(Mtmp[0], Mtmp[4], Mtmp[8], Mtmp[12], Mtmp[1], Mtmp[5], Mtmp[9], Mtmp[13], Mtmp[2], Mtmp[6], Mtmp[10], Mtmp[14], Mtmp[3], Mtmp[7], Mtmp[11], Mtmp[15]);
+				MM = MM.inverse();
+
+				lastMouseDeltaInWorld[0] = lastMouseDelta[0];
+				lastMouseDeltaInWorld[1] = lastMouseDelta[1];
+				lastMouseDeltaInWorld[2] = lastMouseDeltaInWorld[3] = 0;
+				lastMouseDeltaInWorld = MM * lastMouseDeltaInWorld;
+				lastMouseDeltaInWorld = lastMouseDeltaInWorld * abs(MM[3][3]) * 0.05f;
 
 				hasMouseDelta = true;
 			}

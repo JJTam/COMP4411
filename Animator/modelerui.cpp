@@ -938,6 +938,8 @@ m_bSaveMovie(false)
 	m_projTextPosZ->callback((Fl_Callback*)cb_redraw);
 	m_pchoShading->callback((Fl_Callback*)cb_redraw);
 	m_pbtnTeapot->callback((Fl_Callback*)cb_redraw);
+	m_pbtnEnableIK->callback((Fl_Callback*)cb_redraw);
+	m_pbtnDrawIKTarg->callback((Fl_Callback*)cb_redraw);
 
 	m_pwndMainWnd->callback((Fl_Callback*)cb_hide);
 	m_pwndMainWnd->when(FL_HIDE);

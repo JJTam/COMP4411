@@ -34,4 +34,11 @@ void kumaInitControls(ModelerControl* controls)
 	controls[WAIST_ROTATION_X] = ModelerControl("Waist rotation X", -90, 90, 0.01f, 0);
 	controls[WAIST_ROTATION_Y] = ModelerControl("Waist rotation Y", -90, 90, 0.01f, 0);
 	controls[WAIST_ROTATION_Z] = ModelerControl("Waist rotation Z", -30, 30, 0.01f, 0);
+
+	controls[LEFT_ARM_IK_X] = ModelerControl("Left arm ik X", -2, 1, 0.01f, -0.4);
+	controls[LEFT_ARM_IK_Y] = ModelerControl("Left arm ik Y", 0, 3, 0.01f, 2.5);
+	controls[LEFT_ARM_IK_Z] = ModelerControl("Left arm ik Z", -1, 1, 0.01f, 1.0);
+	controls[RIGHT_ARM_IK_X] = ModelerControl("Right arm ik X", -1, 2, 0.01f, 0.4);
+	controls[RIGHT_ARM_IK_Y] = ModelerControl("Right arm ik Y", 0, 3, 0.01f, 2.0);
+	controls[RIGHT_ARM_IK_Z] = ModelerControl("Right arm ik Z", -1, 1, 0.01f, 1.0);
 }

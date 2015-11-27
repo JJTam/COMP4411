@@ -68,11 +68,15 @@ void solveIK(int maxIter, double step, Vec3f target, int numVals, double* vals, 
 			}
 		} while (stepperNext(numVals, stepper));
 
-		if (hasUpdate)
+		if (hasUpdate && globalBest - localBest > 0.001)
 		{
 			globalBest = localBest;
 			for (int i = 0; i < numVals; ++i)
 				globalsol[i] = globalsol[i] + diff[localsol[i]];
+		}
+		if (globalBest < 0.004)
+		{
+			break;
 		}
 	}
 	memcpy(vals, globalsol, sizeof(double) * numVals);
