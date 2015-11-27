@@ -3,6 +3,9 @@
 #include <gl/glu.h>
 #include <fstream>
 
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 #include "Camera.h"
 #include "Curve.h"
 #include "CurveEvaluator.h"
@@ -14,6 +17,8 @@
 #ifndef M_PI
 #define M_PI 3.141592653589793238462643383279502f
 #endif 
+
+using namespace glm;
 
 const float kMouseRotationSensitivity		= 1.0f/90.0f;
 const float kMouseTranslationXSensitivity	= 0.03f;
@@ -250,15 +255,75 @@ void Camera::releaseMouse( int x, int y )
 }
 
 
+quat RotationBetweenVectors(vec3 start, vec3 dest){
+	start = normalize(start);
+	dest = normalize(dest);
+
+	float cosTheta = dot(start, dest);
+
+	vec3 rotationAxis;
+
+	if (cosTheta < -1 + 0.001f){
+
+		// special case when vectors in opposite directions:
+		// there is no "ideal" rotation axis
+		// So guess one; any will do as long as it's perpendicular to start
+		rotationAxis = cross(vec3(0.0f, 0.0f, 1.0f), start);
+		if (length2(rotationAxis) < 0.01) // bad luck, they were parallel, try again!
+			rotationAxis = cross(vec3(1.0f, 0.0f, 0.0f), start);
+		rotationAxis = normalize(rotationAxis);
+		return angleAxis(180.0f, rotationAxis);
+	}
+
+	rotationAxis = cross(start, dest);
+
+	float s = sqrt((1 + cosTheta) * 2);
+	float invs = 1 / s;
+
+	return quat(
+		s * 0.5f,
+		rotationAxis.x * invs,
+		rotationAxis.y * invs,
+		rotationAxis.z * invs
+		);
+}
+
 void Camera::applyViewingTransform() {
 	if( mDirtyTransform )
 		calculateViewingTransformParameters();
 
 	// Place the camera at mPosition, aim the camera at
 	// mLookAt, and twist the camera such that mUpVector is up
+	/*
 	gluLookAt(	mPosition[0], mPosition[1], mPosition[2],
 				mLookAt[0],   mLookAt[1],   mLookAt[2],
 				mUpVector[0], mUpVector[1], mUpVector[2]);
+				*/
+
+	vec3 direction(mLookAt[0] - mPosition[0], mLookAt[1] - mPosition[1], mLookAt[2] - mPosition[2]);
+	vec3 desiredUp(mUpVector[0], mUpVector[1], mUpVector[2]);
+	quat rot1 = RotationBetweenVectors(vec3(0.0f, 0.0f, 1.0f), direction);
+	vec3 right = cross(direction, desiredUp);
+	desiredUp = cross(right, direction);
+
+	vec3 newUp = rot1 * vec3(0.0f, 1.0f, 0.0f);
+	quat rot2 = RotationBetweenVectors(newUp, desiredUp);
+	quat targetOrientation = rot2 * rot1;
+	mat4 n = toMat4(targetOrientation);
+	
+	GLfloat mat[16];
+	for (int i = 0; i < 16; ++i)
+	{
+		mat[i] = n[i / 4][i % 4];
+	}
+	/*
+	{ mat[0] = n[0][0]; mat[1] = n[1][0]; mat[2] = n[2][0]; mat[3] = n[3][0];
+	mat[4] = n[0][1]; mat[5] = n[1][1]; mat[6] = n[2][1]; mat[7] = n[3][1];
+	mat[8] = n[0][2]; mat[9] = n[1][2]; mat[10] = n[2][2]; mat[11] = n[3][2];
+	mat[12] = n[0][3]; mat[13] = n[1][3]; mat[14] = n[2][3]; mat[15] = n[3][3]; }
+	*/
+	glMultMatrixf(mat);
+	
 }
 
 
