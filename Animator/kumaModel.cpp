@@ -84,10 +84,12 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 
 int KumaModel::handle(int ev)
 {
+	static Vec3f prevMousePos(0, 0, 0);
 	unsigned eventCoordX = Fl::event_x();
 	unsigned eventCoordY = Fl::event_y();
 	unsigned eventButton = Fl::event_button();
 	unsigned eventState = Fl::event_state();
+	KumaModelPart part = KumaModelPart::NONE;
 
 	switch (ev)
 	{
@@ -106,7 +108,7 @@ int KumaModel::handle(int ev)
 				}
 
 				double mindiff = 100;
-				KumaModelPart part = KumaModelPart::NONE;
+				
 				for (auto pair : indicatingColors)
 				{
 					double diff = val - pair.second[refIndex];
@@ -127,19 +129,36 @@ int KumaModel::handle(int ev)
 						pUI->m_pbrsBrowser->select(ctrl + 1);
 					}
 					pUI->m_pbrsBrowser->do_callback();
+
+					prevMousePos[0] = eventCoordX;
+					prevMousePos[1] = eventCoordY;
 				}
 
 				lastSelectedPart = part;
+			}
+			break;
+		case FL_DRAG:
+			if (lastSelectedPart != KumaModelPart::NONE && eventButton == FL_LEFT_MOUSE)
+			{
+				Vec3f mouseDelta = Vec3f(eventCoordX, eventCoordY, 0.0f) - prevMousePos;
+				prevMousePos[0] = eventCoordX;
+				prevMousePos[1] = eventCoordY;
 
-				// printf("val = %.2f, ref = %d, mindiff = %.2f, you clicked on %s.\n", val, refIndex, mindiff, partNames[part].c_str());
-				// printf("You clicked on %s.\n", partNames[part].c_str());
+				printf("%2f, %2f\n", mouseDelta[0], mouseDelta[1]);
 			}
 			break;
 		default:
 			break;
 	}
 
-	return ModelerView::handle(ev);
+	if (part != KumaModelPart::NONE)
+	{
+		return 1;
+	}
+	else
+	{
+		return ModelerView::handle(ev);
+	}
 }
 
 void drawTeapot()
