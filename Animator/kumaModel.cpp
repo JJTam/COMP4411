@@ -501,6 +501,8 @@ void KumaModel::draw()
 						glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 						glCullFace(GL_FRONT);
 
+						if (ModelerApplication::getPUI()->m_pbtnTeapot->value() > 0)
+							drawTeapot();
 						drawModel(false);
 
 						glMatrixMode(GL_MODELVIEW);
@@ -518,6 +520,7 @@ void KumaModel::draw()
 					glEnable(GL_TEXTURE_2D);
 					glActiveTextureARB(GL_TEXTURE7);
 					glBindTexture(GL_TEXTURE_2D, shadowTextureID);
+					glActiveTextureARB(GL_TEXTURE0);
 				}
 
 				glUseProgramObjectARB(shaderPrograms[shaderSelection]);
@@ -533,8 +536,6 @@ void KumaModel::draw()
 				drawTeapot();
 			drawModel(false);
 
-			glDisable(GL_TEXTURE_2D);
-
 			if (shadowSuccess)
 			{
 				glDeleteFramebuffers(1, &shadowFboID);
@@ -542,11 +543,13 @@ void KumaModel::draw()
 				shadowSuccess = false;
 			}
 
-			glUseProgram(0);
+			glDisable(GL_TEXTURE_2D);
+			glUseProgramObjectARB(0);
 		}
 	}
 	else
 	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		if (ModelerApplication::getPUI()->m_pbtnTeapot->value() > 0)
 			drawTeapot();
 		drawModel(false);

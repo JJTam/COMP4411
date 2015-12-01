@@ -1,9 +1,10 @@
-varying vec3 normal;
-varying vec3 pos;
+#version 120
+varying vec4 normal;
+varying vec4 pos;
 
 void main()
 {
-    normal = normalize(gl_NormalMatrix * gl_Normal);
+    normal = vec4(normalize(gl_NormalMatrix * gl_Normal),0);
     pos = gl_ModelViewMatrix * gl_Vertex;
     
     gl_Position = ftransform();
