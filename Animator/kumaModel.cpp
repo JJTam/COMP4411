@@ -228,6 +228,39 @@ Mat4f getViewMat(Vec3f pos, Vec3f lookat, Vec3f up)
 	return M * Mat4f::createTranslation(-pos[0], -pos[1], -pos[2]);
 }
 
+Mat4f fromGLMat(GLfloat* glmat)
+{
+	return Mat4f(glmat[0], glmat[4], glmat[8], glmat[12], glmat[1], glmat[5], glmat[9], glmat[13], glmat[2], glmat[6], glmat[10], glmat[14], glmat[3], glmat[7], glmat[11], glmat[15]);
+}
+
+bool createShadowFBO(GLuint& fboID, GLuint& depthTextureID, int width, int height)
+{
+	glGenTextures(1, &depthTextureID);
+	glBindTexture(GL_TEXTURE_2D, depthTextureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT24, GL_UNSIGNED_BYTE, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glGenFramebuffersEXT(1, &fboID);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D, depthTextureID, 0);
+
+	GLenum fbostatus = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+	bool ok = true;
+	if (fbostatus != GL_FRAMEBUFFER_COMPLETE_EXT)
+	{
+		glDeleteTextures(1, &depthTextureID);
+	}
+
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	return ok;
+}
+
 // Override draw() to draw out Kuma
 void KumaModel::draw()
 {
@@ -416,7 +449,7 @@ void KumaModel::draw()
 				// proj view mat
 				Mat4f M = getViewMat(projPos, projAt, projUp);
 				M.getGLMatrix(M_t);
-				Mat4f MProjView(M_t[0], M_t[4], M_t[8], M_t[12], M_t[1], M_t[5], M_t[9], M_t[13], M_t[2], M_t[6], M_t[10], M_t[14], M_t[3], M_t[7], M_t[11], M_t[15]);
+				Mat4f MProjView = fromGLMat(M_t);
 				// proj proj mat
 				glPushMatrix();
 				{
@@ -425,7 +458,7 @@ void KumaModel::draw()
 					glGetFloatv(GL_MODELVIEW_MATRIX, M_t);
 				}
 				glPopMatrix();
-				Mat4f MProj(M_t[0], M_t[4], M_t[8], M_t[12], M_t[1], M_t[5], M_t[9], M_t[13], M_t[2], M_t[6], M_t[10], M_t[14], M_t[3], M_t[7], M_t[11], M_t[15]);
+				Mat4f MProj = fromGLMat(M_t);
 				// proj bias mat
 				Mat4f MSB = Mat4f::createTranslation(0.5, 0.5, 0.5) * Mat4f::createScale(0.5, 0.5, 0.5);
 
@@ -437,11 +470,61 @@ void KumaModel::draw()
 				MView = MView.inverse();
 				MView.getGLMatrix(M_viewinv);
 
-				glEnable(GL_TEXTURE_2D);
+				// render from the view of projector
+				static GLuint shadowTextureID;
+				static GLuint shadowFboID;
+				bool shadowSuccess = createShadowFBO(shadowFboID, shadowTextureID, w(), h());
+
+				if (shadowSuccess)
+				{
+					glMatrixMode(GL_PROJECTION);
+					glPushMatrix();
+					glMatrixMode(GL_MODELVIEW);
+					glPushMatrix();
+					{
+						glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, shadowFboID);
+						glMatrixMode(GL_PROJECTION);
+						glLoadIdentity();
+						gluPerspective(15.0f, 1.0f, 1.0f, 100.0f);
+
+						glMatrixMode(GL_MODELVIEW);
+						GLfloat Mgl[16];
+						MProjView.getGLMatrix(Mgl);
+						glLoadIdentity();
+						glMultMatrixf(Mgl);
+						glUseProgramObjectARB(0);
+						glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+						glCullFace(GL_FRONT);
+
+						drawModel(false);
+
+						glMatrixMode(GL_TEXTURE);
+						glActiveTextureARB(GL_TEXTURE7);
+						glLoadIdentity();
+						glMultMatrixf(M_t);
+
+						glMatrixMode(GL_MODELVIEW);
+						glCullFace(GL_BACK);
+						glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+						glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+						//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+						glUseProgramObjectARB(shaderPrograms[shaderSelection]);
+					}
+					glPopMatrix();
+					glMatrixMode(GL_PROJECTION);
+					glPopMatrix();
+					glMatrixMode(GL_MODELVIEW);
+
+					glEnable(GL_TEXTURE_2D);
+					glActiveTextureARB(GL_TEXTURE7);
+					glBindTexture(GL_TEXTURE_2D, shadowTextureID);
+				}
 
 				glUniformMatrix4fvARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "projMatrix"), 1, GL_FALSE, M_t);
 				glUniformMatrix4fvARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "viewInv"), 1, GL_FALSE, M_viewinv);
 				glUniform1iARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "textureSampler"), 0);
+				glUniform1iARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "shadowSampler"), 7);
+				glUniform1iARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "useShadow"), shadowSuccess ? 1 : 0);
 				glUniform4fARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "projPos"), projPos[0], projPos[1], projPos[2], 1);
 			}
 

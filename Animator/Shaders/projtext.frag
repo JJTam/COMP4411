@@ -1,9 +1,12 @@
 uniform sampler2D textureSampler;
+uniform sampler2D shadowSampler;
+uniform int useShadow;
 
 varying vec3 normal;
 varying vec3 pos;
 varying vec4 projTexCoord;
 varying vec4 projPosW;
+varying vec4 shadowCoord;
 
 void main (void)  
 {  
@@ -38,5 +41,15 @@ void main (void)
     {
         projTexColor = vec4(1.0, 1.0, 1.0, 1.0);
     }
+    
+    if (useShadow == 1)
+    {
+        vec4 shadowCoordWdiv = shadowCoord / shadowCoord.w;
+        shadowCoordWdiv.z += 0.0005;
+        float distFromProj = texture2D(shadowSampler, shadowCoordWdiv.xy).z;
+        if (shadowCoord.w > 0 && distFromProj < shadowCoordWdiv.z)
+            projTexColor = vec4(0.5, 0.5, 0.5, 0.5);
+    }
+    
     gl_FragColor = (color + gl_FrontMaterial.ambient) * projTexColor;
 }
