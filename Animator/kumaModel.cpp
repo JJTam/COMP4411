@@ -409,6 +409,7 @@ void KumaModel::draw()
 			!createProgramWithTwoShaders(shaderVertFilenames[shaderSelection], shaderFragFilenames[shaderSelection], shaderPrograms[shaderSelection]))
 		{
 			shaderFailed[shaderSelection] = true;
+			printf("Shader loading failed!\n");
 		}
 		shaderLoaded[shaderSelection] = true;
 
@@ -481,7 +482,7 @@ void KumaModel::draw()
 				MView.getGLMatrix(M_viewinv);
 
 				// render from the view of projector
-				shadowSuccess = createShadowFBO(shadowFboID, shadowTextureID, w(), h());
+				shadowSuccess = createShadowFBO(shadowFboID, shadowTextureID, drawWidth, drawHeight);
 				if (shadowSuccess)
 				{
 					glMatrixMode(GL_PROJECTION);
@@ -521,6 +522,10 @@ void KumaModel::draw()
 					glActiveTextureARB(GL_TEXTURE7);
 					glBindTexture(GL_TEXTURE_2D, shadowTextureID);
 					glActiveTextureARB(GL_TEXTURE0);
+				}
+				else
+				{
+					printf("Failed generating shadow texture.\n");
 				}
 
 				glUseProgramObjectARB(shaderPrograms[shaderSelection]);
