@@ -416,6 +416,10 @@ void KumaModel::draw()
 		{
 			glUseProgram(shaderPrograms[shaderSelection]);
 
+			static GLuint shadowTextureID;
+			static GLuint shadowFboID;
+			static bool shadowSuccess = false;
+
 			if (!projBitmapFailed && shaderSelection == KUMA_PHONG_PROJECTIVE_SHADER && projBitmap == nullptr)
 			{
 				projBitmap = readBMP("projected_texture.bmp", projBitmapWidth, projBitmapHeight);
@@ -433,7 +437,6 @@ void KumaModel::draw()
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 					glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-					// gluBuild2DMipmaps(GL_TEXTURE_2D, 3, projBitmapWidth, projBitmapHeight, GL_RGB, GL_UNSIGNED_BYTE, projBitmap);
 					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, projBitmapWidth, projBitmapHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, projBitmap);
 				}
 			}
@@ -441,43 +444,44 @@ void KumaModel::draw()
 			if (shaderSelection == KUMA_PHONG_PROJECTIVE_SHADER && !projBitmapFailed)
 			{
 				glUseProgramObjectARB(0);
+				GLfloat M_temp[16];
 
+				// projector parameters
 				auto pUI = ModelerApplication::Instance()->getPUI();
 				Vec3f projPos(-pUI->m_projTextPosX->value(), -pUI->m_projTextPosY->value(), -pUI->m_projTextPosZ->value());
 				Vec3f projAt(-pUI->m_projTextAtX->value(), -pUI->m_projTextAtY->value(), -pUI->m_projTextAtZ->value());
 				Vec3f projUp(0, 1, 0);
-				projUp.normalize();
-				GLfloat M_t[16];
-				// proj view mat
-				Mat4f M = getViewMat(projPos, projAt, projUp);
-				M.getGLMatrix(M_t);
-				Mat4f MProjView = fromGLMat(M_t);
-				// proj proj mat
+
+				// projector view matrix
+				Mat4f MProjView = getViewMat(projPos, projAt, projUp);
+
+				// projector proj mat
 				glPushMatrix();
 				{
 					glLoadIdentity();
 					gluPerspective(15.0f, 1.0f, 1.0f, 100.0f);
-					glGetFloatv(GL_MODELVIEW_MATRIX, M_t);
+					glGetFloatv(GL_MODELVIEW_MATRIX, M_temp);
 				}
 				glPopMatrix();
-				Mat4f MProj = fromGLMat(M_t);
-				// proj bias mat
+				Mat4f MProj = fromGLMat(M_temp);
+
+				// projection bias mat
 				Mat4f MSB = Mat4f::createTranslation(0.5, 0.5, 0.5) * Mat4f::createScale(0.5, 0.5, 0.5);
 
-				(MSB * MProj * MProjView).getGLMatrix(M_t);
+				// projection view and MVP mat
+				GLfloat M_projView[16];
+				MProjView.getGLMatrix(M_projView);
+				GLfloat M_projMVP[16];
+				(MSB * MProj * MProjView).getGLMatrix(M_projMVP);
 
-				// compute view inverse
+				// compute camera view inverse
 				GLfloat M_viewinv[16];
 				Mat4f MView = getViewMat(m_camera->getPosition(), m_camera->getLookAt(), m_camera->getUpVector());
 				MView = MView.inverse();
 				MView.getGLMatrix(M_viewinv);
 
 				// render from the view of projector
-				static GLuint shadowTextureID;
-				static GLuint shadowFboID;
-				bool shadowSuccess = createShadowFBO(shadowFboID, shadowTextureID, w(), h());
-				static unsigned char *depthpix;
-
+				shadowSuccess = createShadowFBO(shadowFboID, shadowTextureID, w(), h());
 				if (shadowSuccess)
 				{
 					glMatrixMode(GL_PROJECTION);
@@ -491,26 +495,19 @@ void KumaModel::draw()
 						gluPerspective(15.0f, 1.0f, 1.0f, 100.0f);
 
 						glMatrixMode(GL_MODELVIEW);
-						GLfloat Mgl[16];
-						MProjView.getGLMatrix(Mgl);
 						glLoadIdentity();
-						glMultMatrixf(Mgl);
+						glMultMatrixf(M_projView);
 						glDepthMask(GL_TRUE);
 						glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-						//glCullFace(GL_FRONT);
+						glCullFace(GL_FRONT);
 
 						drawModel(false);
-
-						glMatrixMode(GL_TEXTURE);
-						glActiveTextureARB(GL_TEXTURE7);
-						glLoadIdentity();
-						glMultMatrixf(M_t);
 
 						glMatrixMode(GL_MODELVIEW);
 						glCullFace(GL_BACK);
 						glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 						glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-						//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 						
 					}
 					glPopMatrix();
@@ -521,46 +518,15 @@ void KumaModel::draw()
 					glEnable(GL_TEXTURE_2D);
 					glActiveTextureARB(GL_TEXTURE7);
 					glBindTexture(GL_TEXTURE_2D, shadowTextureID);
-
-					//depthpix = new unsigned char[drawWidth * drawHeight * 3];
-					//glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, depthpix);
-					//for (int y = 100; y < 110; ++y)
-					//{
-					//	for (int x = 0; x < drawWidth; ++x)
-					//	{
-					//		printf("%d ", depthpix[(x + y * drawWidth) * 3 + 2]);
-					//	}
-					//	printf("\n");
-					//}
-					//printf("---------------------\n");
-					//delete[] depthpix;
-
-					//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-					//glBegin(GL_QUADS);
-					//glTexCoord2f(0, 0); glVertex3f(0, 3, 0);
-					//glTexCoord2f(0, 1); glVertex3f(0, 3, 5);
-					//glTexCoord2f(1, 1); glVertex3f(5, 3, 5);
-					//glTexCoord2f(1, 0); glVertex3f(5, 3, 0);
-					//glEnd();
 				}
 
 				glUseProgramObjectARB(shaderPrograms[shaderSelection]);
-				glUniformMatrix4fvARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "projMatrix"), 1, GL_FALSE, M_t);
+				glUniformMatrix4fvARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "projMatrix"), 1, GL_FALSE, M_projMVP);
 				glUniformMatrix4fvARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "viewInv"), 1, GL_FALSE, M_viewinv);
 				glUniform1iARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "textureSampler"), 0);
 				glUniform1iARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "shadowSampler"), 7);
 				glUniform1iARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "useShadow"), shadowSuccess ? 1 : 0);
 				glUniform4fARB(glGetUniformLocationARB(shaderPrograms[shaderSelection], "projPos"), projPos[0], projPos[1], projPos[2], 1);
-
-				//glMatrixMode(GL_PROJECTION);
-				//glLoadIdentity();
-				//gluPerspective(15.0f, 1.0f, 1.0f, 100.0f);
-
-				//glMatrixMode(GL_MODELVIEW);
-				//GLfloat Mgl[16];
-				//MProjView.getGLMatrix(Mgl);
-				//glLoadIdentity();
-				//glMultMatrixf(Mgl);
 			}
 
 			if (ModelerApplication::getPUI()->m_pbtnTeapot->value() > 0)
@@ -568,6 +534,13 @@ void KumaModel::draw()
 			drawModel(false);
 
 			glDisable(GL_TEXTURE_2D);
+
+			if (shadowSuccess)
+			{
+				glDeleteFramebuffers(1, &shadowFboID);
+				glDeleteTextures(1, &shadowTextureID);
+				shadowSuccess = false;
+			}
 
 			glUseProgram(0);
 		}

@@ -4,22 +4,11 @@ uniform sampler2D textureSampler;
 uniform sampler2D shadowSampler;
 uniform int useShadow;
 
-varying vec3 normal;
+varying vec4 normal;
 varying vec4 pos;
 varying vec4 projTexCoord;
 varying vec4 projPosW;
 varying vec4 shadowCoord;
-varying vec4 glpos;
-
-float dot(vec4 a, vec3 b)
-{
-    return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
-}
-
-float dot(vec3 a, vec4 b)
-{
-    return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
-}
 
 void main (void)  
 {  
@@ -27,7 +16,7 @@ void main (void)
 
     for (int i = 0; i < 2; ++i)
     {
-        vec3 lightDir = normalize(vec3(gl_LightSource[i].position));
+        vec4 lightDir = normalize(gl_LightSource[i].position);
         float NdotL = max(dot(normal, lightDir), 0.0);
         float dist = distance(gl_LightSource[i].position, pos);
 
@@ -58,7 +47,6 @@ void main (void)
     vec4 shadowCoordWdiv = shadowCoord / shadowCoord.q;
     if (useShadow == 1 && shadowCoordWdiv.x > 0 && shadowCoordWdiv.y > 0 && shadowCoordWdiv.x < 1 && shadowCoordWdiv.y < 1)
     {
-        //shadowCoordWdiv.z += 0.0005;
         shadowCoordWdiv.z -= 1e-4;
         float distFromProj = texture2D(shadowSampler, shadowCoordWdiv.xy).z;
         if (shadowCoord.q > 0 && distFromProj < shadowCoordWdiv.z)
