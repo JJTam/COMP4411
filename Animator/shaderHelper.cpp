@@ -60,17 +60,17 @@ bool createShaderCompiled(const char* filename, GLenum shaderType, GLhandleARB& 
 	
 	GLint isCompiled = 0;
 	glGetObjectParameterivARB(shaderID, GL_OBJECT_COMPILE_STATUS_ARB, &isCompiled);
+
+	GLint maxLength = 0;
+	glGetObjectParameterivARB(shaderID, GL_OBJECT_INFO_LOG_LENGTH_ARB, &maxLength);
+	GLchar* errorLog = new GLchar[maxLength];
+	glGetInfoLogARB(shaderID, maxLength, &maxLength, errorLog);
+	printf("%s\n", errorLog);
+	delete[] errorLog;
+
 	if (isCompiled == GL_FALSE)
 	{
 		printf("Compilation failed! (%s) \n", filename);
-
-		GLint maxLength = 0;
-		glGetObjectParameterivARB(shaderID, GL_OBJECT_INFO_LOG_LENGTH_ARB, &maxLength);
-		GLchar* errorLog = new GLchar[maxLength];
-		glGetInfoLogARB(shaderID, maxLength, &maxLength, errorLog);
-		printf("%s\n", errorLog);
-		delete[] errorLog;
-
 		glDeleteObjectARB(shaderID);
 		return false;
 	}
