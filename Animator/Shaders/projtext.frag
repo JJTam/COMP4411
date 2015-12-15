@@ -37,7 +37,7 @@ void main (void)
     vec4 projTexCoordDiv = projTexCoord / projTexCoord.q;
     if (projDot > 0.0 && projTexCoord.q > 0.0 && projTexCoordDiv.x > 0.0 && projTexCoordDiv.y > 0.0 && projTexCoordDiv.x < 1.0 && projTexCoordDiv.y < 1.0)
     {
-        projTexColor = texture2DProj(textureSampler, projTexCoordDiv);
+        projTexColor = texture2D(textureSampler, projTexCoordDiv.xy);
     }
     else
     {
