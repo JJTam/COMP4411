@@ -10,4 +10,4 @@ Modeler [**Done**](https://github.com/logchan/COMP4411/wiki/Modeler)
 
 Trace [**Done**](https://github.com/logchan/COMP4411/wiki/Trace)
 
-Animator  [**In Progress**](https://github.com/logchan/COMP4411/wiki/Animator)
+Animator  [**Done**](https://github.com/logchan/COMP4411/wiki/Animator)
