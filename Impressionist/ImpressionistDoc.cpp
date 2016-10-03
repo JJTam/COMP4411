@@ -56,6 +56,8 @@ ImpressionistDoc::ImpressionistDoc()
 	m_ucBitmapFiltered = NULL;
 	m_ucAlphaBrush = NULL;
 	m_nFilterType = FB_GAUSSIAN_FILTER;
+	m_nPaintWidth = -1;
+	m_nPaintHeight = -1;
 
 	// create one instance of each brush
 	ImpBrush::c_nBrushCount	= NUM_BRUSH_TYPE;
