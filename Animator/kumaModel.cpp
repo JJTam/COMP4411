@@ -37,18 +37,18 @@ KumaModel::KumaModel(int x, int y, int w, int h, char *label)
 
 	// setup indicating colors
 	// MAGIC NUMBERS! DO NOT MODIFY!!
-	indicatingColors[KumaModelPart::NONE] = new float[] { 0.0f, 0, 0 };
-	indicatingColors[KumaModelPart::TORSO] = new float[] { 0.12f, 0, 0 };
-	indicatingColors[KumaModelPart::HEAD] = new float[] { 0.24f, 0, 0 };
-	indicatingColors[KumaModelPart::LEFT_ARM_UPPER] = new float[] { 0.36f, 0, 0 };
-	indicatingColors[KumaModelPart::LEFT_ARM_LOWER] = new float[] { 0.48f, 0, 0 };
-	indicatingColors[KumaModelPart::RIGHT_ARM_UPPER] = new float[] { 0.58f, 0, 0 };
-	indicatingColors[KumaModelPart::RIGHT_ARM_LOWER] = new float[] { 0.70f, 0, 0 };
-	indicatingColors[KumaModelPart::LEFT_LEG_UPPER] = new float[] { 0.84f, 0.12f, 0 };
-	indicatingColors[KumaModelPart::LEFT_LEG_LOWER] = new float[] { 1.0f, 0.24f, 0 };
-	indicatingColors[KumaModelPart::RIGHT_LEG_UPPER] = new float[] { 1.0f, 0.36f, 0 };
-	indicatingColors[KumaModelPart::RIGHT_LEG_LOWER] = new float[] { 1.0f, 0.48f, 0 };
-	indicatingColors[KumaModelPart::WAIST] = new float[] {1.0f, 0.62f, 0};
+	indicatingColors[KumaModelPart::NONE] = new float[3] { 0.0f, 0, 0 };
+	indicatingColors[KumaModelPart::TORSO] = new float[3] { 0.12f, 0, 0 };
+	indicatingColors[KumaModelPart::HEAD] = new float[3] { 0.24f, 0, 0 };
+	indicatingColors[KumaModelPart::LEFT_ARM_UPPER] = new float[3] { 0.36f, 0, 0 };
+	indicatingColors[KumaModelPart::LEFT_ARM_LOWER] = new float[3] { 0.48f, 0, 0 };
+	indicatingColors[KumaModelPart::RIGHT_ARM_UPPER] = new float[3] { 0.58f, 0, 0 };
+	indicatingColors[KumaModelPart::RIGHT_ARM_LOWER] = new float[3] { 0.70f, 0, 0 };
+	indicatingColors[KumaModelPart::LEFT_LEG_UPPER] = new float[3] { 0.84f, 0.12f, 0 };
+	indicatingColors[KumaModelPart::LEFT_LEG_LOWER] = new float[3] { 1.0f, 0.24f, 0 };
+	indicatingColors[KumaModelPart::RIGHT_LEG_UPPER] = new float[3] { 1.0f, 0.36f, 0 };
+	indicatingColors[KumaModelPart::RIGHT_LEG_LOWER] = new float[3] { 1.0f, 0.48f, 0 };
+	indicatingColors[KumaModelPart::WAIST] = new float[3] {1.0f, 0.62f, 0};
 
 	partNames[KumaModelPart::NONE] = "Air";
 	partNames[KumaModelPart::TORSO] = "Torso";
